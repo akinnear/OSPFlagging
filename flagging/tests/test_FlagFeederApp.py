@@ -1491,6 +1491,18 @@ f["MY_FLAG"]"""
     assert test_output.referenced_flags.keys() == {"MY_FLAG"}
 
 
+def test_simple_flag_get():
+    logic = """f.get("MY_FLAG")"""
+    test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == {"f"}
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == {"f.get"}
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == {"MY_FLAG"}
+
+
 def test_example():
     """Imagine code is:
     my_var = 1
