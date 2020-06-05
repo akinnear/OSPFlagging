@@ -14,9 +14,21 @@ class VariableInformation:
         return f"VariableInformation({self.name}, {self.parent})"
 
     def __str__(self):
+        pre = ""
+        post = ""
+        if self.parent:
+            pre = ""
+            a_parent = self.parent
+            while a_parent:
+                pre = f"{a_parent.name}.{pre}"
+                a_parent = a_parent.parent
+            pre = f"[{pre}]"
         if self.child:
-            return f"{self.name}.{str(self.child)}"
-        return self.name
+            a_child = self.child
+            while a_child:
+                post += f".{a_child.name}"
+                a_child = a_child.child
+        return f"{pre}{self.name}{post}"
 
     # object equality
     def __eq__(self, other):

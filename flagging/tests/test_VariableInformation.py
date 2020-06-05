@@ -7,8 +7,8 @@ def test_Create_complex_VariableInformation_str():
     c = VariableInformation("c", b)
 
     assert "a.b.c" == str(a)
-    assert "b.c" == str(b)
-    assert "c" == str(c)
+    assert "[a.]b.c" == str(b)
+    assert "[a.b.]c" == str(c)
 
 def test_Create_complex_VariableInformation_equality():
     a = VariableInformation("a")
@@ -27,3 +27,5 @@ def test_variable_information_as_key():
     assert a in test_set
     assert b in test_set
     assert c in test_set
+
+
