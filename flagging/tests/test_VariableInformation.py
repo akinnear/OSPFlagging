@@ -29,3 +29,15 @@ def test_variable_information_as_key():
     assert c in test_set
 
 
+def test_variable_information_as_key_in_dict():
+    a = VariableInformation("a")
+    b = VariableInformation("b", a)
+    c = VariableInformation("c", b)
+
+    test_dict = {a: 1, b: 2, c: 3}
+    assert test_dict[a] == 1
+    assert test_dict[b] == 2
+    assert test_dict[c] == 3
+
+
+
