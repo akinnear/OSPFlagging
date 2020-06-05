@@ -1,6 +1,8 @@
 import ast
 import contextlib
 from ast import NodeVisitor
+from flagging.src.VariableInformation import VariableInformation
+
 
 
 def _print_helper(node):
