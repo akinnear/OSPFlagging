@@ -21,13 +21,13 @@ def _print_helper(node):
 def code_location_helper(var_dict, key, cl):
     if key in var_dict.keys():
         var_dict[key].add(cl)
-        print(key + ": " + str(cl))
+        print(str(key) + ": " + str(cl))
         print(var_dict)
     else:
         #creat new key
         var_dict.setdefault(key, set())
         var_dict[key].add(cl)
-        print(key + ": " + str(cl))
+        print(str(key) + ": " + str(cl))
         print(var_dict)
     return var_dict
 
@@ -99,15 +99,13 @@ class FlagFeederNodeVisitor(NodeVisitor):
 
     def visit_FunctionDef(self, node):
         with self.handle_node_stack(node):
-            self.defined_functions = code_location_helper(self.defined_functions, node.name,
+            self.defined_functions = code_location_helper(self.defined_functions, VariableInformation(node.name),
                                                           CodeLocation(line_number=node.lineno,
                                                                        column_offset=node.col_offset))
-            # self.defined_functions.add(node.name)
             for arg in node.args.args:
-                self.assigned_variables = code_location_helper(self.assigned_variables, arg.arg,
+                self.assigned_variables = code_location_helper(self.assigned_variables, VariableInformation(arg.arg),
                                                                CodeLocation(line_number=node.lineno,
                                                                             column_offset=node.col_offset))
-                # self.assigned_variables.add(arg.arg)
             for body_line in node.body:
                 ast.NodeVisitor.generic_visit(self, body_line)
             ast.NodeVisitor.generic_visit(self, node)
@@ -118,7 +116,6 @@ class FlagFeederNodeVisitor(NodeVisitor):
                 self.referenced_moduels = code_location_helper(self.referenced_modules, name.name,
                                                                CodeLocation(line_number=node.lineno,
                                                                             column_offset=node.col_offset))
-                # self.referenced_modules.add(name.name)
             ast.NodeVisitor.generic_visit(self, node)
 
     def visit_ImportFrom(self, node):
@@ -127,7 +124,6 @@ class FlagFeederNodeVisitor(NodeVisitor):
                 self.referenced_modules = code_location_helper(self.referenced_modules, name.name,
                                                                CodeLocation(line_number=node.lineno,
                                                                             column_offset=node.col_offset))
-                # self.referenced_modules.add(name.name)
             ast.NodeVisitor.generic_visit(self, node)
 
     def visit_Name(self, node):
@@ -135,15 +131,13 @@ class FlagFeederNodeVisitor(NodeVisitor):
             name = node.id
             parent = self._stack[-2]
             if isinstance(parent, ast.Assign):
-                self.assigned_variables = code_location_helper(self.assigned_variables, name,
+                self.assigned_variables = code_location_helper(self.assigned_variables, VariableInformation(name),
                                                                CodeLocation(line_number=node.lineno,
                                                                             column_offset=node.col_offset))
-                # self.assigned_variables.add(name)
             elif isinstance(parent, ast.FunctionDef):
-                self.assigned_variables = code_location_helper(self.assigned_variables, name,
+                self.assigned_variables = code_location_helper(self.assigned_variables, VariableInformation(name),
                                                                CodeLocation(line_number=node.lineno,
                                                                             column_offset=node.col_offset))
-                # self.assigned_variables.add(name)
             elif isinstance(parent, ast.Attribute):
                 before_attributes = self._stack[-1*(len(self._attribute_stack) + 2)]
                 attributes = self._attribute_stack.copy()
@@ -157,43 +151,39 @@ class FlagFeederNodeVisitor(NodeVisitor):
                     full_name = f"{variable_name}.{function_name}"
 
                     if variable_name not in self.referenced_moduels:
-                        code_location_helper(self.used_variables, variable_name,
+                        self.used_variables = code_location_helper(self.used_variables, VariableInformation(variable_name),
                                                                CodeLocation(line_number=node.lineno,
                                                                             column_offset=node.col_offset))
 
                     possible_args = self._call_args_to_names(before_attributes.args)
                     if full_name in possible_args:
-                        self.used_variables = code_location_helper(self.used_variables, full_name,
+                        self.used_variables = code_location_helper(self.used_variables, VariableInformation(variable_name),
                                                                    CodeLocation(line_number=node.lineno,
                                                                                 column_offset=node.col_offset))
-                        # self.used_variables.add(full_name)
 
                     else:
                         post_attr_name = ".".join(map(lambda attr_node: attr_node.attr, attributes))
                         full_name = f"{name}.{post_attr_name}"
-                        self.referenced_functions = code_location_helper(self.referenced_functions, full_name,
+                        self.referenced_functions = code_location_helper(self.referenced_functions, VariableInformation(full_name),
                                                                    CodeLocation(line_number=node.lineno,
                                                                                 column_offset=node.col_offset))
-                        # self.referenced_functions.add(full_name)
                 else:
-                    #TODO
-                    # bug fix for full_name declaration
-                    self.used_variables = code_location_helper(self.used_variables, full_name,
+                    variable_list = [name]
+                    for attrs in attributes:
+                        variable_list.append(attrs.attr)
+                    self.used_variables = code_location_helper(self.used_variables, VariableInformation.create_var(variable_list),
                                                                CodeLocation(line_number=node.lineno,
                                                                             column_offset=node.col_offset))
-                    # self.used_variables.add(full_name)
             elif isinstance(parent, ast.Call):
                 args = map(lambda x: x.id, filter(lambda y: isinstance(y, ast.Name), parent.args))
                 if name in args:
-                    self.used_variables = code_location_helper(self.used_variables, name,
+                    self.used_variables = code_location_helper(self.used_variables, VariableInformation(name),
                                                                    CodeLocation(line_number=node.lineno,
                                                                                 column_offset=node.col_offset))
-                    # self.used_variables.add(name)
                 else:
-                    self.referenced_functions = code_location_helper(self.referenced_functions, name,
+                    self.referenced_functions = code_location_helper(self.referenced_functions, VariableInformation(name),
                                                                CodeLocation(line_number=node.lineno,
                                                                             column_offset=node.col_offset))
-                    # self.referenced_functions.add(name)
             elif isinstance(parent, ast.Tuple):
                 three_up_stack_node = self._stack[-3]
                 if isinstance(three_up_stack_node, ast.Assign):
@@ -201,29 +191,25 @@ class FlagFeederNodeVisitor(NodeVisitor):
                                  for target in three_up_stack_node.targets if isinstance(target, ast.Tuple)
                                  for name in target.elts if isinstance(name, ast.Name)])
                     if name in names:
-                        self.assigned_variables = code_location_helper(self.assigned_variables, name,
+                        self.assigned_variables = code_location_helper(self.assigned_variables, VariableInformation(name),
                                                                          CodeLocation(line_number=node.lineno,
                                                                                       column_offset=node.col_offset))
-                        # self.assigned_variables.add(name)
                     else:
-                        self.used_variables = code_location_helper(self.used_variables, name,
+                        self.used_variables = code_location_helper(self.used_variables, VariableInformation(name),
                                                                        CodeLocation(line_number=node.lineno,
                                                                                     column_offset=node.col_offset))
-                        # self.used_variables.add(name)
                 else:
                     raise ValueError(f"Have no idea how to handle this node from a tuple {type(three_up_stack_node)}")
             elif isinstance(parent, ast.withitem):
                 if parent.optional_vars is node:
-                    self.assigned_variables = code_location_helper(self.assigned_variables, name,
+                    self.assigned_variables = code_location_helper(self.assigned_variables, VariableInformation(name),
                                                                CodeLocation(line_number=node.lineno,
                                                                             column_offset=node.col_offset))
-                    # self.assigned_variables.add(name)
             elif isinstance(parent, ast.comprehension):
                 if parent.target is node:
-                    self.assigned_variables = code_location_helper(self.assigned_variables, name,
+                    self.assigned_variables = code_location_helper(self.assigned_variables, VariableInformation(name),
                                                                    CodeLocation(line_number=node.lineno,
                                                                                 column_offset=node.col_offset))
-                    # self.assigned_variables.add(name)
             elif isinstance(parent, ast.ExceptHandler):
                 # not sure what to do with exceptions right now
                 pass
@@ -232,16 +218,13 @@ class FlagFeederNodeVisitor(NodeVisitor):
                     self.referenced_flags = code_location_helper(self.referenced_flags, parent.slice.value.s,
                                                                    CodeLocation(line_number=node.lineno,
                                                                                 column_offset=node.col_offset))
-                    # self.referenced_flags.add(parent.slice.value.s)
-                self.used_variables = code_location_helper(self.used_variables, name,
+                self.used_variables = code_location_helper(self.used_variables, VariableInformation(name),
                                                              CodeLocation(line_number=node.lineno,
                                                                           column_offset=node.col_offset))
-                # self.used_variables.add(name)
             else:
-                self.used_variables = code_location_helper(self.used_variables, name,
+                self.used_variables = code_location_helper(self.used_variables, VariableInformation(name),
                                                            CodeLocation(line_number=node.lineno,
                                                                         column_offset=node.col_offset))
-                # self.used_variables.add(name)
 
             ast.NodeVisitor.generic_visit(self, node)
 
@@ -256,7 +239,6 @@ class FlagFeederNodeVisitor(NodeVisitor):
             self.defined_classes = code_location_helper(self.defined_classes, node.name,
                                                        CodeLocation(line_number=node.lineno,
                                                                     column_offset=node.col_offset))
-            # self.defined_classes.add(node.name)
 
     def generic_visit(self, node):
         with self.handle_node_stack(node):
@@ -283,11 +265,6 @@ def determine_variables(logic):
     root = ast.parse(logic)
     nv = FlagFeederNodeVisitor()
     nv.visit(root)
-
-    #TODO
-    # parse used_variabeles, assigned_varaibles,
-    # referenced_fucntiosn, defined_functions
-    # to create VaribleInformation Objects as keys
     return FlagLogicInformation(used_variables=nv.used_variables,
                                 assigned_variables=nv.assigned_variables,
                                 referenced_functions=nv.referenced_functions,
