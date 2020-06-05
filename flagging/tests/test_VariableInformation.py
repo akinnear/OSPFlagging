@@ -56,3 +56,18 @@ def test_variable_information_simple_str():
     a = VariableInformation("a")
     assert "a" == str(a)
 
+
+def test_variable_information_simple_equals():
+    a = VariableInformation("a")
+    assert a == VariableInformation("a")
+
+def test_Create_complex_VariableInformation_equals():
+    a1 = VariableInformation("a")
+    b1 = VariableInformation("b", a1)
+    c1 = VariableInformation("c", b1)
+
+    a2 = VariableInformation("a")
+    b2 = VariableInformation("b", a2)
+    c2 = VariableInformation("c", b2)
+
+    assert a1 == a2

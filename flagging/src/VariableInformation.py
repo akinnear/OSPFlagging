@@ -32,12 +32,10 @@ class VariableInformation:
 
     # object equality
     def __eq__(self, other):
-        return self.name == other.name and \
-               self.parent is other.parent and \
-               self.child is other.child
+        return str(self) == str(other)
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
     def __hash__(self):
-        return hash((self.name, self.child))
+        return hash(str(self))
