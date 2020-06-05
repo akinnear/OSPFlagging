@@ -52,4 +52,7 @@ def test_variable_information_as_key_in_dict_overwrite():
     assert test_dict[c] == 3
 
 
+def test_variable_information_simple_str():
+    a = VariableInformation("a")
+    assert "a" == str(a)
 
