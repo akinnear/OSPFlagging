@@ -176,6 +176,8 @@ class FlagFeederNodeVisitor(NodeVisitor):
                                                                                 column_offset=node.col_offset))
                         # self.referenced_functions.add(full_name)
                 else:
+                    #TODO
+                    # bug fix for full_name declaration
                     self.used_variables = code_location_helper(self.used_variables, full_name,
                                                                CodeLocation(line_number=node.lineno,
                                                                             column_offset=node.col_offset))
@@ -281,6 +283,11 @@ def determine_variables(logic):
     root = ast.parse(logic)
     nv = FlagFeederNodeVisitor()
     nv.visit(root)
+
+    #TODO
+    # parse used_variabeles, assigned_varaibles,
+    # referenced_fucntiosn, defined_functions
+    # to create VaribleInformation Objects as keys
     return FlagLogicInformation(used_variables=nv.used_variables,
                                 assigned_variables=nv.assigned_variables,
                                 referenced_functions=nv.referenced_functions,
