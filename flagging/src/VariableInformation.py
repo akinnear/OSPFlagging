@@ -39,16 +39,18 @@ class VariableInformation:
 
     def __hash__(self):
         return hash(str(self))
-    
-@staticmethod
-def create_var(names):
-    first = None
-    parent = None
-    for name in names:
-        if parent:
-            var = VariableInformation(name, parent)
-        else:
-            var = VariableInformation(name)
-            first = var
-        parent = var
-    return first
+
+    @staticmethod
+    def create_var(names):
+        first = None
+        parent = None
+        for name in names:
+            if parent:
+                var = VariableInformation(name, parent)
+            else:
+                var = VariableInformation(name)
+                first = var
+            parent = var
+        return first
+
+
