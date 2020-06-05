@@ -28,4 +28,4 @@ class VariableInformation:
         return not self.__eq__(other)
 
     def __hash__(self):
-        return hash((self.name, self.parent, self.child))
+        return hash((self.name, self.child))

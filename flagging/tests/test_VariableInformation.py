@@ -17,3 +17,13 @@ def test_Create_complex_VariableInformation_equality():
     assert a.child == b
     assert b.child == c
     assert c.child is None
+
+def test_variable_information_as_key():
+    a = VariableInformation("a")
+    b = VariableInformation("b", a)
+    c = VariableInformation("c", b)
+
+    test_set = {a, b, c}
+    assert a in test_set
+    assert b in test_set
+    assert c in test_set
