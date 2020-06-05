@@ -71,3 +71,8 @@ def test_Create_complex_VariableInformation_equals():
     c2 = VariableInformation("c", b2)
 
     assert a1 == a2
+
+
+def test_create_var():
+    a = VariableInformation.create_var(["a", "b", "c"])
+    assert "a.b.c" == str(a)
