@@ -113,7 +113,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
     def visit_Import(self, node):
         with self.handle_node_stack(node):
             for name in node.names:
-                self.referenced_moduels = code_location_helper(self.referenced_modules, name.name,
+                self.referenced_modules = code_location_helper(self.referenced_modules, name.name,
                                                                CodeLocation(line_number=node.lineno,
                                                                             column_offset=node.col_offset))
             ast.NodeVisitor.generic_visit(self, node)
@@ -150,7 +150,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
                         variable_name += f".{post_variable_name}"
                     full_name = f"{variable_name}.{function_name}"
 
-                    if variable_name not in self.referenced_moduels:
+                    if variable_name not in self.referenced_modules:
                         self.used_variables = code_location_helper(self.used_variables, VariableInformation(variable_name),
                                                                CodeLocation(line_number=node.lineno,
                                                                             column_offset=node.col_offset))
