@@ -1,5 +1,5 @@
 from flagging.src.FlagFeederApp import determine_variables, CodeLocation
-from flagging.src import VariableInformation
+from flagging.src.VariableInformation import VariableInformation
 
 
 def test_determine_flag_feeders_logic_and_keys():
@@ -949,11 +949,11 @@ def test_object_function_CodeLocation():
     logic = """
 a.b.c() > 10"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"a.b"}
-    assert test_output.used_variables == {"a.b": {CodeLocation(2, 0)}}
+    assert test_output.used_variables.keys() == {VariableInformation.create_var(["a", "b"])}
+    assert test_output.used_variables == {VariableInformation.create_var(["a", "b"]): {CodeLocation(2, 0)}}
     assert test_output.assigned_variables == {}
-    assert test_output.referenced_functions.keys() == {"a.b.c"}
-    assert test_output.referenced_functions == {"a.b.c": {CodeLocation(2, 0)}}
+    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["a", "b", "c"])}
+    assert test_output.referenced_functions == {VariableInformation.create_var(["a", "b", "c"]): {CodeLocation(2, 0)}}
     assert test_output.defined_functions.keys() == set()
     assert test_output.referenced_modules.keys() == set()
 
