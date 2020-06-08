@@ -172,6 +172,8 @@ class FlagFeederNodeVisitor(NodeVisitor):
                                                                    CodeLocation(line_number=node.lineno,
                                                                                 column_offset=node.col_offset))
                 else:
+                    #TODO
+                    # good a.b.c.d.e
                     variable_list = [name]
                     for attrs in attributes:
                         variable_list.append(attrs.attr)
