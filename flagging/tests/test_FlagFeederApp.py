@@ -1116,7 +1116,7 @@ elif max(c) in d:
     return ff1 > min(c)
 else:
     return ff3 == True"""
-    test_output = determine_variables_X(logic)
+    test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {"a", "b", "c", "x", "y", "z", "ff1", "ff2", "ff3", "d"}
     assert test_output.assigned_variables.keys() == {"a", "b", "c", "d"}
     assert test_output.referenced_functions.keys() == {"reduce", "list", "filter", "map", "max", "min", "math.sqrt"}
@@ -1172,7 +1172,8 @@ myfunc(ff1) > 10"""
     assert test_output.defined_functions.keys() == {"myfunc"}
     assert test_output.referenced_modules.keys() == set()
 
-
+#TODO
+# fails
 def test_list_comprehension():
     logic = """
 names = set([name.id 
@@ -1199,6 +1200,7 @@ isinstance(ff1, int)"""
     assert test_output.defined_functions.keys() == set()
     assert test_output.referenced_modules.keys() == set()
 
+
 #TODO
 # fails
 def test_complex_class_reference():
@@ -1212,10 +1214,12 @@ isinstance(a.b.Class, ff1)"""
     assert test_output.referenced_modules.keys() == set()
 
 
+#TODO
+# fails
 def test_complex_object_reference():
     logic = """
 my_function(a.b.c, c.d.e)"""
-    test_output = determine_variables_X(logic)
+    test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {VariableInformation.create_var(["a", "b", "c"]),
                                                  VariableInformation.create_var(["c", "d", "e"])}
     assert test_output.assigned_variables.keys() == set(VariableInformation.create_var(["new_var"]))
@@ -1224,6 +1228,8 @@ my_function(a.b.c, c.d.e)"""
     assert test_output.referenced_modules.keys() == set()
 
 
+#TODO
+# fails
 def test_complex_object_reference_complex_function():
     logic = """
 a.b.c.my_function(a.b.c, c.d.e)"""
@@ -1378,6 +1384,8 @@ return ff1"""
     assert test_output.referenced_modules.keys() == set()
 
 
+#TODO
+# fails
 def test_try_except_finally():
     logic = """
 try:
@@ -1406,6 +1414,8 @@ finally:
     assert test_output.referenced_modules.keys() == set()
 
 
+#TODO
+# fails
 def test_try_except_finally_in_defined_function():
     logic = """
 def my_func():
@@ -1453,9 +1463,7 @@ return ff1"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
 
-##TODO
-## bug fix
-## UnboundLocalError: local variable 'full_name' referenced before assignment
+
 def test_used_class_CodeLocation():
     logic = """
 class MyClass():
@@ -1530,6 +1538,7 @@ f["MY_FLAG"]"""
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == {"MY_FLAG"}
+
 
 ##TODO
 ## Issue 3, support get method in flag name detection
