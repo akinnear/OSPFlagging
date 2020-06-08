@@ -19,9 +19,10 @@ cat and dog"""
 def test_determine_flag_feeders_logic_and_CodeLocation():
     logic = """cat and dog"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"cat", "dog"}
-    assert test_output.used_variables["cat"] == {CodeLocation(line_number=1, column_offset=0)}
-    assert test_output.used_variables["dog"] == {CodeLocation(line_number=1, column_offset=8)}
+    assert test_output.used_variables.keys() == {VariableInformation("cat", None),
+                                                 VariableInformation("dog", None)}
+    assert test_output.used_variables[VariableInformation("cat", None)] == {CodeLocation(line_number=1, column_offset=0)}
+    assert test_output.used_variables[VariableInformation("dog", None)] == {CodeLocation(line_number=1, column_offset=8)}
     assert test_output.assigned_variables.keys() == set()
     assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
