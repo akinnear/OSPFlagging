@@ -701,13 +701,16 @@ else:
                                                  VariableInformation("x", None)}
     assert test_output.assigned_variables.keys() == {VariableInformation("a_list", None),
                                                  VariableInformation("y_list", None)}
-    #TODO
-    # referenced_functions may be wrong
-    assert test_output.referenced_functions.keys() == {"math.sqrt", "abs", "max", "min", "list", "map",
-                                                "y_list.append"}
+    assert test_output.referenced_functions.keys() == {VariableInformation("math.sqrt", None),
+                                                       VariableInformation("abs", None),
+                                                       VariableInformation("max", None),
+                                                       VariableInformation("min", None),
+                                                       VariableInformation("list", None),
+                                                       VariableInformation("map", None),
+                                                       VariableInformation("y_list.append", None)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == {"math"}
+    assert test_output.referenced_modules.keys() == {VariableInformation("math", None)}
     assert test_output.referenced_flags.keys() == set()
 
 ##TODO
