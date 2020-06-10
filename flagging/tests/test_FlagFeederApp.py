@@ -739,8 +739,9 @@ else:
     assert test_output.used_variables["x"] == {CodeLocation(11, 40)}
     assert test_output.assigned_variables.keys() == {"a_list", "y_list"}
     assert test_output.assigned_variables == {"a_list": {CodeLocation(3, 0)}, "y_list": {CodeLocation(4, 0)}}
-    assert test_output.referenced_functions.keys() == {["math", "sqrt"], ["ff1", "isin"], "abs", "max", "min", "list", "map",
-                                                ["y_list", "add"]}
+    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["math", "sqrt"]), VariableInformation.create_var(["ff1", "isin"]),
+     VariableInformation("abs", None), VariableInformation("max", None), VariableInformation("min", None),
+     VariableInformation("list", None), VariableInformation("map", None), VariableInformation.create_var(["y_list", "add"])}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
