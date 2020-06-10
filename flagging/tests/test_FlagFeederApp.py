@@ -853,9 +853,10 @@ else:
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {"a_list", "y_list", "a", "ff1", "ff2", "x", "z"}
     assert test_output.assigned_variables.keys() == {"a_list", "y_list", "ff1", "ff2", "z"}
-    assert test_output.referenced_functions.keys() == {["math", "sqrt"], "ff1.isin",
+    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["math", "sqrt"]),
+                                                       VariableInformation.create_var(["ff1", "isin"]),
                                                        "abs", "max", "min", "list", "map",
-                                                ["y_list", "add"]}
+                                                        VariableInformation.create_var(["y_list", "add"])}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
