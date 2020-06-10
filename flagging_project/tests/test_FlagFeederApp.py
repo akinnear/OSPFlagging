@@ -1,5 +1,5 @@
-from flagging.src.FlagFeederApp import determine_variables, CodeLocation
-from flagging.src.VariableInformation import VariableInformation
+from flagging.FlagFeederApp import determine_variables, CodeLocation
+from flagging.VariableInformation import VariableInformation
 
 
 def test_determine_flag_feeders_logic_and_keys():

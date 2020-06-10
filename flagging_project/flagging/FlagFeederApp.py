@@ -1,8 +1,7 @@
+from flagging.VariableInformation import VariableInformation
 import ast
 import contextlib
 from ast import NodeVisitor
-from flagging.src.VariableInformation import VariableInformation
-
 
 
 

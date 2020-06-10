@@ -1,4 +1,4 @@
-from flagging.src.VariableInformation import VariableInformation
+from flagging.VariableInformation import VariableInformation
 
 
 def test_Create_complex_VariableInformation_str():
