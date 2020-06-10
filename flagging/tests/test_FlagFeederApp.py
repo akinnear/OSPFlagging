@@ -147,8 +147,7 @@ return ff1 > z"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
 
-##TODO
-## code location test
+
 def test_normal_expression_CodeLocation():
     logic = """
 def my_add(x, y): return x + y
@@ -672,10 +671,7 @@ return ff1 == add"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
 
-##TODO
-## provide details to Kinnear
-## variable.expresssion does not add variable to used_variable set
-## instead adds variable.expression to referenced_function set
+
 def test_math_expression_Keys():
     ''' changing ff1.isin(max(y_list))
     to ff2.ising(max(a_list))
@@ -714,8 +710,7 @@ else:
     assert test_output.referenced_modules.keys() == {VariableInformation("math", None)}
     assert test_output.referenced_flags.keys() == set()
 
-##TODO
-## fails
+
 def test_math_expression_CodeLocation():
     logic = """
 import math
@@ -804,8 +799,7 @@ return ff1 > x"""
     assert test_output.referenced_flags.keys() == set()
 
 
-#TODO
-# test fails
+
 def test_math_expression_3_Keys():
     logic = """
 import math
@@ -1177,7 +1171,7 @@ myfunc(ff1) > 10"""
     assert test_output.referenced_modules.keys() == set()
 
 #TODO
-# fails
+# fails, fix for issue #10
 def test_list_comprehension():
     logic = """
 names = set([name.id 
@@ -1205,8 +1199,6 @@ isinstance(ff1, int)"""
     assert test_output.referenced_modules.keys() == set()
 
 
-#TODO
-# fails
 def test_complex_class_reference():
     logic = """
 isinstance(a.b.Class, ff1)"""
@@ -1218,8 +1210,7 @@ isinstance(a.b.Class, ff1)"""
     assert test_output.referenced_modules.keys() == set()
 
 
-#TODO
-# fails
+
 def test_complex_object_reference():
     logic = """
 my_function(a.b.c, c.d.e)"""
@@ -1232,8 +1223,7 @@ my_function(a.b.c, c.d.e)"""
     assert test_output.referenced_modules.keys() == set()
 
 
-#TODO
-# fails
+
 def test_complex_object_reference_complex_function():
     logic = """
 a.b.c.my_function(a.b.c, c.d.e)"""
@@ -1390,7 +1380,7 @@ return ff1"""
 
 
 #TODO
-# fails
+# fails, fix for issue #10
 def test_try_except_finally():
     logic = """
 try:
@@ -1420,7 +1410,7 @@ finally:
 
 
 #TODO
-# fails
+# fails, fix for issue #10
 def test_try_except_finally_in_defined_function():
     logic = """
 def my_func():
@@ -1545,8 +1535,6 @@ f["MY_FLAG"]"""
     assert test_output.referenced_flags.keys() == {"MY_FLAG"}
 
 
-##TODO
-## Issue 3, support get method in flag name detection
 def test_simple_flag_get():
     logic = """f.get("MY_FLAG")"""
     test_output = determine_variables(logic)
