@@ -1193,9 +1193,10 @@ return ff1 in names"""
     assert test_output.assigned_variables.keys() == {VariableInformation("names", None),
                                                      VariableInformation("target", None),
                                                      VariableInformation("name", None)}
-    # assert test_output.referenced_functions.keys() == {"isinstance", "set"}
-    # assert test_output.defined_functions.keys() == set()
-    # assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_functions.keys() == {VariableInformation("set", None),
+                                                       VariableInformation("isinstance", None)}
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
 
 
 def test_class_reference():
