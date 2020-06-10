@@ -69,11 +69,11 @@ class FlagFeederNodeVisitor(NodeVisitor):
         print("NODE:"+f"{_print_helper(node)} Stack[{', '.join(map(lambda x: _print_helper(x), self._stack))}]")
 
         self._stack.append(node)
-        print("-PUSH->")
+        # print("-PUSH->")
         try:
             yield node
             self._stack.pop()
-            print("**POP**")
+            # print("**POP**")
         except:
             raise
 
