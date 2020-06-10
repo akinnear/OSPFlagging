@@ -702,13 +702,13 @@ else:
                                                  VariableInformation("x", None)}
     assert test_output.assigned_variables.keys() == {VariableInformation("a_list", None),
                                                  VariableInformation("y_list", None)}
-    assert test_output.referenced_functions.keys() == {VariableInformation("math.sqrt", None),
+    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["math", "sqrt"]),
                                                        VariableInformation("abs", None),
                                                        VariableInformation("max", None),
                                                        VariableInformation("min", None),
                                                        VariableInformation("list", None),
                                                        VariableInformation("map", None),
-                                                       VariableInformation("y_list.append", None)}
+                                                       VariableInformation.create_var(["y_list", "append"])}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {VariableInformation("math", None)}
@@ -738,8 +738,8 @@ else:
     assert test_output.used_variables["x"] == {CodeLocation(11, 40)}
     assert test_output.assigned_variables.keys() == {"a_list", "y_list"}
     assert test_output.assigned_variables == {"a_list": {CodeLocation(3, 0)}, "y_list": {CodeLocation(4, 0)}}
-    assert test_output.referenced_functions.keys() == {"math.sqrt", "ff1.isin", "abs", "max", "min", "list", "map",
-                                                "y_list.add"}
+    assert test_output.referenced_functions.keys() == {["math", "sqrt"], ["ff1", "isin"], "abs", "max", "min", "list", "map",
+                                                ["y_list", "add"]}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
@@ -755,7 +755,7 @@ return ff1 > x"""
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {"x", "ff1"}
     assert test_output.assigned_variables.keys() == {"x", "y"}
-    assert test_output.referenced_functions.keys() == {"math.sqrt"}
+    assert test_output.referenced_functions.keys() == {["math", "sqrt"]}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
@@ -773,7 +773,7 @@ return ff1 > math"""
     assert test_output.used_variables["ff1"] == {CodeLocation(3, 7)}
     assert test_output.assigned_variables.keys() == {"math"}
     assert test_output.assigned_variables["math"] == {CodeLocation(2, 0)}
-    assert test_output.referenced_functions.keys() == {"math.sqrt"}
+    assert test_output.referenced_functions.keys() == {["math", "sqrt"]}
     assert test_output.referenced_functions["math.sqrt"] == {CodeLocation(2, 7)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
@@ -795,7 +795,7 @@ return ff1 > x"""
     assert test_output.assigned_variables.keys() == {"x", "y"}
     assert test_output.assigned_variables["x"] == {CodeLocation(3, 0)}
     assert test_output.assigned_variables["y"] == {CodeLocation(4, 0)}
-    assert test_output.referenced_functions.keys() == {"math.sqrt"}
+    assert test_output.referenced_functions.keys() == {["math", "sqrt"]}
     assert test_output.referenced_functions["math.sqrt"] == {CodeLocation(4, 4)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
@@ -823,10 +823,10 @@ else:
                                                  VariableInformation("a", None), VariableInformation("ff1", None),
                                                  VariableInformation("ff2", None), VariableInformation("x", None)}
     assert test_output.assigned_variables.keys() == {VariableInformation("a_list", None), VariableInformation("y_list", None)}
-    assert test_output.referenced_functions.keys() == {VariableInformation("math.sqrt", None), VariableInformation("abs", None),
+    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["math", "sqrt"]), VariableInformation("abs", None),
                                                        VariableInformation("max", None), VariableInformation("min", None),
                                                        VariableInformation("list", None), VariableInformation("map", None),
-                                                       VariableInformation("y_list.append", None)}
+                                                       VariableInformation.create_var(["y_list", "append"])}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
@@ -849,8 +849,8 @@ else:
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {"a_list", "y_list", "a", "ff1", "ff2", "x", "z"}
     assert test_output.assigned_variables.keys() == {"a_list", "y_list", "ff1", "ff2", "z"}
-    assert test_output.referenced_functions.keys() == {"math.sqrt", "ff1.isin", "abs", "max", "min", "list", "map",
-                                                "y_list.add"}
+    assert test_output.referenced_functions.keys() == {["math", "sqrt"], "ff1.isin", "abs", "max", "min", "list", "map",
+                                                ["y_list", "add"]}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
@@ -878,8 +878,8 @@ else:
     assert test_output.assigned_variables["ff1"] == {CodeLocation(5, 1)}
     assert test_output.assigned_variables["ff2"] == {CodeLocation(5, 6)}
     assert test_output.assigned_variables["z"] == {CodeLocation(5, 11)}
-    assert test_output.referenced_functions.keys() == {"math.sqrt", "ff1.isin", "abs", "max", "min", "list", "map",
-                                                "y_list.add"}
+    assert test_output.referenced_functions.keys() == {["math", "sqrt"], "ff1.isin", "abs", "max", "min", "list", "map",
+                                                ["y_list", "add"]}
     assert test_output.referenced_functions["math.sqrt"] == {CodeLocation(7, 7), CodeLocation(8, 19)}
     assert test_output.referenced_functions["ff1.isin"] == {CodeLocation(9, 3)}
     assert test_output.referenced_functions["abs"] == {CodeLocation(7, 17)}
@@ -1099,7 +1099,7 @@ else:
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {"a", "b", "c", "x", "y", "z", "ff1", "ff2", "ff3", "d"}
     assert test_output.assigned_variables.keys() == {"a", "b", "c", "d"}
-    assert test_output.referenced_functions.keys() == {"reduce", "list", "filter", "map", "max", "min", "math.sqrt"}
+    assert test_output.referenced_functions.keys() == {"reduce", "list", "filter", "map", "max", "min", ["math", "sqrt"]}
     assert test_output.defined_functions.keys() == set()
     assert test_output.referenced_modules.keys() == {"math", "pandas"}
 
@@ -1123,7 +1123,7 @@ else:
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {"a", "b", "c", "x", "y", "z", "ff1", "ff2", "ff3", "d"}
     assert test_output.assigned_variables.keys() == {"a", "b", "c", "d"}
-    assert test_output.referenced_functions.keys() == {"reduce", "list", "filter", "map", "max", "min", "math.sqrt"}
+    assert test_output.referenced_functions.keys() == {"reduce", "list", "filter", "map", "max", "min", ["math", "sqrt"]}
     assert test_output.defined_functions.keys() == set()
     assert test_output.referenced_modules.keys() == {"math", "pandas"}
 
@@ -1572,7 +1572,7 @@ def test_function_with_vars():
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_function_with_vars():
+def test_function_with_vars_using_import_function():
     logic = """\
 import math
 my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
@@ -1580,12 +1580,27 @@ my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
     assert test_output.used_variables.keys() == {VariableInformation.create_var(["a", "b", "c"]),
                                                  VariableInformation.create_var(["x", "y", "z"])}
     assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["my_func"]),
+                                                       VariableInformation.create_var(["math", "sqrt"])}
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == {"math"}
+    assert test_output.referenced_flags.keys() == set()
+
+
+def test_function_with_vars_using_import_value():
+    logic = """\
+import math
+my_func(math.PI, math.E)"""
+    test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == {VariableInformation.create_var(["math", "PI"]),
+                                                 VariableInformation.create_var(["math", "E"])}
+    assert test_output.assigned_variables.keys() == set()
     assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["my_func"])}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_modules.keys() == {"math"}
     assert test_output.referenced_flags.keys() == set()
-
 
 def test_example():
     """Imagine code is:
