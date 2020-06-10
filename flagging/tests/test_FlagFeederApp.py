@@ -716,7 +716,7 @@ else:
     assert test_output.referenced_modules.keys() == {VariableInformation("math", None)}
     assert test_output.referenced_flags.keys() == set()
 
-#TODO
+
 def test_math_expression_CodeLocation():
     logic = """
 import math
@@ -748,7 +748,8 @@ else:
     assert test_output.referenced_modules == {"math": {CodeLocation(2, 0)}}
     assert test_output.referenced_flags.keys() == set()
 
-#TODO
+
+
 def test_math_expression_2_keys():
     logic = """
 import math
@@ -764,7 +765,7 @@ return ff1 > x"""
     assert test_output.referenced_modules.keys() == {"math"}
     assert test_output.referenced_flags.keys() == set()
 
-#TODO
+
 def test_math_overwrite_module_CodeLocation():
     logic = """\
 import math
@@ -785,7 +786,7 @@ return ff1 > math"""
     assert test_output.referenced_flags.keys() == set()
 
 
-#TODO
+
 def test_math_expression_2_CodeLocation():
     logic = """
 import math
@@ -836,7 +837,6 @@ else:
     assert test_output.referenced_flags.keys() == set()
 
 
-#TODO
 def test_tuple_assignment_2_keys():
     logic = """
 import math
@@ -863,7 +863,6 @@ else:
     assert test_output.referenced_flags.keys() == set()
 
 
-#TODO
 def test_tuple_assignment_2_CodeLocation():
     logic = """
 import math
@@ -1095,7 +1094,6 @@ else:
     assert test_output.referenced_flags.keys() == set()
 
 
-#TODO
 def test_map_filter_lambda_keys():
     logic = """
 import math
@@ -1120,7 +1118,7 @@ else:
     assert test_output.referenced_modules.keys() == {"math", "pandas"}
     assert test_output.referenced_flags.keys() == set()
 
-#TODO
+
 def test_map_filter_lambda_CodeLocation():
     logic = """
 import math
@@ -1198,8 +1196,7 @@ myfunc(ff1) > 10"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
 
-#TODO
-# fails, fix for issue #10
+
 def test_list_comprehension():
     logic = """
 names = set([name.id 
@@ -1619,7 +1616,8 @@ f["MY_FLAG"]"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == {"MY_FLAG"}
 
-
+#TODO
+# Issue 3
 def test_simple_flag_get():
     logic = """f.get("MY_FLAG")"""
     test_output = determine_variables(logic)
