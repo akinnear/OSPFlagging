@@ -159,10 +159,6 @@ class FlagFeederNodeVisitor(NodeVisitor):
                     pre_variable_name = ".".join(variable_names[:-1])
 
                     # if variable_name not in self.referenced_modules:
-                    #     #TODO
-                    #     # possible new bug
-                    #     # a.b.c.d, if a.b.c is not in referenced_modules, a.b.c is added to used_variables
-                    #     # originally designed for x.y.method(something), if x.y not in referenced_modules, add x.y to used_variables
                     #     self.used_variables = code_location_helper(self.used_variables, variable_information,
                     #                                            CodeLocation(line_number=node.lineno,
                     #                                                         column_offset=node.col_offset))
