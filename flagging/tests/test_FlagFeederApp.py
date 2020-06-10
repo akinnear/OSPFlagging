@@ -1390,8 +1390,6 @@ return ff1"""
     assert test_output.referenced_modules.keys() == set()
 
 
-#TODO
-# fails, fix for issue #10
 def test_try_except_finally():
     logic = """
 try:
@@ -1407,15 +1405,22 @@ finally:
     fin = fun_func(e.f.g, f.g.h(), ff3, fun_3())
     return fin"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"x", "y", "result",
-                                          "zde", "a.b.c", "a.b", "ff1",
-                                          "ezde", "c.d.e", "c.d", "ff2",
-                                          "fin", "e.f.g", "e.f", "ff3",
-                                                 "b.c", "d.e", "f.g"}
-    assert test_output.assigned_variables.keys() == {"result", "zde", "ezde", "fin"}
-    assert test_output.referenced_functions.keys() == {"fun_0", "fun_1", "fun_2", "fun_3",
-                                                "zde_func", "ezde_func", "fun_func",
-                                                "b.c.d", "d.e.f", "f.g.h"}
+    assert test_output.used_variables.keys() == {VariableInformation("result", None), VariableInformation("x", None),
+                                                 VariableInformation("y", None), VariableInformation("zde", None),
+                                                 VariableInformation.create_var(["a", "b", "c"]), VariableInformation.create_var(["b", "c"]),
+                                                 VariableInformation("ff1", None), VariableInformation("ezde", None),
+                                                 VariableInformation.create_var(["c", "d", "e"]), VariableInformation.create_var(["d", "e"]),
+                                                 VariableInformation("ff2", None), VariableInformation("fin", None),
+                                                 VariableInformation.create_var(["e", "f", "g"]), VariableInformation.create_var(["f", "g"]),
+                                                 VariableInformation("ff3", None)}
+    assert test_output.assigned_variables.keys() == {VariableInformation("result", None), VariableInformation("zde", None),
+                                                     VariableInformation("ezde", None), VariableInformation("fin", None)}
+    assert test_output.referenced_functions.keys() == {VariableInformation("fun_0", None), VariableInformation("zde_func", None),
+                                                       VariableInformation("ezde_func", None), VariableInformation("fun_func", None),
+                                                       VariableInformation.create_var(["b", "c", "d"]),
+                                                       VariableInformation.create_var(["d", "e", "f"]),
+                                                       VariableInformation.create_var(["f", "g", "h"]),
+                                                       VariableInformation("fun_1", None), VariableInformation("fun_2", None), VariableInformation("fun_3", None)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.referenced_modules.keys() == set()
 
