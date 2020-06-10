@@ -885,16 +885,17 @@ else:
     assert test_output.assigned_variables["ff1"] == {CodeLocation(5, 1)}
     assert test_output.assigned_variables["ff2"] == {CodeLocation(5, 6)}
     assert test_output.assigned_variables["z"] == {CodeLocation(5, 11)}
-    assert test_output.referenced_functions.keys() == {["math", "sqrt"], "ff1.isin", "abs", "max", "min", "list", "map",
-                                                ["y_list", "add"]}
-    assert test_output.referenced_functions["math.sqrt"] == {CodeLocation(7, 7), CodeLocation(8, 19)}
-    assert test_output.referenced_functions["ff1.isin"] == {CodeLocation(9, 3)}
+    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["math", "sqrt"]),
+                                                       VariableInformation.create_var(["ff1", "isin"]), "abs", "max", "min", "list", "map",
+                                                        VariableInformation.create_var(["y_list", "add"])}
+    assert test_output.referenced_functions[VariableInformation.create_var(["math", "sqrt"])] == {CodeLocation(7, 7), CodeLocation(8, 19)}
+    assert test_output.referenced_functions[VariableInformation.create_var(["ff1", "isin"])] == {CodeLocation(9, 3)}
     assert test_output.referenced_functions["abs"] == {CodeLocation(7, 17)}
     assert test_output.referenced_functions["max"] == {CodeLocation(9, 12)}
     assert test_output.referenced_functions["min"] == {CodeLocation(12, 17)}
     assert test_output.referenced_functions["list"] == {CodeLocation(12, 21)}
     assert test_output.referenced_functions["map"] == {CodeLocation(12, 26)}
-    assert test_output.referenced_functions["y_list.add"] == {CodeLocation(8, 8)}
+    assert test_output.referenced_functions[VariableInformation.create_var(["y_list", "add"])] == {CodeLocation(8, 8)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
