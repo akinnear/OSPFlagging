@@ -2,7 +2,6 @@ from flagging.src.FlagFeederApp import determine_variables, CodeLocation
 from flagging.src.VariableInformation import VariableInformation
 
 
-
 def test_determine_flag_feeders_logic_and_keys():
     logic = """
 cat and dog"""
@@ -14,7 +13,6 @@ cat and dog"""
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
-
 
 
 def test_determine_flag_feeders_logic_and_CodeLocation():
@@ -30,7 +28,6 @@ def test_determine_flag_feeders_logic_and_CodeLocation():
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
-
 
 
 def test_determine_flag_feeders_logic_or_keys():
@@ -61,7 +58,6 @@ man or woman"""
     assert test_output.referenced_flags.keys() == set()
 
 
-
 def test_determine_flag_feeder_conditional_keys():
     logic = """
 cat = 100
@@ -74,7 +70,6 @@ return cat < 10"""
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
-
 
 
 def test_determine_flag_feeder_conditional_CodeLocation():
@@ -111,7 +106,6 @@ else:
     assert test_output.referenced_flags.keys() == set()
 
 
-
 def test_determine_flag_feeder_if_statement_CodeLocation():
     logic = """
 x = (ff1 or ff2)
@@ -136,7 +130,6 @@ else:
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
-
 
 
 def test_normal_expression_keys():
@@ -749,7 +742,6 @@ else:
     assert test_output.referenced_flags.keys() == set()
 
 
-
 def test_math_expression_2_keys():
     logic = """
 import math
@@ -786,7 +778,6 @@ return ff1 > math"""
     assert test_output.referenced_flags.keys() == set()
 
 
-
 def test_math_expression_2_CodeLocation():
     logic = """
 import math
@@ -807,7 +798,6 @@ return ff1 > x"""
     assert test_output.referenced_modules.keys() == {"math"}
     assert test_output.referenced_modules == {"math": {CodeLocation(2, 0)}}
     assert test_output.referenced_flags.keys() == set()
-
 
 
 def test_math_expression_3_Keys():
@@ -942,9 +932,6 @@ a.b.c > 10"""
     assert test_output.referenced_flags.keys() == set()
 
 
-
-
-
 def test_object_CodeLocation():
     logic = """
 a.b.c.d.e > 10"""
@@ -959,7 +946,6 @@ a.b.c.d.e > 10"""
     assert test_output.referenced_flags.keys() == set()
 
 
-
 def test_object_function_CodeLocation():
     logic = """
 a.b.c() > 10"""
@@ -970,6 +956,7 @@ a.b.c() > 10"""
     assert test_output.defined_functions.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
+
 
 def test_object_function_2_CodeLocation():
     logic = """
@@ -1249,7 +1236,6 @@ isinstance(a.b.Class, ff1)"""
     assert test_output.referenced_flags.keys() == set()
 
 
-
 def test_complex_object_reference():
     logic = """
 my_function(a.b.c, c.d.e)"""
@@ -1261,7 +1247,6 @@ my_function(a.b.c, c.d.e)"""
     assert test_output.defined_functions.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
-
 
 
 def test_complex_object_reference_complex_function():
@@ -1475,7 +1460,6 @@ finally:
     assert test_output.referenced_flags.keys() == set()
 
 
-
 def test_try_except_finally_in_defined_function():
     logic = """
 def my_func():
@@ -1587,7 +1571,6 @@ len(list[ff:]) > 10"""
     assert test_output.referenced_flags.keys() == set()
 
 
-
 def test_list_slice_CodeLocation():
     logic = """
 len(list[ff:]) > 10"""
@@ -1672,6 +1655,7 @@ my_func(math.PI, math.E)"""
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
     assert test_output.referenced_flags.keys() == set()
+
 
 def test_example():
     """Imagine code is:
