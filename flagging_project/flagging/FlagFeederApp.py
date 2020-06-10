@@ -158,12 +158,14 @@ class FlagFeederNodeVisitor(NodeVisitor):
 
                     pre_variable_name = ".".join(variable_names[:-1])
 
-                    # if variable_name not in self.referenced_modules:
-                    #     self.used_variables = code_location_helper(self.used_variables, variable_information,
-                    #                                            CodeLocation(line_number=node.lineno,
-                    #                                                         column_offset=node.col_offset))
-
                     possible_args = self._call_args_to_names(before_attributes.args)
+
+                    if full_name == "f.get":
+                        flag_name = self._stack[-4].value.args[0].s
+                        code_location_helper(self.referenced_flags, flag_name,
+                                             CodeLocation(line_number=node.lineno,
+                                                          column_offset=node.col_offset))
+
                     if full_name in possible_args:
                         code_location_helper(self.used_variables, variable_information,
                                                                    CodeLocation(line_number=node.lineno,
@@ -176,7 +178,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
                                                                                     column_offset=node.col_offset))
                         code_location_helper(self.referenced_functions, variable_information,
                                                                    CodeLocation(line_number=node.lineno,
-                                                                                column_offset=node.col_offset))
+                                                                          column_offset=node.col_offset))
                 else:
                     variable_names = [attribute.attr for attribute in attributes]
                     variable_names.insert(0, name)
