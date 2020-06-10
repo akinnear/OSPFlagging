@@ -142,6 +142,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
                 before_attributes = self._stack[-1*(len(self._attribute_stack) + 2)]
                 attributes = self._attribute_stack.copy()
                 attributes.reverse()
+
                 if isinstance(before_attributes, ast.Call) or isinstance(before_attributes, ast.FunctionDef):
                     function_name = attributes[-1].attr
                     post_variable_name = ".".join(map(lambda attr_node: attr_node.attr, attributes[:-1]))
@@ -150,25 +151,34 @@ class FlagFeederNodeVisitor(NodeVisitor):
                         variable_name += f".{post_variable_name}"
                     full_name = f"{variable_name}.{function_name}"
 
-                    if variable_name not in self.referenced_modules:
-                        #TODO
-                        # possible new bug
-                        # a.b.c.d, if a.b.c is not in referenced_modules, a.b.c is added to used_variables
-                        # originally designed for x.y.method(something), if x.y not in referenced_modules, add x.y to used_variables
-                        self.used_variables = code_location_helper(self.used_variables, VariableInformation(variable_name),
-                                                               CodeLocation(line_number=node.lineno,
-                                                                            column_offset=node.col_offset))
+
+                    variable_names = [attribute.attr for attribute in attributes]
+                    variable_names.insert(0, name)
+                    variable_information = VariableInformation.create_var(variable_names)
+
+                    pre_variable_name = ".".join(variable_names[:-1])
+
+                    # if variable_name not in self.referenced_modules:
+                    #     #TODO
+                    #     # possible new bug
+                    #     # a.b.c.d, if a.b.c is not in referenced_modules, a.b.c is added to used_variables
+                    #     # originally designed for x.y.method(something), if x.y not in referenced_modules, add x.y to used_variables
+                    #     self.used_variables = code_location_helper(self.used_variables, variable_information,
+                    #                                            CodeLocation(line_number=node.lineno,
+                    #                                                         column_offset=node.col_offset))
 
                     possible_args = self._call_args_to_names(before_attributes.args)
                     if full_name in possible_args:
-                        self.used_variables = code_location_helper(self.used_variables, VariableInformation(variable_name),
+                        self.used_variables = code_location_helper(self.used_variables, variable_information,
                                                                    CodeLocation(line_number=node.lineno,
                                                                                 column_offset=node.col_offset))
 
                     else:
-                        post_attr_name = ".".join(map(lambda attr_node: attr_node.attr, attributes))
-                        full_name = f"{name}.{post_attr_name}"
-                        self.referenced_functions = code_location_helper(self.referenced_functions, VariableInformation(full_name),
+                        if len(variable_names) > 1 and pre_variable_name not in self.referenced_modules:
+                            self.used_variables = code_location_helper(self.used_variables, VariableInformation.create_var(variable_names[0:-1]),
+                                                                       CodeLocation(line_number=node.lineno,
+                                                                                    column_offset=node.col_offset))
+                        self.referenced_functions = code_location_helper(self.referenced_functions, variable_information,
                                                                    CodeLocation(line_number=node.lineno,
                                                                                 column_offset=node.col_offset))
                 else:

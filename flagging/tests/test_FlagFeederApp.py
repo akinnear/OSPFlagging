@@ -957,12 +957,9 @@ def test_object_function_CodeLocation():
     logic = """
 a.b.c() > 10"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == set()
-    assert test_output.used_variables == {}
-    assert test_output.assigned_variables.keys() == set()
+    assert test_output.used_variables == {VariableInformation.create_var(["a", "b"]): {CodeLocation(2, 0)}}
     assert test_output.assigned_variables == {}
-    assert test_output.referenced_functions.keys() == {VariableInformation("a.b.c", None)}
-    assert test_output.referenced_functions == {VariableInformation("a.b.c", None): {CodeLocation(2, 0)}}
+    assert test_output.referenced_functions == {VariableInformation.create_var(["a", "b", "c"]): {CodeLocation(2, 0)}}
     assert test_output.defined_functions.keys() == set()
     assert test_output.referenced_modules.keys() == set()
 
@@ -1560,6 +1557,34 @@ def test_simple_flag_get():
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == {"MY_FLAG"}
+
+
+def test_function_with_vars():
+    logic = "my_func(a.b.c, x.y.z)"
+    test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == {VariableInformation.create_var(["a", "b", "c"]),
+                                                 VariableInformation.create_var(["x", "y", "z"])}
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["my_func"])}
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == set()
+
+
+def test_function_with_vars():
+    logic = """\
+import math
+my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
+    test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == {VariableInformation.create_var(["a", "b", "c"]),
+                                                 VariableInformation.create_var(["x", "y", "z"])}
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["my_func"])}
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == set()
 
 
 def test_example():
