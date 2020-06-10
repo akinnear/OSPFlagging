@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["Adam Kinnear <akinnear@gmail.com>"]
 packages = [
-    { include = "flagging" },
+    { include = "flagging_project" },
 ]
 
 [tool.poetry.dependencies]
