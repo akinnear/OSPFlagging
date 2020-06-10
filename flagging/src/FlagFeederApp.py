@@ -182,12 +182,10 @@ class FlagFeederNodeVisitor(NodeVisitor):
                                                                    CodeLocation(line_number=node.lineno,
                                                                                 column_offset=node.col_offset))
                 else:
-                    #TODO
-                    # good a.b.c.d.e
-                    variable_list = [name]
-                    for attrs in attributes:
-                        variable_list.append(attrs.attr)
-                    self.used_variables = code_location_helper(self.used_variables, VariableInformation.create_var(variable_list),
+                    variable_names = [attribute.attr for attribute in attributes]
+                    variable_names.insert(0, name)
+                    variable_information = VariableInformation.create_var(variable_names)
+                    self.used_variables = code_location_helper(self.used_variables, variable_information,
                                                                CodeLocation(line_number=node.lineno,
                                                                             column_offset=node.col_offset))
             elif isinstance(parent, ast.Call):
