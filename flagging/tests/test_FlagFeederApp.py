@@ -758,7 +758,7 @@ return ff1 > x"""
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {"x", "ff1"}
     assert test_output.assigned_variables.keys() == {"x", "y"}
-    assert test_output.referenced_functions.keys() == {["math", "sqrt"]}
+    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["math", "sqrt"])}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
