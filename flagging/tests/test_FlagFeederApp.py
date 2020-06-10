@@ -799,7 +799,7 @@ return ff1 > x"""
     assert test_output.assigned_variables.keys() == {"x", "y"}
     assert test_output.assigned_variables["x"] == {CodeLocation(3, 0)}
     assert test_output.assigned_variables["y"] == {CodeLocation(4, 0)}
-    assert test_output.referenced_functions.keys() == {["math", "sqrt"]}
+    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["math", "sqrt"])}
     assert test_output.referenced_functions["math.sqrt"] == {CodeLocation(4, 4)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
