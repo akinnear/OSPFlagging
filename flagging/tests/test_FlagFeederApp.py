@@ -776,8 +776,8 @@ return ff1 > math"""
     assert test_output.used_variables["ff1"] == {CodeLocation(3, 7)}
     assert test_output.assigned_variables.keys() == {"math"}
     assert test_output.assigned_variables["math"] == {CodeLocation(2, 0)}
-    assert test_output.referenced_functions.keys() == {["math", "sqrt"]}
-    assert test_output.referenced_functions["math.sqrt"] == {CodeLocation(2, 7)}
+    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["math", "sqrt"])}
+    assert test_output.referenced_functions[VariableInformation.create_var(["math", "sqrt"])] == {CodeLocation(2, 7)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
