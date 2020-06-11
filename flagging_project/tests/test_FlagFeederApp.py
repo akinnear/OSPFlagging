@@ -519,7 +519,7 @@ else:
 
 
 #TODO
-# this needs to return an error to user,
+# Issue #1
 # don't allow user to overwrite module
 def test_math_overwrite_module_CodeLocation():
     logic = """
@@ -549,14 +549,16 @@ x = 10
 y = math.sqrt(10)
 return ff1 > x"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"x", "ff1"}
-    assert test_output.used_variables["x"] == {CodeLocation(5, 13)}
-    assert test_output.used_variables["ff1"] == {CodeLocation(5, 7)}
-    assert test_output.assigned_variables.keys() == {"x", "y"}
-    assert test_output.assigned_variables["x"] == {CodeLocation(3, 0)}
-    assert test_output.assigned_variables["y"] == {CodeLocation(4, 0)}
+    assert test_output.used_variables.keys() == {VariableInformation("x", None),
+                                                 VariableInformation("ff1", None)}
+    assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(5, 13)}
+    assert test_output.used_variables[VariableInformation("ff1", None)] == {CodeLocation(5, 7)}
+    assert test_output.assigned_variables.keys() == {VariableInformation("x", None),
+                                                     VariableInformation("y", None)}
+    assert test_output.assigned_variables[VariableInformation("x", None)] == {CodeLocation(3, 0)}
+    assert test_output.assigned_variables[VariableInformation("y", None)] == {CodeLocation(4, 0)}
     assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["math", "sqrt"])}
-    assert test_output.referenced_functions["math.sqrt"] == {CodeLocation(4, 4)}
+    assert test_output.referenced_functions[VariableInformation.create_var(["math", "sqrt"])] == {CodeLocation(4, 4)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
