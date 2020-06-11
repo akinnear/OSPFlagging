@@ -748,13 +748,16 @@ a.b.c > 10"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
 
-
+#TODO
+# possible new bug / issue
+# should assign variable contain ff1 or ff1.lower()
+# present question to A Kinnear
 def test_feeder_function_function_CodeLocation():
     logic = """ff1.lower() == 'my value'"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables == {"ff1": {CodeLocation(1, 0)}}
+    assert test_output.used_variables == {VariableInformation("ff1", None): {CodeLocation(1, 0)}}
     assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions == {"ff1.lower": {CodeLocation(1, 0)}}
+    assert test_output.referenced_functions == {VariableInformation.create_var(["ff1", "lower"]): {CodeLocation(1, 0)}}
     assert test_output.defined_functions.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
