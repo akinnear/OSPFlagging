@@ -412,22 +412,6 @@ else:
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_map_lambda_keys():
-    logic = """
-a = [1,2,3,4]
-b = [17,12,11,10]
-c = [-1,-4,5,9]
-my_map_list = list(map(lambda x,y,z:x+y-z, a,b,c))"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"a", "b", "c", "x", "y", "z"}
-    assert test_output.assigned_variables.keys() == {"a", "b", "c", "my_map_list"}
-    assert test_output.referenced_functions.keys() == {"list", "map"}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-
-
 def test_map_lambda_CodeLocation():
     logic = """
 a = [1,2,3,4]
