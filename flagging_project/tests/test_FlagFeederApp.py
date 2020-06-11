@@ -316,24 +316,6 @@ else:
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_reduce_lambda_keys():
-    logic = """                                  
-f = lambda a,b: a if (a > b) else b              
-if reduce(f, [47,11,42,102,13]) > 100:           
-    return ff1 > reduce(f, [47,11,42,102,13])    
-else:                                            
-    return ff2 < reduce(f, [47,11,42,102,13])"""
-    test_output = determine_variables(logic)
-    print(test_output.used_variables)
-    assert test_output.used_variables.keys() == {"ff1", "ff2", "a", "b", "f"}
-    assert test_output.assigned_variables.keys() == {"f"}
-    assert test_output.referenced_functions.keys() == {"reduce"}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-
-
 def test_reduce_lambda_CodeLocation():
     logic = """                                  
 f = lambda a,b: a if (a > b) else b              
