@@ -435,21 +435,30 @@ b = [17,12,11,10]
 c = [-1,-4,5,9]
 my_map_list = list(map(lambda x,y,z:x+y-z, a,b,c))"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"a", "b", "c", "x", "y", "z"}
-    assert test_output.used_variables["a"] == {CodeLocation(5, 43)}
-    assert test_output.used_variables["b"] == {CodeLocation(5, 45)}
-    assert test_output.used_variables["c"] == {CodeLocation(5, 47)}
-    assert test_output.used_variables["x"] == {CodeLocation(5, 36)}
-    assert test_output.used_variables["y"] == {CodeLocation(5, 38)}
-    assert test_output.used_variables["z"] == {CodeLocation(5, 40)}
-    assert test_output.assigned_variables.keys() == {"a", "b", "c", "my_map_list"}
-    assert test_output.assigned_variables["a"] == {CodeLocation(2, 0)}
-    assert test_output.assigned_variables["b"] == {CodeLocation(3, 0)}
-    assert test_output.assigned_variables["c"] == {CodeLocation(4, 0)}
-    assert test_output.assigned_variables["my_map_list"] == {CodeLocation(5, 0)}
-    assert test_output.referenced_functions.keys() == {"list", "map"}
-    assert test_output.referenced_functions["list"] == {CodeLocation(5, 14)}
-    assert test_output.referenced_functions["map"] == {CodeLocation(5, 19)}
+    assert test_output.used_variables.keys() == {VariableInformation("a", None),
+                                                 VariableInformation("b", None),
+                                                 VariableInformation("c", None),
+                                                 VariableInformation("x", None),
+                                                 VariableInformation("y", None),
+                                                 VariableInformation("z", None)}
+    assert test_output.used_variables[VariableInformation("a", None)] == {CodeLocation(5, 43)}
+    assert test_output.used_variables[VariableInformation("b", None)] == {CodeLocation(5, 45)}
+    assert test_output.used_variables[VariableInformation("c", None)] == {CodeLocation(5, 47)}
+    assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(5, 36)}
+    assert test_output.used_variables[VariableInformation("y", None)] == {CodeLocation(5, 38)}
+    assert test_output.used_variables[VariableInformation("z", None)] == {CodeLocation(5, 40)}
+    assert test_output.assigned_variables.keys() == {VariableInformation("a", None),
+                                                     VariableInformation("b", None),
+                                                     VariableInformation("c", None),
+                                                     VariableInformation("my_map_list", None)}
+    assert test_output.assigned_variables[VariableInformation("a", None)] == {CodeLocation(2, 0)}
+    assert test_output.assigned_variables[VariableInformation("b", None)] == {CodeLocation(3, 0)}
+    assert test_output.assigned_variables[VariableInformation("c", None)] == {CodeLocation(4, 0)}
+    assert test_output.assigned_variables[VariableInformation("my_map_list", None)] == {CodeLocation(5, 0)}
+    assert test_output.referenced_functions.keys() == {VariableInformation("list", None),
+                                                       VariableInformation("map", None)}
+    assert test_output.referenced_functions[VariableInformation("list", None)] == {CodeLocation(5, 14)}
+    assert test_output.referenced_functions[VariableInformation("map", None)] == {CodeLocation(5, 19)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
