@@ -649,7 +649,20 @@ if ff1.isin(max(y_list)):
 else:
     return ff2 > min(list(map(lambda x: x**2, a_list)))"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"a_list", "y_list", "a", "ff1", "ff2", "x", "z"}
+    assert test_output.used_variables.keys() == {VariableInformation("a_list", None),
+                                                 VariableInformation("y_list", None),
+                                                 VariableInformation("a", None),
+                                                 VariableInformation("ff1", None),
+                                                 VariableInformation("ff2", None),
+                                                 VariableInformation("x", None),
+                                                 VariableInformation("z", None)}
+    assert test_output.used_variables[VariableInformation("a_list", None)] == {CodeLocation(6, 9), CodeLocation(12, 46)}
+    assert test_output.used_variables[VariableInformation("y_list", None)] == {CodeLocation(8, 8), CodeLocation(9, 16)}
+    assert test_output.used_variables[VariableInformation("a", None)] == {CodeLocation(6, 4), CodeLocation(7, 21), CodeLocation(8, 29)}
+    assert test_output.used_variables[VariableInformation("ff1", None)] == {CodeLocation(9, 3), CodeLocation(10, 11)}
+    assert test_output.used_variables[VariableInformation("ff2", None)] == {CodeLocation(12, 11)}
+    assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(12, 40)}
+    assert test_output.used_variables[VariableInformation("z", None)] == {CodeLocation(7, 34)}
     assert test_output.assigned_variables.keys() == {"a_list", "y_list", "ff1", "ff2", "z"}
     assert test_output.assigned_variables["a_list"] == {CodeLocation(3, 0)}
     assert test_output.assigned_variables["y_list"] == {CodeLocation(4, 0)}
@@ -657,8 +670,13 @@ else:
     assert test_output.assigned_variables["ff2"] == {CodeLocation(5, 6)}
     assert test_output.assigned_variables["z"] == {CodeLocation(5, 11)}
     assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["math", "sqrt"]),
-                                                       VariableInformation.create_var(["ff1", "isin"]), "abs", "max", "min", "list", "map",
-                                                        VariableInformation.create_var(["y_list", "add"])}
+                                                       VariableInformation.create_var(["ff1", "isin"]),
+                                                       VariableInformation("abs", None),
+                                                       VariableInformation("max", None),
+                                                       VariableInformation("min", None),
+                                                       VariableInformation("list", None),
+                                                       VariableInformation("map", None),
+                                                       VariableInformation.create_var(["y_list", "add"])}
     assert test_output.referenced_functions[VariableInformation.create_var(["math", "sqrt"])] == {CodeLocation(7, 7), CodeLocation(8, 19)}
     assert test_output.referenced_functions[VariableInformation.create_var(["ff1", "isin"])] == {CodeLocation(9, 3)}
     assert test_output.referenced_functions["abs"] == {CodeLocation(7, 17)}
