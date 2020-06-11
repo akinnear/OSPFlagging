@@ -449,20 +449,6 @@ my_map_list = list(map(lambda x,y,z:x+y-z, a,b,c))"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_lambda_expression_keys():
-    logic = """                               
-add = (lambda x, y: x + y)(2, 3)              
-return ff1 == add"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"add", "ff1", "x", "y"}
-    assert test_output.assigned_variables.keys() == {"add"}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-
-
 def test_lambda_expression_CodeLocation():
     logic = """                               
 add = (lambda x, y: x + y)(2, 3)              
