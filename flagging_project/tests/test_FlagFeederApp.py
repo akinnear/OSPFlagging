@@ -97,7 +97,7 @@ return ff1 > z"""
     assert test_output.referenced_flags.keys() == set()
 
 #TODO
-# bug in assigned variable for variables passed as paramaters to functions
+# bug in assigned variable code location for variables passed as parameters to functions
 # expected x to have code location line 3, col 11
 # actual x has code location line 2, col offset 0
 def test_normal_expression_CodeLocation():
@@ -137,9 +137,9 @@ def test_equals_operation_keys():
 def test_equals_operation_CodeLocation():
     logic = """return ff1 == ff2"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"ff1", "ff2"}
-    assert test_output.used_variables == {"ff1": {CodeLocation(line_number=1, column_offset=7)},
-                                          "ff2": {CodeLocation(line_number=1, column_offset=14)}}
+    assert test_output.used_variables.keys() == {VariableInformation("ff1", None), VariableInformation("ff2", None)}
+    assert test_output.used_variables == {VariableInformation("ff1", None): {CodeLocation(line_number=1, column_offset=7)},
+                                          VariableInformation("ff2", None): {CodeLocation(line_number=1, column_offset=14)}}
     assert test_output.assigned_variables.keys() == set()
     assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
