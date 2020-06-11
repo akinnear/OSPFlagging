@@ -346,20 +346,6 @@ else:
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_comprehension_keys():
-    logic = """
-sum = reduce(lambda x, y: x + y, [cat ** cat for cat in range(4)])
-return sum > 10"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"sum", "x", "y", "cat"}
-    assert test_output.assigned_variables.keys() == {"sum", "cat"}
-    assert test_output.referenced_functions.keys() == {"reduce", "range"}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-
-
 def test_comprehension_CodeLocation():
     logic = """
 sum = reduce(lambda x, y: x + y, [cat ** cat for cat in range(4)])
