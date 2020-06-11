@@ -797,29 +797,47 @@ elif max(b) in reduce_step:
 else: 
     return ff1 + ff2"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"a", "b", "c", "map_step", "filter_step", "reduce_step", "x", "y", "z",
-                                                 "ff1", "ff2"}
-    assert test_output.used_variables["a"] == {CodeLocation(5, 40), CodeLocation(8, 7)}
-    assert test_output.used_variables["b"] == {CodeLocation(5, 42), CodeLocation(10, 9)}
-    assert test_output.used_variables["c"] == {CodeLocation(5, 44)}
-    assert test_output.used_variables["map_step"] == {CodeLocation(6, 43)}
-    assert test_output.used_variables["filter_step"] == {CodeLocation(7, 56)}
-    assert test_output.used_variables["reduce_step"] == {CodeLocation(8, 13), CodeLocation(10, 15)}
-    assert test_output.used_variables["x"] == {CodeLocation(5, 33), CodeLocation(6, 36), CodeLocation(7, 39), CodeLocation(7, 44)}
-    assert test_output.used_variables["y"] == {CodeLocation(5, 35), CodeLocation(7, 46), CodeLocation(7, 53)}
-    assert test_output.used_variables["z"] == {CodeLocation(5, 37)}
-    assert test_output.used_variables["ff1"] == {CodeLocation(11, 11), CodeLocation(13, 11)}
-    assert test_output.used_variables["ff2"] == {CodeLocation(9, 11), CodeLocation(13, 17)}
-    assert test_output.assigned_variables.keys() == {"a", "b", "c", "map_step", "filter_step", "reduce_step"}
-    assert test_output.assigned_variables["a"] == {CodeLocation(2, 0)}
-    assert test_output.assigned_variables["b"] == {CodeLocation(3, 0)}
-    assert test_output.assigned_variables["c"] == {CodeLocation(4, 0)}
-    assert test_output.referenced_functions.keys() == {"list", "map", "filter", "reduce", "max"}
-    assert test_output.referenced_functions["list"] == {CodeLocation(5, 11), CodeLocation(6, 14), CodeLocation(7, 14)}
-    assert test_output.referenced_functions["map"] == {CodeLocation(5, 16)}
-    assert test_output.referenced_functions["filter"] == {CodeLocation(6, 19)}
-    assert test_output.referenced_functions["reduce"] == {CodeLocation(7, 19)}
-    assert test_output.referenced_functions["max"] == {CodeLocation(8, 3), CodeLocation(10, 5)}
+    assert test_output.used_variables.keys() == {VariableInformation("a", None),
+                                                 VariableInformation("b", None),
+                                                 VariableInformation("c", None),
+                                                 VariableInformation("map_step", None),
+                                                 VariableInformation("filter_step", None),
+                                                 VariableInformation("reduce_step", None),
+                                                 VariableInformation("x", None),
+                                                 VariableInformation("y", None),
+                                                 VariableInformation("z", None),
+                                                 VariableInformation("ff1", None),
+                                                 VariableInformation("ff2", None)}
+    assert test_output.used_variables[VariableInformation("a", None)] == {CodeLocation(5, 40), CodeLocation(8, 7)}
+    assert test_output.used_variables[VariableInformation("b", None)] == {CodeLocation(5, 42), CodeLocation(10, 9)}
+    assert test_output.used_variables[VariableInformation("c", None)] == {CodeLocation(5, 44)}
+    assert test_output.used_variables[VariableInformation("map_step", None)] == {CodeLocation(6, 43)}
+    assert test_output.used_variables[VariableInformation("filter_step", None)] == {CodeLocation(7, 56)}
+    assert test_output.used_variables[VariableInformation("reduce_step", None)] == {CodeLocation(8, 13), CodeLocation(10, 15)}
+    assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(5, 33), CodeLocation(6, 36), CodeLocation(7, 39), CodeLocation(7, 44)}
+    assert test_output.used_variables[VariableInformation("y", None)] == {CodeLocation(5, 35), CodeLocation(7, 46), CodeLocation(7, 53)}
+    assert test_output.used_variables[VariableInformation("z", None)] == {CodeLocation(5, 37)}
+    assert test_output.used_variables[VariableInformation("ff1", None)] == {CodeLocation(11, 11), CodeLocation(13, 11)}
+    assert test_output.used_variables[VariableInformation("ff2", None)] == {CodeLocation(9, 11), CodeLocation(13, 17)}
+    assert test_output.assigned_variables.keys() == {VariableInformation("a", None),
+                                                     VariableInformation("b", None),
+                                                     VariableInformation("c", None),
+                                                     VariableInformation("map_step", None),
+                                                     VariableInformation("filter_step", None),
+                                                     VariableInformation("reduce_step", None)}
+    assert test_output.assigned_variables[VariableInformation("a", None)] == {CodeLocation(2, 0)}
+    assert test_output.assigned_variables[VariableInformation("b", None)] == {CodeLocation(3, 0)}
+    assert test_output.assigned_variables[VariableInformation("c", None)] == {CodeLocation(4, 0)}
+    assert test_output.referenced_functions.keys() == {VariableInformation("list", None),
+                                                       VariableInformation("map", None),
+                                                       VariableInformation("filter", None),
+                                                       VariableInformation("reduce", None),
+                                                       VariableInformation("max", None)}
+    assert test_output.referenced_functions[VariableInformation("list", None)] == {CodeLocation(5, 11), CodeLocation(6, 14), CodeLocation(7, 14)}
+    assert test_output.referenced_functions[VariableInformation("map", None)] == {CodeLocation(5, 16)}
+    assert test_output.referenced_functions[VariableInformation("filter", None)] == {CodeLocation(6, 19)}
+    assert test_output.referenced_functions[VariableInformation("reduce", None)] == {CodeLocation(7, 19)}
+    assert test_output.referenced_functions[VariableInformation("max", None)] == {CodeLocation(8, 3), CodeLocation(10, 5)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
