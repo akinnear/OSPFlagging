@@ -710,8 +710,12 @@ def test_tuple_assignment_CodeLocation():
 (x, y, z) = (-11, 2, 3)"""
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == set()
-    assert test_output.assigned_variables.keys() == {"x", "y", "z"}
-    assert test_output.assigned_variables == {"x": {CodeLocation(2, 1)}, "y": {CodeLocation(2, 4)}, "z": {CodeLocation(2, 7)}}
+    assert test_output.assigned_variables.keys() == {VariableInformation("x", None),
+                                                     VariableInformation("y", None),
+                                                     VariableInformation("z", None)}
+    assert test_output.assigned_variables == {VariableInformation("x", None): {CodeLocation(2, 1)},
+                                              VariableInformation("y", None): {CodeLocation(2, 4)},
+                                              VariableInformation("z", None): {CodeLocation(2, 7)}}
     assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
