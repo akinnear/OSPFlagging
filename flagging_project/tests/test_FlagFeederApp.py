@@ -373,24 +373,6 @@ return sum > 10"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_map_expression_keys():
-    logic = """
-numbers = (1, 2, 3, 4)
-result = map(lambda x: x + x, numbers)
-if ff1 in list(result):
-    return ff2 > max(list(result))
-else:
-    return ff3 < min(list(result))"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"numbers", "result", "x", "ff1", "ff2", "ff3"}
-    assert test_output.assigned_variables.keys() == {"numbers", "result"}
-    assert test_output.referenced_functions.keys() == {"map", "list", "max", "min"}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-
-
 def test_map_expression_CodeLocation():
     logic = """
 numbers = (1, 2, 3, 4)
