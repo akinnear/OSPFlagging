@@ -533,24 +533,27 @@ return ff1 > x"""
     assert test_output.referenced_modules.keys() == {"math"}
     assert test_output.referenced_flags.keys() == set()
 
-
+#TODO
+# this needs to return an error to user,
+# don't allow user to overwrite module
 def test_math_overwrite_module_CodeLocation():
-    logic = """\
+    logic = """
 import math
 math = math.sqrt(10)
 return ff1 > math"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"math", "ff1"}
-    assert test_output.used_variables["math"] == {CodeLocation(3, 13)}
-    assert test_output.used_variables["ff1"] == {CodeLocation(3, 7)}
-    assert test_output.assigned_variables.keys() == {"math"}
-    assert test_output.assigned_variables["math"] == {CodeLocation(2, 0)}
+    assert test_output.used_variables.keys() == {VariableInformation("math", None),
+                                                 VariableInformation("ff1", None)}
+    assert test_output.used_variables[VariableInformation("math", None)] == {CodeLocation(4, 13)}
+    assert test_output.used_variables[VariableInformation("ff1", None)] == {CodeLocation(4, 7)}
+    assert test_output.assigned_variables.keys() == {VariableInformation("math", None)}
+    assert test_output.assigned_variables[VariableInformation("math", None)] == {CodeLocation(3, 0)}
     assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["math", "sqrt"])}
-    assert test_output.referenced_functions[VariableInformation.create_var(["math", "sqrt"])] == {CodeLocation(2, 7)}
+    assert test_output.referenced_functions[VariableInformation.create_var(["math", "sqrt"])] == {CodeLocation(3, 7)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
-    assert test_output.referenced_modules == {"math": {CodeLocation(1, 0)}}
+    assert test_output.referenced_modules == {"math": {CodeLocation(2, 0)}}
     assert test_output.referenced_flags.keys() == set()
 
 
