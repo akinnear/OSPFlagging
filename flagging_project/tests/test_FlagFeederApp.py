@@ -758,30 +758,6 @@ return cat < 10 and fish > 100"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_map_filter_lambda_2_keys():
-    logic = """    
-a = [1,2,3,4]
-b = [17,12,11,10]        
-c = [-1,-4,5,9]
-map_step = list(map(lambda x,y,z:x+y-z, a,b,c))
-filter_step = list(filter(lambda x: x > 4, map_step))
-reduce_step = list(reduce(lambda x, y: x if x>y else y, filter_step))
-if max(a) in reduce_step:
-    return ff2 > 10
-elif max(b) in reduce_step:
-    return ff1 < 10
-else: 
-    return ff1 + ff2"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"a", "b", "c", "map_step", "filter_step", "reduce_step", "x", "y", "z", "ff1",
-                                          "ff2"}
-    assert test_output.assigned_variables.keys() == {"a", "b", "c", "map_step", "filter_step", "reduce_step"}
-    assert test_output.referenced_functions.keys() == {"list", "map", "filter", "reduce", "max"}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-
-
 def test_map_filter_lambda_2_CodeLocation():
     logic = """    
 a = [1,2,3,4]
