@@ -228,20 +228,6 @@ return ff3 < test_1"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_division_operation_keys():
-    logic = """
-test_1 = ff1 / ff2
-return ff3 < test_1"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"ff1", "ff2", "ff3", "test_1"}
-    assert test_output.assigned_variables.keys() == {"test_1"}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-
-
 def test_division_operation_CodeLocation():
     logic = """
 test_1 = ff1 / ff2
