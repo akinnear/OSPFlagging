@@ -710,19 +710,6 @@ def test_tuple_assignment_CodeLocation():
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_object_keys():
-    logic = """
-a.b.c > 10"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"a.b.c"}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-
-
 def test_object_CodeLocation():
     logic = """
 a.b.c.d.e > 10"""
