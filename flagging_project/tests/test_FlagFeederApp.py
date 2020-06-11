@@ -2,19 +2,6 @@ from flagging.FlagFeederApp import determine_variables, CodeLocation
 from flagging.VariableInformation import VariableInformation
 
 
-def test_determine_flag_feeders_logic_and_keys():
-    logic = """
-cat and dog"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"cat", "dog"}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-
-
 def test_determine_flag_feeders_logic_and_CodeLocation():
     logic = """cat and dog"""
     test_output = determine_variables(logic)
