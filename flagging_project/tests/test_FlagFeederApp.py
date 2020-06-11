@@ -49,24 +49,6 @@ return cat < 10"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_determine_flag_feeder_if_statement_keys():
-    logic = """
-x = (ff1 or ff2)
-y = (ff3 + ff4)
-if y > 100:
-    return ff5 != x
-else:
-    return ff5 == x"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"y", "ff1", "ff2", "ff3", "ff4", "ff5", "x"}
-    assert test_output.assigned_variables.keys() == {"x", "y"}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-
-
 def test_determine_flag_feeder_if_statement_CodeLocation():
     logic = """
 x = (ff1 or ff2)
