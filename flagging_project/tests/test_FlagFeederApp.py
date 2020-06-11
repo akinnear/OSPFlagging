@@ -96,15 +96,25 @@ return ff1 > z"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
 
-
+#TODO
+# bug in assigned variable for variables passed as paramaters to functions
+# expected x to have code location line 3, col 11
+# actual x has code location line 2, col offset 0
 def test_normal_expression_CodeLocation():
     logic = """
 def my_add(x, y): return x + y
 z = my_add(2, 3)
 return ff1 > z"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"x", "y", "ff1", "z"}
-    assert test_output.assigned_variables.keys() == {"x", "y", "z"}
+    assert test_output.used_variables.keys() == {VariableInformation("ff1", None), VariableInformation("z", None),
+                                                 VariableInformation("x", None), VariableInformation("y", None)}
+    assert test_output.used_variables[VariableInformation('ff1', None)] == {CodeLocation(4, 7)}
+    assert test_output.used_variables[VariableInformation("z", None)] == {CodeLocation(4, 13)}
+    assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(2, 25)}
+    assert test_output.used_variables[VariableInformation("y", None)] == {CodeLocation(2, 29)}
+    assert test_output.assigned_variables.keys() == {VariableInformation("x", None), VariableInformation("y", None),
+                                                     VariableInformation("z", None)}
+    assert test_output.assigned_variables[VariableInformation("x", None)] == {CodeLocation(3, 11)}
     assert test_output.referenced_functions.keys() == {"my_add"}
     assert test_output.defined_functions.keys() == {"my_add"}
     assert test_output.defined_classes.keys() == set()
