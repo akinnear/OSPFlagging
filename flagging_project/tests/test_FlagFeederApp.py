@@ -365,17 +365,22 @@ def test_comprehension_CodeLocation():
 sum = reduce(lambda x, y: x + y, [cat ** cat for cat in range(4)])
 return sum > 10"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"sum", "x", "y", "cat"}
-    assert test_output.used_variables["x"] == {CodeLocation(2, 26)}
-    assert test_output.used_variables["y"] == {CodeLocation(2, 30)}
-    assert test_output.used_variables["cat"] == {CodeLocation(2, 34), CodeLocation(2, 41)}
-    assert test_output.used_variables["sum"] == {CodeLocation(3, 7)}
-    assert test_output.assigned_variables.keys() == {"sum", "cat"}
-    assert test_output.assigned_variables["sum"] == {CodeLocation(2, 0)}
-    assert test_output.assigned_variables["cat"] == {CodeLocation(2, 49)}
-    assert test_output.referenced_functions.keys() == {"reduce", "range"}
-    assert test_output.referenced_functions["reduce"] == {CodeLocation(2, 6)}
-    assert test_output.referenced_functions["range"] == {CodeLocation(2, 56)}
+    assert test_output.used_variables.keys() == {VariableInformation("sum", None),
+                                                 VariableInformation("x", None),
+                                                 VariableInformation("y", None),
+                                                 VariableInformation("cat", None)}
+    assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(2, 26)}
+    assert test_output.used_variables[VariableInformation("y", None)] == {CodeLocation(2, 30)}
+    assert test_output.used_variables[VariableInformation("cat", None)] == {CodeLocation(2, 34), CodeLocation(2, 41)}
+    assert test_output.used_variables[VariableInformation("sum", None)] == {CodeLocation(3, 7)}
+    assert test_output.assigned_variables.keys() == {VariableInformation("sum", None),
+                                                     VariableInformation("cat", None)}
+    assert test_output.assigned_variables[VariableInformation("sum", None)] == {CodeLocation(2, 0)}
+    assert test_output.assigned_variables[VariableInformation("cat", None)] == {CodeLocation(2, 49)}
+    assert test_output.referenced_functions.keys() == {VariableInformation("reduce", None),
+                                                       VariableInformation("range", None)}
+    assert test_output.referenced_functions[VariableInformation("reduce", None)] == {CodeLocation(2, 6)}
+    assert test_output.referenced_functions[VariableInformation("range", None)] == {CodeLocation(2, 56)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
