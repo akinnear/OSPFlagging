@@ -319,17 +319,24 @@ else:
         a = a + 10                                         
         return ff1 < a"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"ff1", "ff2", "ff3", "ff4", "ff5", "a"}
-    assert test_output.used_variables["ff1"] == {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15), CodeLocation(9, 5), CodeLocation(17, 15)}
-    assert test_output.used_variables["ff2"] == {CodeLocation(4, 15), CodeLocation(5, 9)}
-    assert test_output.used_variables["ff3"] == {CodeLocation(7, 9)}
-    assert test_output.used_variables["ff4"] == {CodeLocation(2, 3), CodeLocation(8, 15)}
-    assert test_output.used_variables["ff5"] == {CodeLocation(10, 11), CodeLocation(15, 7)}
-    assert test_output.used_variables["a"] == {CodeLocation(16, 12), CodeLocation(17, 21)}
-    assert test_output.assigned_variables.keys() == {"a", "b", "c"}
-    assert test_output.assigned_variables["a"] == {CodeLocation(12, 4), CodeLocation(16, 8)}
-    assert test_output.assigned_variables["b"] == {CodeLocation(13, 4)}
-    assert test_output.assigned_variables["c"] == {CodeLocation(14, 4)}
+    assert test_output.used_variables.keys() == {VariableInformation("ff1", None),
+                                                 VariableInformation("ff2", None),
+                                                 VariableInformation("ff3", None),
+                                                 VariableInformation("ff4", None),
+                                                 VariableInformation("ff5", None),
+                                                 VariableInformation("a", None)}
+    assert test_output.used_variables[VariableInformation("ff1", None)] == {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15), CodeLocation(9, 5), CodeLocation(17, 15)}
+    assert test_output.used_variables[VariableInformation("ff2", None)] == {CodeLocation(4, 15), CodeLocation(5, 9)}
+    assert test_output.used_variables[VariableInformation("ff3", None)] == {CodeLocation(7, 9)}
+    assert test_output.used_variables[VariableInformation("ff4", None)] == {CodeLocation(2, 3), CodeLocation(8, 15)}
+    assert test_output.used_variables[VariableInformation("ff5", None)] == {CodeLocation(10, 11), CodeLocation(15, 7)}
+    assert test_output.used_variables[VariableInformation("a", None)] == {CodeLocation(16, 12), CodeLocation(17, 21)}
+    assert test_output.assigned_variables.keys() == {VariableInformation("a", None),
+                                                     VariableInformation("b", None),
+                                                     VariableInformation("c", None)}
+    assert test_output.assigned_variables[VariableInformation("a", None)] == {CodeLocation(12, 4), CodeLocation(16, 8)}
+    assert test_output.assigned_variables[VariableInformation("b", None)] == {CodeLocation(13, 4)}
+    assert test_output.assigned_variables[VariableInformation("c", None)] == {CodeLocation(14, 4)}
     assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
