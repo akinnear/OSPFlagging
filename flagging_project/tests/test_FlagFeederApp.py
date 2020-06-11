@@ -471,45 +471,6 @@ return ff1 == add"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_math_expression_Keys():
-    ''' changing ff1.isin(max(y_list))
-    to ff2.ising(max(a_list))
-    removes y_list from used_variable set
-    despite y_list.add(math.sqrt(a))
-    '''
-    logic = """
-import math
-a_list = [10, 13, 16, 19, 22, -212]
-y_list = [1]
-for a in a_list:
-    if math.sqrt(abs(a)) <= 4:
-        y_list.append(math.sqrt(a))
-if ff1 in (max(y_list)):
-    return ff1
-else:
-    return ff2 > min(list(map(lambda x: x**2, a_list)))"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("a_list", None),
-                                                 VariableInformation("y_list", None),
-                                                 VariableInformation("a", None),
-                                                 VariableInformation("ff1", None),
-                                                 VariableInformation("ff2", None),
-                                                 VariableInformation("x", None)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("a_list", None),
-                                                 VariableInformation("y_list", None)}
-    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["math", "sqrt"]),
-                                                       VariableInformation("abs", None),
-                                                       VariableInformation("max", None),
-                                                       VariableInformation("min", None),
-                                                       VariableInformation("list", None),
-                                                       VariableInformation("map", None),
-                                                       VariableInformation.create_var(["y_list", "append"])}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == {VariableInformation("math", None)}
-    assert test_output.referenced_flags.keys() == set()
-
-
 def test_math_expression_CodeLocation():
     logic = """
 import math
