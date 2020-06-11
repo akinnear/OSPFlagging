@@ -272,34 +272,6 @@ return ff3 < test_1"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_determine_flag_feeder_for_loop_keys():
-    logic = """                                            
-if ff4 >= 50:                                              
-    if ff1 > 10:                                           
-        return ff2 == True                                 
-    elif ff2:                                              
-        return ff1 < 10                                    
-    elif ff3 > ff1:                                        
-        return ff4 < 50                                    
-elif ff1 < 10:                                             
-    return ff5 == 'CAT'                                    
-else:                                                      
-    a = 10                                                 
-    b = True                                               
-    c = "CAR"                                              
-    if ff5 == "DOG":                                       
-        a = a + 10                                         
-        return ff1 < a"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"ff1", "ff2", "ff3", "ff4", "ff5", "a"}
-    assert test_output.assigned_variables.keys() == {"a", "b", "c"}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-
-
 def test_determine_flag_feeder_for_loop_CodeLocation():
     logic = """                                            
 if ff4 >= 50:                                              
