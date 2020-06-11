@@ -743,8 +743,7 @@ a.b.c > 10"""
     assert test_output.used_variables.keys() == {VariableInformation.create_var(["a", "b", "c"])}
     assert test_output.used_variables == {VariableInformation.create_var(["a", "b", "c"]): {CodeLocation(2, 0)}}
     assert test_output.assigned_variables == {}
-    #assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["a", "b", "c"])}
-    #assert test_output.referenced_functions == {VariableInformation.create_var(["a", "b", "c"]): {CodeLocation(2, 0)}}
+    assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
