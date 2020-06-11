@@ -165,9 +165,9 @@ def test_greater_than_operation_keys():
 def test_greater_than_operation_CodeLocation():
     logic = """return ff1 <= ff2"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"ff1", "ff2"}
-    assert test_output.used_variables == {"ff1": {CodeLocation(line_number=1, column_offset=7)},
-                                          "ff2": {CodeLocation(line_number=1, column_offset=14)}}
+    assert test_output.used_variables.keys() == {VariableInformation("ff1", None), VariableInformation("ff2", None)}
+    assert test_output.used_variables == {VariableInformation("ff1", None): {CodeLocation(line_number=1, column_offset=7)},
+                                          VariableInformation("ff2", None): {CodeLocation(line_number=1, column_offset=14)}}
     assert test_output.assigned_variables.keys() == set()
     assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
