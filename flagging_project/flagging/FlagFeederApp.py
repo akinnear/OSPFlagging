@@ -111,6 +111,9 @@ class FlagFeederNodeVisitor(NodeVisitor):
             ast.NodeVisitor.generic_visit(self, node)
 
     def visit_Import(self, node):
+        #TODO
+        # account for correct column offsets
+        # instead of default node offset
         with self.handle_node_stack(node):
             for name in node.names:
                 code_location_helper(self.referenced_modules, name.name,
