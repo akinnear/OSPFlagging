@@ -763,19 +763,6 @@ def test_feeder_function_function_CodeLocation():
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_determine_flag_feeders_keys():
-    logic = """
-unused1, unused2 = fish, bird
-return cat < 10 and fish > 100"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"cat", "fish", "bird"}
-    assert test_output.assigned_variables.keys() == {"unused1", "unused2"}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-
-
 def test_determine_flag_feeders_CodeLocation():
     logic = """
 unused1, unused2 = fish, bird
