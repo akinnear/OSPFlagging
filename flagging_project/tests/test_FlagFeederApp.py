@@ -468,13 +468,16 @@ def test_lambda_expression_CodeLocation():
 add = (lambda x, y: x + y)(2, 3)              
 return ff1 == add"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"add", "ff1", "x", "y"}
-    assert test_output.used_variables["add"] == {CodeLocation(3, 14)}
-    assert test_output.used_variables["ff1"] == {CodeLocation(3, 7)}
-    assert test_output.used_variables["x"] == {CodeLocation(2, 20)}
-    assert test_output.used_variables["y"] == {CodeLocation(2, 24)}
-    assert test_output.assigned_variables.keys() == {"add"}
-    assert test_output.assigned_variables["add"] == {CodeLocation(2, 0)}
+    assert test_output.used_variables.keys() == {VariableInformation("add", None),
+                                                 VariableInformation("ff1", None),
+                                                 VariableInformation("x", None),
+                                                 VariableInformation("y", None)}
+    assert test_output.used_variables[VariableInformation("add", None)] == {CodeLocation(3, 14)}
+    assert test_output.used_variables[VariableInformation("ff1", None)] == {CodeLocation(3, 7)}
+    assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(2, 20)}
+    assert test_output.used_variables[VariableInformation("y", None)] == {CodeLocation(2, 24)}
+    assert test_output.assigned_variables.keys() == {VariableInformation("add", None)}
+    assert test_output.assigned_variables[VariableInformation("add", None)] == {CodeLocation(2, 0)}
     assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
