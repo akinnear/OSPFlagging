@@ -122,18 +122,6 @@ return ff1 > z"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_equals_operation_keys():
-    logic = """return ff1 == ff2"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"ff1", "ff2"}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-
-
 def test_equals_operation_CodeLocation():
     logic = """return ff1 == ff2"""
     test_output = determine_variables(logic)
