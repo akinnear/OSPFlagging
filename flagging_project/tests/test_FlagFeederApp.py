@@ -923,14 +923,21 @@ with method(item):
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_with_using_as():
+def test_with_using_as_CodeLocation():
     logic = """
 with method(ff1, ff2) as my_with:
     return my_with > 100"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"ff1", "ff2", "my_with"}
-    assert test_output.assigned_variables.keys() == {"my_with"}
-    assert test_output.referenced_functions.keys() == {'method'}
+    assert test_output.used_variables.keys() == {VariableInformation("ff1"),
+                                                 VariableInformation("ff2"),
+                                                 VariableInformation("my_with")}
+    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(2, 12)}
+    assert test_output.used_variables[VariableInformation("ff2")] == {CodeLocation(2, 17)}
+    assert test_output.used_variables[VariableInformation("my_with")] == {CodeLocation(3,11)}
+    assert test_output.assigned_variables.keys() == {VariableInformation("my_with")}
+    assert test_output.assigned_variables[VariableInformation("my_with")] == {CodeLocation(2, 25)}
+    assert test_output.referenced_functions.keys() == {VariableInformation('method')}
+    assert test_output.referenced_functions[VariableInformation("method")] == {CodeLocation(2, 5)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
