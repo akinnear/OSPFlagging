@@ -906,14 +906,18 @@ return cat in animals"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_with_no_as():
+def test_with_no_as_CodeLocation():
     logic = """
 with method(item):
     return ff1 > 100"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"ff1", "item"}
+    assert test_output.used_variables.keys() == {VariableInformation("ff1"),
+                                                 VariableInformation("item")}
+    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(3, 11)}
+    assert test_output.used_variables[VariableInformation("item")] == {CodeLocation(2, 12)}
     assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == {'method'}
+    assert test_output.referenced_functions.keys() == {VariableInformation('method')}
+    assert test_output.referenced_functions[VariableInformation("method")] == {CodeLocation(2, 5)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
