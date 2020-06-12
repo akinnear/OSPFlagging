@@ -1037,14 +1037,17 @@ isinstance(a.b.Class, ff1)"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_complex_object_reference():
+def test_complex_object_reference_CodeLocation():
     logic = """
 my_function(a.b.c, c.d.e)"""
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {VariableInformation.create_var(["a", "b", "c"]),
                                                  VariableInformation.create_var(["c", "d", "e"])}
+    assert test_output.used_variables[VariableInformation.create_var(["a", "b", "c"])] == {CodeLocation(2, 12)}
+    assert test_output.used_variables[VariableInformation.create_var(["c", "d", "e"])] == {CodeLocation(2, 19)}
     assert test_output.assigned_variables.keys() == set()
     assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["my_function"])}
+    assert test_output.referenced_functions[VariableInformation.create_var(["my_function"])] == {CodeLocation(2, 0)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
