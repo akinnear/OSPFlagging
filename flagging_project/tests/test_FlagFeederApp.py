@@ -1021,13 +1021,17 @@ isinstance(ff1, int)"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_complex_class_reference():
+def test_complex_class_reference_CodeLocation():
     logic = """
 isinstance(a.b.Class, ff1)"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"ff1", VariableInformation.create_var(["a", "b", "Class"])}
+    assert test_output.used_variables.keys() == {VariableInformation("ff1"),
+                                                 VariableInformation.create_var(["a", "b", "Class"])}
+    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(2, 22)}
+    assert test_output.used_variables[VariableInformation.create_var(["a", "b", "Class"])] == {CodeLocation(2, 11)}
     assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == {"isinstance"}
+    assert test_output.referenced_functions.keys() == {VariableInformation("isinstance")}
+    assert test_output.referenced_functions[VariableInformation("isinstance")] == {CodeLocation(2, 0)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
