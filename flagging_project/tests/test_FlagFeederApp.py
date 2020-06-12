@@ -942,17 +942,24 @@ with method(ff1, ff2) as my_with:
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
 
-
-def test_func():
+#TODO
+# assigned variable code location test not correct
+def test_func_CodeLocation():
     logic = """
 def myfunc(xyz):
     return xyz+10
 myfunc(ff1) > 10"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"ff1", "xyz"}
-    assert test_output.assigned_variables.keys() == {"xyz"}
-    assert test_output.referenced_functions.keys() == {"myfunc"}
-    assert test_output.defined_functions.keys() == {"myfunc"}
+    assert test_output.used_variables.keys() == {VariableInformation("ff1"),
+                                                 VariableInformation("xyz")}
+    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(4, 7)}
+    assert test_output.used_variables[VariableInformation("xyz")] == {CodeLocation(3, 11)}
+    assert test_output.assigned_variables.keys() == {VariableInformation("xyz")}
+    assert test_output.assigned_variables[VariableInformation("xyz")] == {CodeLocation(2, 0)}
+    assert test_output.referenced_functions.keys() == {VariableInformation("myfunc")}
+    assert test_output.referenced_functions[VariableInformation("myfunc")] == {CodeLocation(4, 0)}
+    assert test_output.defined_functions.keys() == {VariableInformation("myfunc")}
+    assert test_output.defined_functions[VariableInformation("myfunc")] == {CodeLocation(2, 0)}
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
 
