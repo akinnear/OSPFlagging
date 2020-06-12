@@ -965,7 +965,7 @@ myfunc(ff1) > 10"""
     assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(4, 7)}
     assert test_output.used_variables[VariableInformation("xyz")] == {CodeLocation(3, 11)}
     assert test_output.assigned_variables.keys() == {VariableInformation("xyz")}
-    assert test_output.assigned_variables[VariableInformation("xyz")] == {CodeLocation(2, 0)}
+    assert test_output.assigned_variables[VariableInformation("xyz")] == {CodeLocation(2, 11)}
     assert test_output.referenced_functions.keys() == {VariableInformation("myfunc")}
     assert test_output.referenced_functions[VariableInformation("myfunc")] == {CodeLocation(4, 0)}
     assert test_output.defined_functions.keys() == {VariableInformation("myfunc")}
