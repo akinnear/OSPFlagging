@@ -819,31 +819,6 @@ else:
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_map_filter_lambda_keys():
-    logic = """
-import math
-import pandas
-a = [1,2,3,4]
-b = [17,12,11,10]        
-c = [-1,-4,5,9]    
-d = reduce(lambda x, y: x if x>20 else y,(list(filter(lambda x: x > math.sqrt(10), list(map(lambda x,y,z:x+y-z, a,b,c))))))
-if max(a) in d:
-    return ff1 > min(a)
-elif min(b) in d:
-    return ff2 < max(b)
-elif max(c) in d:
-    return ff1 > min(c)
-else:
-    return ff3 == True"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"a", "b", "c", "x", "y", "z", "ff1", "ff2", "ff3", "d"}
-    assert test_output.assigned_variables.keys() == {"a", "b", "c", "d"}
-    assert test_output.referenced_functions.keys() == {"reduce", "list", "filter", "map", "max", "min", VariableInformation.create_var(["math", "sqrt"])}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.referenced_modules.keys() == {"math", "pandas"}
-    assert test_output.referenced_flags.keys() == set()
-
-
 def test_map_filter_lambda_CodeLocation():
     logic = """
 import math
