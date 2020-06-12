@@ -1005,13 +1005,17 @@ return ff1 in names"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_class_reference():
+def test_class_reference_CodeLocation():
     logic = """
 isinstance(ff1, int)"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"ff1", "int"}
+    assert test_output.used_variables.keys() == {VariableInformation("ff1"),
+                                                 VariableInformation("int")}
+    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(2, 11)}
+    assert test_output.used_variables[VariableInformation("int")] == {CodeLocation(2, 16)}
     assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == {"isinstance"}
+    assert test_output.referenced_functions.keys() == {VariableInformation("isinstance")}
+    assert test_output.referenced_functions[VariableInformation("isinstance")] == {CodeLocation(2, 0)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
