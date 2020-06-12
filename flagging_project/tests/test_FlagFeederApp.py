@@ -885,13 +885,21 @@ else:
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_variables_in_list():
+def test_variables_in_list_CodeLocation():
     logic = """
 animals = [cat, dog, fish]
 return cat in animals"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"animals", "cat", "dog", "fish"}
+    assert test_output.used_variables.keys() == {VariableInformation("animals"),
+                                                 VariableInformation("cat"),
+                                                 VariableInformation("dog"),
+                                                 VariableInformation("fish")}
+    assert test_output.used_variables[VariableInformation("animals")] == {CodeLocation(3, 14)}
+    assert test_output.used_variables[VariableInformation("cat")] == {CodeLocation(2, 11), CodeLocation(3, 7)}
+    assert test_output.used_variables[VariableInformation("dog")] == {CodeLocation(2, 16)}
+    assert test_output.used_variables[VariableInformation("fish")] == {CodeLocation(2, 21)}
     assert test_output.assigned_variables.keys() == {"animals"}
+    assert test_output.assigned_variables[VariableInformation("animals")] == {CodeLocation(2, 0)}
     assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
     assert test_output.referenced_modules.keys() == set()
