@@ -942,6 +942,7 @@ with method(ff1, ff2) as my_with:
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
 
+
 #TODO
 # assigned variable code location test not correct
 def test_func_CodeLocation():
@@ -964,14 +965,13 @@ myfunc(ff1) > 10"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_list_comprehension():
+def test_list_comprehension_CodeLocation():
     logic = """
 names = set([name.id 
     for target in three_up_stack_node.targets if isinstance(target, ast.Tuple) 
     for name in target.elts if isinstance(name, ast.Name)])
 return ff1 in names"""
     test_output = determine_variables(logic)
-
     assert test_output.used_variables.keys() == {VariableInformation("names", None),
      VariableInformation.create_var(["name", "id"]),
      VariableInformation("target", None),
@@ -981,12 +981,25 @@ return ff1 in names"""
      VariableInformation.create_var(["target", "elts"]),
      VariableInformation.create_var(["ast", "Name"]),
      VariableInformation("ff1", None)}
-
+    assert test_output.used_variables[VariableInformation("names")] == {CodeLocation(5, 14)}
+    assert test_output.used_variables[VariableInformation.create_var(["name", "id"])] == {CodeLocation(2, 13)}
+    assert test_output.used_variables[VariableInformation("target")] == {CodeLocation(3, 60)}
+    assert test_output.used_variables[VariableInformation.create_var(["three_up_stack_node", "targets"])] == {CodeLocation(3, 18)}
+    assert test_output.used_variables[VariableInformation.create_var(["ast", "Tuple"])] == {CodeLocation(3, 68)}
+    assert test_output.used_variables[VariableInformation("name")] == {CodeLocation(4, 42)}
+    assert test_output.used_variables[VariableInformation.create_var(["target", "elts"])] == {CodeLocation(4, 16)}
+    assert test_output.used_variables[VariableInformation.create_var(["ast", "Name"])] == {CodeLocation(4, 48)}
+    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(5, 7)}
     assert test_output.assigned_variables.keys() == {VariableInformation("names", None),
                                                      VariableInformation("target", None),
                                                      VariableInformation("name", None)}
+    assert test_output.assigned_variables[VariableInformation("names")] == {CodeLocation(2, 0)}
+    assert test_output.assigned_variables[VariableInformation("target")] == {CodeLocation(3, 8)}
+    assert test_output.assigned_variables[VariableInformation("name")] == {CodeLocation(4, 8)}
     assert test_output.referenced_functions.keys() == {VariableInformation("set", None),
                                                        VariableInformation("isinstance", None)}
+    assert test_output.referenced_functions[VariableInformation("set")] == {CodeLocation(2, 8)}
+    assert test_output.referenced_functions[VariableInformation("isinstance")] == {CodeLocation(3, 49), CodeLocation(4, 31)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
