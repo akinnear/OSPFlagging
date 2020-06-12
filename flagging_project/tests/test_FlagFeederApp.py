@@ -1085,14 +1085,25 @@ a.b.c.my_function(a.b.c, c.d.e)"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_complex_object_function_reference_complex_function():
+def test_complex_object_function_reference_complex_function_CodeLocation():
     logic = """
 a.b.c.my_function(a.b.c(), c.d.e())"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"a.b", "c.d", "a.b.c"}
+    assert test_output.used_variables.keys() == {VariableInformation.create_var(["a", "b"]),
+                                                 VariableInformation.create_var(["c", "d"]),
+                                                 VariableInformation.create_var(["a", "b", "c"])}
+    assert test_output.used_variables[VariableInformation.create_var(["a", "b"])] == {CodeLocation(2, 18)}
+    assert test_output.used_variables[VariableInformation.create_var(["c", "d"])] == {CodeLocation(2, 27)}
+    assert test_output.used_variables[VariableInformation.create_var(["a", "b", "c"])] == {CodeLocation(2, 0)}
     assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == {"a.b.c.my_function", "a.b.c", "c.d.e"}
+    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["a", "b", "c"]),
+                                                       VariableInformation.create_var(["c", "d", "e"]),
+                                                       VariableInformation.create_var(["a", "b", "c", "my_function"])}
+    assert test_output.referenced_functions[VariableInformation.create_var(["a", "b", "c"])] == {CodeLocation(2, 18)}
+    assert test_output.referenced_functions[VariableInformation.create_var(["c", "d", "e"])] == {CodeLocation(2, 27)}
+    assert test_output.referenced_functions[VariableInformation.create_var(["a", "b", "c", "my_function"])] == {CodeLocation(2, 0)}
     assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
 
