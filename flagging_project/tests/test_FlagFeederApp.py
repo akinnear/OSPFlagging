@@ -1068,16 +1068,17 @@ my_function(a.b.c, c.d.e)"""
 
 #TODO
 # incorrect code location
-def test_complex_object_reference_complex_function():
+def test_complex_object_reference_complex_function_CodeLocation():
     logic = """
 a.b.c.my_function(a.b.c, c.d.e)"""
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {VariableInformation.create_var(["a", "b", "c"]),
                                                  VariableInformation.create_var(["c", "d", "e"])}
-    assert test_output.used_variables[VariableInformation.create_var(["a", "b", "c"])] == {CodeLocation(2, 0), CodeLocation(2, 18)}
-    assert test_output.used_variables[VariableInformation.create_var(["c", "d", "e"])] == {CodeLocation(2, 0), CodeLocation(2, 25)}
+    assert test_output.used_variables[VariableInformation.create_var(["a", "b", "c"])] == {CodeLocation(2, 18)}
+    assert test_output.used_variables[VariableInformation.create_var(["c", "d", "e"])] == {CodeLocation(2, 25)}
     assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == {VariableInformation("a.b.c.my_function", None)}
+    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["a", "b", "c", "my_function"])}
+    assert test_output.referenced_functions[VariableInformation.create_var(["a", "b", "c", "my_function"])] == {CodeLocation(2, 0)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
