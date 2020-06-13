@@ -1260,17 +1260,22 @@ return ff1"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_simple_function_dont_use_complex():
+#TODO
+# fix function declaration code position
+def test_simple_function_dont_use_complex_CodeLocation():
     logic = """
 def my_function():
     a.b.k = 4
     return 1
 return ff1"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"ff1"}
-    assert test_output.assigned_variables.keys() == {"a.b.k"}
+    assert test_output.used_variables.keys() == {VariableInformation("ff1")}
+    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(5, 7)}
+    assert test_output.assigned_variables.keys() == {VariableInformation.create_var(["a", "b", "k"])}
+    assert test_output.assigned_variables[VariableInformation.create_var(["a", "b", "k"])] == {CodeLocation(3, 4)}
     assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == {"my_function"}
+    assert test_output.defined_functions.keys() == {VariableInformation("my_function")}
+    assert test_output.defined_functions[VariableInformation("my_function")] == {CodeLocation(2, 4)}
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
