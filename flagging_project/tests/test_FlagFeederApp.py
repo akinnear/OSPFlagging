@@ -1189,7 +1189,7 @@ return 10 in eggs"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_fizzbuzz_comprehension():
+def test_fizzbuzz_comprehension_CodeLocation():
     logic = """
 fizzbuzz = [
     f'fizzbuzz {n}' if n % 3 == 0 and n % 5 == 0
@@ -1200,9 +1200,23 @@ fizzbuzz = [
 ]
 return 'not in' in fizzbuzz"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"n", "fizzbuzz"}
-    assert test_output.assigned_variables.keys() == {"n", "fizzbuzz"}
-    assert test_output.referenced_functions.keys() == {"range"}
+    assert test_output.used_variables.keys() == {VariableInformation("n"),
+                                                 VariableInformation("fizzbuzz")}
+    assert test_output.used_variables[VariableInformation("n")] == {CodeLocation(3, 16),
+                                                                    CodeLocation(3, 23),
+                                                                    CodeLocation(3, 38),
+                                                                    CodeLocation(4, 17),
+                                                                    CodeLocation(4, 24),
+                                                                    CodeLocation(5, 17),
+                                                                    CodeLocation(5, 24),
+                                                                    CodeLocation(6, 9)}
+    assert test_output.used_variables[VariableInformation("fizzbuzz")] == {CodeLocation(9, 19)}
+    assert test_output.assigned_variables.keys() == {VariableInformation("n"),
+                                                     VariableInformation("fizzbuzz")}
+    assert test_output.assigned_variables[VariableInformation("n")] == {CodeLocation(7, 8)}
+    assert test_output.assigned_variables[VariableInformation("fizzbuzz")] == {CodeLocation(2, 0)}
+    assert test_output.referenced_functions.keys() == {VariableInformation("range")}
+    assert test_output.referenced_functions[VariableInformation("range")] == {CodeLocation(7, 13)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
