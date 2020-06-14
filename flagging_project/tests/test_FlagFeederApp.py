@@ -1638,18 +1638,24 @@ my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_function_with_vars_using_import_value():
-    logic = """\
+#TODO
+# correct code location column offset
+# for imported modules
+def test_function_with_vars_using_import_value_CodeLocation():
+    logic = """
 import math
 my_func(math.PI, math.E)"""
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {VariableInformation.create_var(["math", "PI"]),
                                                  VariableInformation.create_var(["math", "E"])}
+    assert test_output.used_variables[VariableInformation.create_var(["math", "PI"])] == {CodeLocation(3, 8)}
+    assert test_output.used_variables[VariableInformation.create_var(["math", "E"])] == {CodeLocation(3, 17)}
     assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["my_func"])}
+    assert test_output.referenced_functions.keys() == {VariableInformation("my_func")}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
+    assert test_output.referenced_functions["math"] == {CodeLocation(2, 7)}
     assert test_output.referenced_flags.keys() == set()
 
 
