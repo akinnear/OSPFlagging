@@ -1597,13 +1597,16 @@ def test_simple_flag_get():
     assert test_output.referenced_flags.keys() == {"MY_FLAG"}
 
 
-def test_function_with_vars():
-    logic = "my_func(a.b.c, x.y.z)"
+def test_function_with_vars_CodeLocation():
+    logic = """my_func(a.b.c, x.y.z)"""
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {VariableInformation.create_var(["a", "b", "c"]),
                                                  VariableInformation.create_var(["x", "y", "z"])}
+    assert test_output.used_variables[VariableInformation.create_var(["a", "b", "c"])] == {CodeLocation(1, 8)}
+    assert test_output.used_variables[VariableInformation.create_var(["x", "y", "z"])] == {CodeLocation(1, 15)}
     assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["my_func"])}
+    assert test_output.referenced_functions.keys() == {VariableInformation("my_func")}
+    assert test_output.referenced_functions[VariableInformation("my_func")] == {CodeLocation(1, 0)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
