@@ -1549,13 +1549,17 @@ dict[ff] > 10"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_list_slice_keys():
+def test_list_slice_CodeLocation():
     logic = """
 len(list[ff:]) > 10"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"list", "ff"}
+    assert test_output.used_variables.keys() == {VariableInformation("list"),
+                                                 VariableInformation("ff")}
+    assert test_output[VariableInformation("list")] == {CodeLocation(2, 4)}
+    assert test_output[VariableInformation("ff")] == {CodeLocation(2, 9)}
     assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == {"len"}
+    assert test_output.referenced_functions.keys() == {VariableInformation("len")}
+    assert test_output.referenced_functions[VariableInformation("len")] == {CodeLocation(2, 0)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
