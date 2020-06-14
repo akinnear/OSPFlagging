@@ -1304,13 +1304,15 @@ return ff1"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_unused_var():
+def test_unused_var_CodeLocation():
     logic = """
 k = 4
 return ff1"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"ff1"}
-    assert test_output.assigned_variables.keys() == {"k"}
+    assert test_output.used_variables.keys() == {VariableInformation("ff1")}
+    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(3, 7)}
+    assert test_output.assigned_variables.keys() == {VariableInformation("k")}
+    assert test_output.assigned_variables[VariableInformation("k")] == {CodeLocation(2, 0)}
     assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
