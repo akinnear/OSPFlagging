@@ -1537,8 +1537,10 @@ def test_dictionary_CodeLocation():
     logic = """
 dict[ff] > 10"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"dict", "ff"}
-    assert test_output.used_variables == {"dict": {CodeLocation(2, 0)}, "ff": {CodeLocation(2, 5)}}
+    assert test_output.used_variables.keys() == {VariableInformation("dict"),
+                                                 VariableInformation("ff")}
+    assert test_output.used_variables == {VariableInformation("dict"): {CodeLocation(2, 0)},
+                                          VariableInformation("ff"): {CodeLocation(2, 5)}}
     assert test_output.assigned_variables.keys() == set()
     assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
