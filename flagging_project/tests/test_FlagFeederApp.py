@@ -1283,7 +1283,7 @@ return ff1"""
 
 #TODO
 # fix function declaration code position
-def test_simple_function_dont_use_complex_CodeLocation():
+def test_simple_function_dont_use_complex_2_CodeLocation():
     logic = """
 def my_function():
     a.b.k()
