@@ -1487,17 +1487,22 @@ return my_func()"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_unused_class():
+#TODO
+# correct code location col offset
+# for class declaration
+def test_unused_class_CodeLocation():
     logic = """
 class MyClass:
     pass
 return ff1"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"ff1"}
+    assert test_output.used_variables.keys() == {VariableInformation("ff1")}
+    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(4, 7)}
     assert test_output.assigned_variables.keys() == set()
     assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == {"MyClass"}
+    assert test_output.defined_classes["MyClass"] == {CodeLocation(2, 6)}
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
 
