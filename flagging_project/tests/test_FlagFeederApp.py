@@ -1566,33 +1566,22 @@ len(list[ff:]) > 10"""
     assert test_output.referenced_flags.keys() == set()
 
 
-def test_list_slice_CodeLocation():
-    logic = """
-len(list[ff:]) > 10"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"list", "ff"}
-    assert test_output.used_variables["ff"] == {CodeLocation(2, 9)}
-    assert test_output.used_variables["list"] == {CodeLocation(2, 4)}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == {"len"}
-    assert test_output.referenced_functions == {"len": {CodeLocation(2, 0)}}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-
-
-def test_simple_flag():
+#TODO
+# fix code location col offset
+# for referenced_flags
+def test_simple_flag_CodeLocation():
     logic = """
 f["MY_FLAG"]"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"f"}
+    assert test_output.used_variables.keys() == {VariableInformation("f")}
+    assert test_output.used_variables[VariableInformation("f")] == {CodeLocation(2, 0)}
     assert test_output.assigned_variables.keys() == set()
     assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == {"MY_FLAG"}
+    assert test_output.referenced_flags["MY_FLAG"] == {CodeLocation(2, 3)}
 
 #TODO
 # Issue 3
