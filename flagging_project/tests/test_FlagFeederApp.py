@@ -1543,8 +1543,7 @@ dict[ff] > 10"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
 
-##TODO
-# test fail
+
 def test_list_slice_CodeLocation():
     logic = """
 len(list[ff:]) > 10"""
