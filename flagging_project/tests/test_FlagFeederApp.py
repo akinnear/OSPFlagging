@@ -965,7 +965,7 @@ myfunc(ff1) > 10"""
     assert test_output.referenced_functions.keys() == {VariableInformation("myfunc")}
     assert test_output.referenced_functions[VariableInformation("myfunc")] == {CodeLocation(4, 0)}
     assert test_output.defined_functions.keys() == {VariableInformation("myfunc")}
-    assert test_output.defined_functions[VariableInformation("myfunc")] == {CodeLocation(2, 0)}
+    assert test_output.defined_functions[VariableInformation("myfunc")] == {CodeLocation(2, 4)}
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
