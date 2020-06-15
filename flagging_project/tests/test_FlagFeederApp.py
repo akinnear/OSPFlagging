@@ -1547,9 +1547,6 @@ len(list[ff:]) > 10"""
     assert test_output.referenced_flags.keys() == set()
 
 
-#TODO
-# fix code location col offset
-# for referenced_flags
 def test_simple_flag_CodeLocation():
     logic = """
 f["MY_FLAG"]"""
