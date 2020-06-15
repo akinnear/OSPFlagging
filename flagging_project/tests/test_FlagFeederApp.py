@@ -1158,7 +1158,7 @@ return 1 in my_gen()"""
     assert test_output.referenced_functions[VariableInformation("my_gen")] == {CodeLocation(15, 12)}
     assert test_output.referenced_functions[VariableInformation("print")] == {CodeLocation(5, 4), CodeLocation(9, 4), CodeLocation(12, 4)}
     assert test_output.defined_functions.keys() == {VariableInformation("my_gen")}
-    assert test_output.defined_functions[VariableInformation("my_gen")] == {CodeLocation(3, 0)}
+    assert test_output.defined_functions[VariableInformation("my_gen")] == {CodeLocation(3, 4)}
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
