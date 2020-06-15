@@ -104,8 +104,8 @@ class FlagFeederNodeVisitor(NodeVisitor):
                                                                        column_offset=node.col_offset))
             for arg in node.args.args:
                 code_location_helper(self.assigned_variables, VariableInformation(arg.arg),
-                                                               CodeLocation(line_number=node.lineno,
-                                                                            column_offset=node.col_offset))
+                                                               CodeLocation(line_number=arg.lineno,
+                                                                            column_offset=arg.col_offset))
             for body_line in node.body:
                 ast.NodeVisitor.generic_visit(self, body_line)
             ast.NodeVisitor.generic_visit(self, node)

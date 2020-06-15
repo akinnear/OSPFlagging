@@ -96,10 +96,7 @@ return ff1 > z"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
 
-#TODO
-# bug in assigned variable code location for variables passed as parameters to functions
-# expected x to have code location line 3, col 11
-# actual x has code location line 2, col offset 0
+
 def test_normal_expression_CodeLocation():
     logic = """
 def my_add(x, y): return x + y
@@ -114,7 +111,8 @@ return ff1 > z"""
     assert test_output.used_variables[VariableInformation("y", None)] == {CodeLocation(2, 29)}
     assert test_output.assigned_variables.keys() == {VariableInformation("x", None), VariableInformation("y", None),
                                                      VariableInformation("z", None)}
-    assert test_output.assigned_variables[VariableInformation("x", None)] == {CodeLocation(3, 11)}
+    assert test_output.assigned_variables[VariableInformation("x", None)] == {CodeLocation(2, 11)}
+    assert test_output.assigned_variables[VariableInformation("y")] == {CodeLocation(2, 14)}
     assert test_output.referenced_functions.keys() == {"my_add"}
     assert test_output.defined_functions.keys() == {"my_add"}
     assert test_output.defined_classes.keys() == set()
@@ -952,8 +950,6 @@ with method(ff1, ff2) as my_with:
     assert test_output.referenced_flags.keys() == set()
 
 
-#TODO
-# assigned variable code location test not correct
 def test_func_CodeLocation():
     logic = """
 def myfunc(xyz):
@@ -1066,15 +1062,14 @@ my_function(a.b.c, c.d.e)"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
 
-#TODO
-# incorrect code location
+
 def test_complex_object_reference_complex_function_CodeLocation():
     logic = """
 a.b.c.my_function(a.b.c, c.d.e)"""
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {VariableInformation.create_var(["a", "b", "c"]),
                                                  VariableInformation.create_var(["c", "d", "e"])}
-    assert test_output.used_variables[VariableInformation.create_var(["a", "b", "c"])] == {CodeLocation(2, 18)}
+    assert test_output.used_variables[VariableInformation.create_var(["a", "b", "c"])] == {CodeLocation(2, 18), CodeLocation(2, 0)}
     assert test_output.used_variables[VariableInformation.create_var(["c", "d", "e"])] == {CodeLocation(2, 25)}
     assert test_output.assigned_variables.keys() == set()
     assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["a", "b", "c", "my_function"])}
@@ -1555,8 +1550,8 @@ len(list[ff:]) > 10"""
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {VariableInformation("list"),
                                                  VariableInformation("ff")}
-    assert test_output[VariableInformation("list")] == {CodeLocation(2, 4)}
-    assert test_output[VariableInformation("ff")] == {CodeLocation(2, 9)}
+    assert test_output.used_variables[VariableInformation("list")] == {CodeLocation(2, 4)}
+    assert test_output.used_variables[VariableInformation("ff")] == {CodeLocation(2, 9)}
     assert test_output.assigned_variables.keys() == set()
     assert test_output.referenced_functions.keys() == {VariableInformation("len")}
     assert test_output.referenced_functions[VariableInformation("len")] == {CodeLocation(2, 0)}
@@ -1655,7 +1650,7 @@ my_func(math.PI, math.E)"""
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
-    assert test_output.referenced_functions["math"] == {CodeLocation(2, 7)}
+    assert test_output.referenced_modules["math"] == {CodeLocation(2, 7)}
     assert test_output.referenced_flags.keys() == set()
 
 
