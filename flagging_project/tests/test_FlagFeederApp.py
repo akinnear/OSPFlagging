@@ -1293,7 +1293,7 @@ return ff1"""
     assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["a", "b", "k"])}
     assert test_output.referenced_functions[VariableInformation.create_var(["a", "b", "k"])] == {CodeLocation(3, 4)}
     assert test_output.defined_functions.keys() == {VariableInformation("my_function")}
-    assert test_output.defined_functions[VariableInformation("my_function")] == {2, 4}
+    assert test_output.defined_functions[VariableInformation("my_function")] == {CodeLocation(2, 4)}
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
