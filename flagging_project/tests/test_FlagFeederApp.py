@@ -1474,9 +1474,6 @@ return my_func()"""
     assert test_output.referenced_flags.keys() == set()
 
 
-#TODO
-# correct code location col offset
-# for class declaration
 def test_unused_class_CodeLocation():
     logic = """
 class MyClass:
@@ -1494,9 +1491,6 @@ return ff1"""
     assert test_output.referenced_flags.keys() == set()
 
 
-#TODO
-# correct code location column offset
-# for class declaration
 def test_used_class_CodeLocation():
     logic = """
 class MyClass():
