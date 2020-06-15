@@ -1256,7 +1256,7 @@ return ff1"""
 
 
 #TODO
-# fix function declaration code position
+# incorrect used variable set
 def test_simple_function_dont_use_complex_CodeLocation():
     logic = """
 def my_function():
