@@ -101,7 +101,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
         with self.handle_node_stack(node):
             code_location_helper(self.defined_functions, VariableInformation(node.name),
                                                           CodeLocation(line_number=node.lineno,
-                                                                       column_offset=node.col_offset))
+                                                                       column_offset=node.col_offset+4))
             for arg in node.args.args:
                 code_location_helper(self.assigned_variables, VariableInformation(arg.arg),
                                                                CodeLocation(line_number=arg.lineno,
