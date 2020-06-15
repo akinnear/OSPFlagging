@@ -253,7 +253,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
         with self.handle_node_stack(node):
             code_location_helper(self.defined_classes, node.name,
                                                        CodeLocation(line_number=node.lineno,
-                                                                    column_offset=node.col_offset))
+                                                                    column_offset=node.col_offset+6))
 
     def generic_visit(self, node):
         with self.handle_node_stack(node):
