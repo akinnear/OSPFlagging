@@ -167,7 +167,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
                         flag_name = self._stack[-4].value.args[0].s
                         code_location_helper(self.referenced_flags, flag_name,
                                              CodeLocation(line_number=node.lineno,
-                                                          column_offset=node.col_offset))
+                                                          column_offset=self._stack[-4].value.args[0].col_offset + 1))
 
                     if full_name in possible_args:
                         code_location_helper(self.used_variables, variable_information,
@@ -232,7 +232,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
                 if name == "f":
                     code_location_helper(self.referenced_flags, parent.slice.value.s,
                                                                    CodeLocation(line_number=node.lineno,
-                                                                                column_offset=node.col_offset))
+                                                                                column_offset=parent.slice.value.col_offset + 1))
                 code_location_helper(self.used_variables, VariableInformation(name),
                                                              CodeLocation(line_number=node.lineno,
                                                                           column_offset=node.col_offset))

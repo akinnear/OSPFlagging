@@ -1547,9 +1547,6 @@ len(list[ff:]) > 10"""
     assert test_output.referenced_flags.keys() == set()
 
 
-#TODO
-# fix code location col offset
-# for referenced_flags
 def test_simple_flag_CodeLocation():
     logic = """
 f["MY_FLAG"]"""
@@ -1566,7 +1563,8 @@ f["MY_FLAG"]"""
 
 
 def test_simple_flag_get():
-    logic = """f.get("MY_FLAG")"""
+    logic = """
+f.get("MY_FLAG")"""
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {"f"}
     assert test_output.assigned_variables.keys() == set()
@@ -1575,6 +1573,7 @@ def test_simple_flag_get():
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == {"MY_FLAG"}
+    assert test_output.referenced_flags["MY_FLAG"] == {CodeLocation(2, 7)}
 
 
 def test_function_with_vars_CodeLocation():
