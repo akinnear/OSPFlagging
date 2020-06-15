@@ -96,10 +96,7 @@ return ff1 > z"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
 
-#TODO
-# bug in assigned variable code location for variables passed as parameters to functions
-# expected x to have code location line 3, col 11
-# actual x has code location line 2, col offset 0
+
 def test_normal_expression_CodeLocation():
     logic = """
 def my_add(x, y): return x + y
@@ -953,8 +950,6 @@ with method(ff1, ff2) as my_with:
     assert test_output.referenced_flags.keys() == set()
 
 
-#TODO
-# assigned variable code location test not correct
 def test_func_CodeLocation():
     logic = """
 def myfunc(xyz):
@@ -1548,15 +1543,16 @@ dict[ff] > 10"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
 
-
+##TODO
+# test fail
 def test_list_slice_CodeLocation():
     logic = """
 len(list[ff:]) > 10"""
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {VariableInformation("list"),
                                                  VariableInformation("ff")}
-    assert test_output[VariableInformation("list")] == {CodeLocation(2, 4)}
-    assert test_output[VariableInformation("ff")] == {CodeLocation(2, 9)}
+    assert test_output.used_variables[VariableInformation("list")] == {CodeLocation(2, 4)}
+    assert test_output.used_variables[VariableInformation("ff")] == {CodeLocation(2, 9)}
     assert test_output.assigned_variables.keys() == set()
     assert test_output.referenced_functions.keys() == {VariableInformation("len")}
     assert test_output.referenced_functions[VariableInformation("len")] == {CodeLocation(2, 0)}
