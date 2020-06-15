@@ -1122,8 +1122,7 @@ return 10 in eggs"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
 
-#TODO
-# fix code location of defined functions
+
 def test_generator_with_yield_CodeLocation():
     logic = """
 # A simple generator function
@@ -1234,8 +1233,6 @@ return ff1"""
     assert test_output.referenced_flags.keys() == set()
 
 
-#TODO
-# fix function declaration code position
 def test_simple_function_dont_use_CodeLocation():
     logic = """
 def my_function():
@@ -1276,8 +1273,6 @@ return ff1"""
     assert test_output.referenced_flags.keys() == set()
 
 
-#TODO
-# fix function declaration code position
 def test_simple_function_dont_use_complex_2_CodeLocation():
     logic = """
 def my_function():
@@ -1394,9 +1389,6 @@ finally:
     assert test_output.referenced_flags.keys() == set()
 
 
-#TODO
-# correct code location col offset
-# for function declaration
 def test_try_except_finally_in_defined_function_CodeLocation():
     logic = """
 def my_func():
@@ -1578,8 +1570,7 @@ f["MY_FLAG"]"""
     assert test_output.referenced_flags.keys() == {"MY_FLAG"}
     assert test_output.referenced_flags["MY_FLAG"] == {CodeLocation(2, 3)}
 
-#TODO
-# Issue 3
+
 def test_simple_flag_get():
     logic = """f.get("MY_FLAG")"""
     test_output = determine_variables(logic)
