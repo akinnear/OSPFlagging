@@ -965,7 +965,7 @@ myfunc(ff1) > 10"""
     assert test_output.referenced_functions.keys() == {VariableInformation("myfunc")}
     assert test_output.referenced_functions[VariableInformation("myfunc")] == {CodeLocation(4, 0)}
     assert test_output.defined_functions.keys() == {VariableInformation("myfunc")}
-    assert test_output.defined_functions[VariableInformation("myfunc")] == {CodeLocation(2, 0)}
+    assert test_output.defined_functions[VariableInformation("myfunc")] == {CodeLocation(2, 4)}
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
@@ -1122,8 +1122,7 @@ return 10 in eggs"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
 
-#TODO
-# fix code location of defined functions
+
 def test_generator_with_yield_CodeLocation():
     logic = """
 # A simple generator function
@@ -1158,7 +1157,7 @@ return 1 in my_gen()"""
     assert test_output.referenced_functions[VariableInformation("my_gen")] == {CodeLocation(15, 12)}
     assert test_output.referenced_functions[VariableInformation("print")] == {CodeLocation(5, 4), CodeLocation(9, 4), CodeLocation(12, 4)}
     assert test_output.defined_functions.keys() == {VariableInformation("my_gen")}
-    assert test_output.defined_functions[VariableInformation("my_gen")] == {CodeLocation(3, 0)}
+    assert test_output.defined_functions[VariableInformation("my_gen")] == {CodeLocation(3, 4)}
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
@@ -1234,8 +1233,6 @@ return ff1"""
     assert test_output.referenced_flags.keys() == set()
 
 
-#TODO
-# fix function declaration code position
 def test_simple_function_dont_use_CodeLocation():
     logic = """
 def my_function():
@@ -1256,7 +1253,7 @@ return ff1"""
 
 
 #TODO
-# fix function declaration code position
+# incorrect used variable set
 def test_simple_function_dont_use_complex_CodeLocation():
     logic = """
 def my_function():
@@ -1276,8 +1273,6 @@ return ff1"""
     assert test_output.referenced_flags.keys() == set()
 
 
-#TODO
-# fix function declaration code position
 def test_simple_function_dont_use_complex_2_CodeLocation():
     logic = """
 def my_function():
@@ -1293,7 +1288,7 @@ return ff1"""
     assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["a", "b", "k"])}
     assert test_output.referenced_functions[VariableInformation.create_var(["a", "b", "k"])] == {CodeLocation(3, 4)}
     assert test_output.defined_functions.keys() == {VariableInformation("my_function")}
-    assert test_output.defined_functions[VariableInformation("my_function")] == {2, 4}
+    assert test_output.defined_functions[VariableInformation("my_function")] == {CodeLocation(2, 4)}
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
@@ -1394,9 +1389,6 @@ finally:
     assert test_output.referenced_flags.keys() == set()
 
 
-#TODO
-# correct code location col offset
-# for function declaration
 def test_try_except_finally_in_defined_function_CodeLocation():
     logic = """
 def my_func():
@@ -1578,8 +1570,7 @@ f["MY_FLAG"]"""
     assert test_output.referenced_flags.keys() == {"MY_FLAG"}
     assert test_output.referenced_flags["MY_FLAG"] == {CodeLocation(2, 3)}
 
-#TODO
-# Issue 3
+
 def test_simple_flag_get():
     logic = """f.get("MY_FLAG")"""
     test_output = determine_variables(logic)
