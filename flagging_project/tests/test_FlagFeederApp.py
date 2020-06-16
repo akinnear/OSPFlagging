@@ -1686,6 +1686,59 @@ engine = create_engine('oracle+cx_oracle://' + username + ':' + password + '@' +
     assert test_output.referenced_flags.keys() == set()
 
 
+def test_import_with_as_CodeLocation():
+    logic = """
+import math as m
+x = m.sqrt(10)
+y = m.sqrt(x)"""
+    test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == set()
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == set()
+
+
+def test_import_with_as_2_CodeLocation():
+    logic = """
+from math import sqrt as sq
+return sq(ff1) > 10"""
+    test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == set()
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == set()
+
+def test_import_with_as_3_CodeLocation():
+    logic = """
+from math import cos as c, sin as s
+x = c(10)
+y = s(10)"""
+    test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == set()
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == set()
+
+def test_import_with_as_4_CodeLocation():
+    logic = """
+from math import (cos as c, sin as s)
+x = c(10)
+y = s(10)"""
+    test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == set()
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == set()
+
+
 def test_example():
     """Imagine code is:
     my_var = 1
