@@ -1664,6 +1664,27 @@ my_func(math.PI, math.E)"""
     assert test_output.referenced_modules["math"] == {CodeLocation(2, 7)}
     assert test_output.referenced_flags.keys() == set()
 
+def test_import_from_CodeLocation():
+    logic = """
+from sqlalchemy import create_engine
+from flask import render_template
+engine = create_engine('oracle+cx_oracle://' + username + ':' + password + '@' + dsn_tns)"""
+    test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == {VariableInformation("username"),
+                                                 VariableInformation("password"),
+                                                 VariableInformation("dsn_tns")}
+    assert test_output.used_variables[VariableInformation("username")] == {CodeLocation(4, 47)}
+    assert test_output.used_variables[VariableInformation("password")] == {CodeLocation(4, 64)}
+    assert test_output.used_variables[VariableInformation("dsn_tns")] == {CodeLocation(4, 81)}
+    assert test_output.assigned_variables.keys() == {VariableInformation("engine")}
+    assert test_output.assigned_variables["engine"] == {CodeLocation(4, 0)}
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == {"sqlalchemy", "flask"}
+    assert test_output.referenced_modules["sqlalchemy"] == {CodeLocation(2, 5)}
+    assert test_output.referenced_modules["flask"] == {CodeLocation(3, 5)}
+    assert test_output.referenced_flags.keys() == set()
+
 
 def test_example():
     """Imagine code is:
