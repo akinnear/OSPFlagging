@@ -1619,25 +1619,25 @@ my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
 
 def test_function_with_vars_using_import_function_2_CodeLocation():
     logic = """
-import pandas as pd, import math
+import pandas as pd, math
 import numpy as np
 import datetime
 my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {VariableInformation.create_var(["a", "b", "c"]),
                                                  VariableInformation.create_var(["x", "y", "z"])}
-    assert test_output.used_variables[VariableInformation.create_var(["a", "b", "c"])] == {CodeLocation(3, 18)}
-    assert test_output.used_variables[VariableInformation.create_var(["x", "y", "z"])] == {CodeLocation(3, 36)}
+    assert test_output.used_variables[VariableInformation.create_var(["a", "b", "c"])] == {CodeLocation(5, 18)}
+    assert test_output.used_variables[VariableInformation.create_var(["x", "y", "z"])] == {CodeLocation(5, 36)}
     assert test_output.assigned_variables.keys() == set()
     assert test_output.referenced_functions.keys() == {VariableInformation("my_func"),
                                                        VariableInformation.create_var(["math", "sqrt"])}
-    assert test_output.referenced_functions[VariableInformation("my_func")] == {CodeLocation(3, 0)}
-    assert test_output.referenced_functions[VariableInformation.create_var(["math", "sqrt"])] == {CodeLocation(3, 8),
-                                                                                                  CodeLocation(3, 26)}
+    assert test_output.referenced_functions[VariableInformation("my_func")] == {CodeLocation(5, 0)}
+    assert test_output.referenced_functions[VariableInformation.create_var(["math", "sqrt"])] == {CodeLocation(5, 8),
+                                                                                                  CodeLocation(5, 26)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math", "pandas", "numpy", "datetime"}
-    assert test_output.referenced_modules["math"] == {CodeLocation(2, 28)}
+    assert test_output.referenced_modules["math"] == {CodeLocation(2, 21)}
     assert test_output.referenced_modules["pandas"] == {CodeLocation(2, 7)}
     assert test_output.referenced_modules["numpy"] == {CodeLocation(3, 7)}
     assert test_output.referenced_modules["datetime"] == {CodeLocation(4, 7)}
