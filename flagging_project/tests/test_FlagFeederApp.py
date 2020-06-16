@@ -512,7 +512,7 @@ else:
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
-    assert test_output.referenced_modules == {"math": {CodeLocation(2, 0)}}
+    assert test_output.referenced_modules == {"math": {CodeLocation(2, 7)}}
     assert test_output.referenced_flags.keys() == set()
 
 
@@ -536,7 +536,7 @@ return ff1 > math"""
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
-    assert test_output.referenced_modules == {"math": {CodeLocation(2, 0)}}
+    assert test_output.referenced_modules == {"math": {CodeLocation(2, 7)}}
     assert test_output.referenced_flags.keys() == set()
 
 
@@ -560,7 +560,7 @@ return ff1 > x"""
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
-    assert test_output.referenced_modules == {"math": {CodeLocation(2, 0)}}
+    assert test_output.referenced_modules == {"math": {CodeLocation(2, 7)}}
     assert test_output.referenced_flags.keys() == set()
 
 
@@ -603,7 +603,7 @@ else:
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
-    assert test_output.referenced_modules["math"] == {CodeLocation(2, 0)}
+    assert test_output.referenced_modules["math"] == {CodeLocation(2, 7)}
     assert test_output.referenced_flags.keys() == set()
 
 
@@ -660,7 +660,7 @@ else:
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
-    assert test_output.referenced_modules == {"math": {CodeLocation(2, 0)}}
+    assert test_output.referenced_modules == {"math": {CodeLocation(2, 7)}}
     assert test_output.referenced_flags.keys() == set()
 
 
@@ -884,8 +884,8 @@ else:
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math", "pandas"}
-    assert test_output.referenced_modules["math"] == {CodeLocation(2, 0)}
-    assert test_output.referenced_modules["pandas"] == {CodeLocation(3, 0)}
+    assert test_output.referenced_modules["math"] == {CodeLocation(2, 7)}
+    assert test_output.referenced_modules["pandas"] == {CodeLocation(3, 7)}
     assert test_output.referenced_flags.keys() == set()
 
 
@@ -1617,6 +1617,33 @@ my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
     assert test_output.referenced_flags.keys() == set()
 
 
+def test_function_with_vars_using_import_function_2_CodeLocation():
+    logic = """
+import pandas as pd, math
+import numpy as np
+import datetime
+my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
+    test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == {VariableInformation.create_var(["a", "b", "c"]),
+                                                 VariableInformation.create_var(["x", "y", "z"])}
+    assert test_output.used_variables[VariableInformation.create_var(["a", "b", "c"])] == {CodeLocation(5, 18)}
+    assert test_output.used_variables[VariableInformation.create_var(["x", "y", "z"])] == {CodeLocation(5, 36)}
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == {VariableInformation("my_func"),
+                                                       VariableInformation.create_var(["math", "sqrt"])}
+    assert test_output.referenced_functions[VariableInformation("my_func")] == {CodeLocation(5, 0)}
+    assert test_output.referenced_functions[VariableInformation.create_var(["math", "sqrt"])] == {CodeLocation(5, 8),
+                                                                                                  CodeLocation(5, 26)}
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == {"math", "pandas", "numpy", "datetime"}
+    assert test_output.referenced_modules["math"] == {CodeLocation(2, 21)}
+    assert test_output.referenced_modules["pandas"] == {CodeLocation(2, 7)}
+    assert test_output.referenced_modules["numpy"] == {CodeLocation(3, 7)}
+    assert test_output.referenced_modules["datetime"] == {CodeLocation(4, 7)}
+    assert test_output.referenced_flags.keys() == set()
+
+
 #TODO
 # correct code location column offset
 # for imported modules
@@ -1635,6 +1662,27 @@ my_func(math.PI, math.E)"""
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
     assert test_output.referenced_modules["math"] == {CodeLocation(2, 7)}
+    assert test_output.referenced_flags.keys() == set()
+
+def test_import_from_CodeLocation():
+    logic = """
+from sqlalchemy import create_engine
+from flask import render_template
+engine = create_engine('oracle+cx_oracle://' + username + ':' + password + '@' + dsn_tns)"""
+    test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == {VariableInformation("username"),
+                                                 VariableInformation("password"),
+                                                 VariableInformation("dsn_tns")}
+    assert test_output.used_variables[VariableInformation("username")] == {CodeLocation(4, 47)}
+    assert test_output.used_variables[VariableInformation("password")] == {CodeLocation(4, 64)}
+    assert test_output.used_variables[VariableInformation("dsn_tns")] == {CodeLocation(4, 81)}
+    assert test_output.assigned_variables.keys() == {VariableInformation("engine")}
+    assert test_output.assigned_variables["engine"] == {CodeLocation(4, 0)}
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == {"sqlalchemy", "flask"}
+    assert test_output.referenced_modules["sqlalchemy"] == {CodeLocation(2, 5)}
+    assert test_output.referenced_modules["flask"] == {CodeLocation(3, 5)}
     assert test_output.referenced_flags.keys() == set()
 
 
