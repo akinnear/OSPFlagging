@@ -113,16 +113,16 @@ class FlagFeederNodeVisitor(NodeVisitor):
     def visit_Import(self, node):
         with self.handle_node_stack(node):
             offset = len("import ")
-            for i in range(0, len(node.names)):
-                code_location_helper(self.referenced_modules, node.names[i].name,
+            for name in node.names:
+                code_location_helper(self.referenced_modules, name.name,
                                      CodeLocation(line_number=node.lineno,
                                                   column_offset=node.col_offset+offset))
 
-                if node.names[i].asname:
-                    offset = offset + len(node.names[i].asname) + len (" as ")
-                offset = offset + len(node.names[i].name) + len(", ")
+                if name.asname:
+                    offset = offset + len(name.asname) + len (" as ")
+                offset = offset + len(name.name) + len(", ")
 
-            # for name in node.names:
+
             #     code_location_helper(self.referenced_modules, name.name,
             #                                                    CodeLocation(line_number=node.lineno,
             #                                                                 column_offset=node.col_offset))
