@@ -560,7 +560,7 @@ return ff1 > x"""
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"math"}
-    assert test_output.referenced_modules == {"math": {CodeLocation(2, 0)}}
+    assert test_output.referenced_modules == {"math": {CodeLocation(2, 7)}}
     assert test_output.referenced_flags.keys() == set()
 
 
