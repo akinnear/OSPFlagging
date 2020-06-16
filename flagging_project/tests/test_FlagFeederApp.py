@@ -1,5 +1,6 @@
 from flagging.FlagFeederApp import determine_variables, CodeLocation
 from flagging.VariableInformation import VariableInformation
+from flagging.ModuleInformation import ModuleInformation
 
 
 def test_determine_flag_feeders_logic_and_CodeLocation():
@@ -1678,6 +1679,7 @@ engine = create_engine('oracle+cx_oracle://' + username + ':' + password + '@' +
     assert test_output.used_variables[VariableInformation("dsn_tns")] == {CodeLocation(4, 81)}
     assert test_output.assigned_variables.keys() == {VariableInformation("engine")}
     assert test_output.assigned_variables["engine"] == {CodeLocation(4, 0)}
+    assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {"sqlalchemy", "flask"}
@@ -1692,12 +1694,21 @@ import math as m
 x = m.sqrt(10)
 y = m.sqrt(x)"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == set()
-    assert test_output.assigned_variables.keys() == set()
+    assert test_output.used_variables.keys() == {VariableInformation("m"),
+                                                 VariableInformation("x")}
+    assert test_output.used_variables[VariableInformation("m")] == {CodeLocation(3, 4),
+                                                                    CodeLocation(4, 4)}
+    assert test_output.assigned_variables.keys() == {VariableInformation("x"),
+                                                     VariableInformation("y")}
+    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["m", "sqrt"])}
+    assert test_output.referenced_functions[VariableInformation.create_var(["m", "sqrt"])] == {CodeLocation(3, 4),
+                                                                                               CodeLocation(4, 4)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_modules.keys() == {ModuleInformation("math", "m")}
+    assert test_output.referenced_modules[ModuleInformation("math", "m")] == {CodeLocation(2, 7)}
     assert test_output.referenced_flags.keys() == set()
+
 
 #TODO
 def test_import_with_as_2_CodeLocation():
@@ -1705,11 +1716,12 @@ def test_import_with_as_2_CodeLocation():
 from math import sqrt as sq
 return sq(ff1) > 10"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == set()
+    assert test_output.used_variables.keys() == {VariableInformation("ff1")}
     assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == {VariableInformation("sq")}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_modules.keys() == {ModuleInformation("math")}
     assert test_output.referenced_flags.keys() == set()
 
 #TODO
@@ -1721,6 +1733,7 @@ y = s(10)"""
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == set()
     assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
@@ -1735,6 +1748,22 @@ y = s(10)"""
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == set()
     assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == set()
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == set()
+
+
+def test_import_with_as_5_CodeLocation():
+    logic = """
+from math import sqrt as sq
+x = m.sqrt(10)
+y = m.sqrt(x)"""
+    test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == set()
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
