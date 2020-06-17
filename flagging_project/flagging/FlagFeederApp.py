@@ -4,7 +4,7 @@ import ast
 import contextlib
 from ast import NodeVisitor
 
-#bug fixed outside correct issue/branch
+
 
 def _print_helper(node):
     if isinstance(node, ast.Name):
@@ -123,11 +123,6 @@ class FlagFeederNodeVisitor(NodeVisitor):
                     offset = offset + len(name.asname) + len (" as ")
                 offset = offset + len(name.name) + len(", ")
 
-
-            #     code_location_helper(self.referenced_modules, name.name,
-            #                                                    CodeLocation(line_number=node.lineno,
-            #                                                                 column_offset=node.col_offset))
-
             ast.NodeVisitor.generic_visit(self, node)
 
     def visit_ImportFrom(self, node):
@@ -184,7 +179,12 @@ class FlagFeederNodeVisitor(NodeVisitor):
                                                                                 column_offset=node.col_offset))
 
                     else:
-                        if len(variable_names) > 1 and pre_variable_name not in self.referenced_modules:
+                        referenced_modules_str = []
+                        for item in self.referenced_modules.keys():
+                            referenced_modules_str.append(item.name)
+                            referenced_modules_str.append(item.asname)
+                        referenced_modules_set = set(referenced_modules_str)
+                        if len(variable_names) > 1 and pre_variable_name not in (referenced_modules_set):
                             code_location_helper(self.used_variables, VariableInformation.create_var(variable_names[0:-1]),
                                                                        CodeLocation(line_number=node.lineno,
                                                                                     column_offset=node.col_offset))
