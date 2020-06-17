@@ -540,7 +540,7 @@ return ff1 > math"""
     assert test_output.referenced_modules == {"math": {CodeLocation(2, 7)}}
     assert test_output.referenced_flags.keys() == set()
 
-#TODO
+
 def test_math_expression_2_CodeLocation():
     logic = """
 import math
@@ -560,8 +560,8 @@ return ff1 > x"""
     assert test_output.referenced_functions[VariableInformation.create_var(["math", "sqrt"])] == {CodeLocation(4, 4)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == {"math"}
-    assert test_output.referenced_modules == {"math": {CodeLocation(2, 7)}}
+    assert test_output.referenced_modules.keys() == {ModuleInformation("math")}
+    assert test_output.referenced_modules == {ModuleInformation("math"): {CodeLocation(2, 7)}}
     assert test_output.referenced_flags.keys() == set()
 
 #TODO
