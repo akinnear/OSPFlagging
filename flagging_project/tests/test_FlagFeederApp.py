@@ -512,8 +512,8 @@ else:
     assert test_output.referenced_functions[VariableInformation.create_var(["y_list", "add"])] == {CodeLocation(7, 8)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == {"math"}
-    assert test_output.referenced_modules == {"math": {CodeLocation(2, 7)}}
+    assert test_output.referenced_modules.keys() == {ModuleInformation("math")}
+    assert test_output.referenced_modules == {ModuleInformation("math"): {CodeLocation(2, 7)}}
     assert test_output.referenced_flags.keys() == set()
 
 
