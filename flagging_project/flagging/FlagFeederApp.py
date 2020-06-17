@@ -141,6 +141,9 @@ class FlagFeederNodeVisitor(NodeVisitor):
     def visit_Name(self, node):
         with self.handle_node_stack(node):
             name = node.id
+            # if name == "math":
+            #     print("hello")
+            #     print("hello")
             parent = self._stack[-2]
             if isinstance(parent, ast.Assign):
                 code_location_helper(self.assigned_variables, VariableInformation(name),
@@ -184,7 +187,12 @@ class FlagFeederNodeVisitor(NodeVisitor):
                                                                                 column_offset=node.col_offset))
 
                     else:
-                        if len(variable_names) > 1 and pre_variable_name not in self.referenced_modules:
+                        referenced_modules_str = []
+                        for item in self.referenced_modules.keys():
+                            referenced_modules_str.append(item.name)
+                            referenced_modules_str.append(item.asname)
+                        referenced_modules_set = set(referenced_modules_str)
+                        if len(variable_names) > 1 and pre_variable_name not in (referenced_modules_set):
                             code_location_helper(self.used_variables, VariableInformation.create_var(variable_names[0:-1]),
                                                                        CodeLocation(line_number=node.lineno,
                                                                                     column_offset=node.col_offset))
