@@ -4,7 +4,7 @@ import ast
 import contextlib
 from ast import NodeVisitor
 
-#bug fixed outside correct issue/branch
+
 
 def _print_helper(node):
     if isinstance(node, ast.Name):
@@ -123,11 +123,6 @@ class FlagFeederNodeVisitor(NodeVisitor):
                     offset = offset + len(name.asname) + len (" as ")
                 offset = offset + len(name.name) + len(", ")
 
-
-            #     code_location_helper(self.referenced_modules, name.name,
-            #                                                    CodeLocation(line_number=node.lineno,
-            #                                                                 column_offset=node.col_offset))
-
             ast.NodeVisitor.generic_visit(self, node)
 
     def visit_ImportFrom(self, node):
@@ -141,9 +136,6 @@ class FlagFeederNodeVisitor(NodeVisitor):
     def visit_Name(self, node):
         with self.handle_node_stack(node):
             name = node.id
-            # if name == "math":
-            #     print("hello")
-            #     print("hello")
             parent = self._stack[-2]
             if isinstance(parent, ast.Assign):
                 code_location_helper(self.assigned_variables, VariableInformation(name),
