@@ -822,7 +822,7 @@ else:
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
 
-#TODO
+
 def test_map_filter_lambda_CodeLocation():
     logic = """
 import math
@@ -884,9 +884,10 @@ else:
     assert test_output.referenced_functions[VariableInformation.create_var(["math", "sqrt"])] == {CodeLocation(7, 68)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == {"math", "pandas"}
-    assert test_output.referenced_modules["math"] == {CodeLocation(2, 7)}
-    assert test_output.referenced_modules["pandas"] == {CodeLocation(3, 7)}
+    assert test_output.referenced_modules.keys() == {ModuleInformation("math"),
+                                                     ModuleInformation("pandas")}
+    assert test_output.referenced_modules[ModuleInformation("math")] == {CodeLocation(2, 7)}
+    assert test_output.referenced_modules[ModuleInformation("pandas")] == {CodeLocation(3, 7)}
     assert test_output.referenced_flags.keys() == set()
 
 
