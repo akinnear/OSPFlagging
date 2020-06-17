@@ -1727,7 +1727,7 @@ return sq(ff1) > 10"""
     assert test_output.referenced_modules[ModuleInformation("math")] == {CodeLocation(2, 5)}
     assert test_output.referenced_flags.keys() == set()
 
-#TODO
+
 def test_import_with_as_3_CodeLocation():
     logic = """
 from math import cos as c, sin as s
