@@ -58,7 +58,6 @@ if y > 100:
     return ff5 != x
 else:
     return ff5 == x"""
-    # note the difference in location for used variables and variable assignment
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {VariableInformation("y", None), VariableInformation("x", None),
                                                  VariableInformation("ff1", None), VariableInformation('ff2', None),
