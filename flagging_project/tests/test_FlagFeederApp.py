@@ -1687,7 +1687,7 @@ engine = create_engine('oracle+cx_oracle://' + username + ':' + password + '@' +
     assert test_output.referenced_modules["flask"] == {CodeLocation(3, 5)}
     assert test_output.referenced_flags.keys() == set()
 
-#TODO
+
 def test_import_with_as_CodeLocation():
     logic = """
 import math as m
@@ -1710,18 +1710,21 @@ y = m.sqrt(x)"""
     assert test_output.referenced_flags.keys() == set()
 
 
-#TODO
+
 def test_import_with_as_2_CodeLocation():
     logic = """
 from math import sqrt as sq
 return sq(ff1) > 10"""
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {VariableInformation("ff1")}
+    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(3, 10)}
     assert test_output.assigned_variables.keys() == set()
     assert test_output.referenced_functions.keys() == {VariableInformation("sq")}
+    assert test_output.referenced_functions[VariableInformation("sq")] == {CodeLocation(3, 7)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {ModuleInformation("math")}
+    assert test_output.referenced_modules[ModuleInformation("math")] == {CodeLocation(2, 5)}
     assert test_output.referenced_flags.keys() == set()
 
 #TODO
