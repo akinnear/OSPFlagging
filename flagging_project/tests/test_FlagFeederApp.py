@@ -1735,14 +1735,21 @@ x = c(10)
 y = s(10)"""
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == set()
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
+    assert test_output.assigned_variables.keys() == {VariableInformation("x"),
+                                                     VariableInformation("y")}
+    assert test_output.assigned_variables[VariableInformation("x")] == {CodeLocation(3, 0)}
+    assert test_output.assigned_variables[VariableInformation("y")] == {CodeLocation(4, 0)}
+    assert test_output.referenced_functions.keys() == {VariableInformation("c"),
+                                                       VariableInformation("s")}
+    assert test_output.referenced_functions[VariableInformation("c")] == {CodeLocation(3, 4)}
+    assert test_output.referenced_functions[VariableInformation("s")] == {CodeLocation(4, 4)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_modules.keys() == {ModuleInformation("math")}
+    assert test_output.referenced_modules[ModuleInformation("math")] == {CodeLocation(2, 5)}
     assert test_output.referenced_flags.keys() == set()
 
-#TODO
+
 def test_import_with_as_4_CodeLocation():
     logic = """
 from math import (cos as c, sin as s)
