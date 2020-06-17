@@ -1594,9 +1594,6 @@ def test_function_with_vars_CodeLocation():
     assert test_output.referenced_flags.keys() == set()
 
 
-#TODO
-# correct code location column offset
-# for imported modules
 def test_function_with_vars_using_import_function_CodeLocation():
     logic = """
 import math
@@ -1614,8 +1611,8 @@ my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
                                                                                                   CodeLocation(3, 26)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == {"math"}
-    assert test_output.referenced_modules["math"] == {CodeLocation(2, 7)}
+    assert test_output.referenced_modules.keys() == {ModuleInformation("math")}
+    assert test_output.referenced_modules[ModuleInformation("math")] == {CodeLocation(2, 7)}
     assert test_output.referenced_flags.keys() == set()
 
 #TODO
