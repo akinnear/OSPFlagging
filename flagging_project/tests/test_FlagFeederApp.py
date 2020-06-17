@@ -1615,7 +1615,7 @@ my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
     assert test_output.referenced_modules[ModuleInformation("math")] == {CodeLocation(2, 7)}
     assert test_output.referenced_flags.keys() == set()
 
-#TODO
+
 def test_function_with_vars_using_import_function_2_CodeLocation():
     logic = """
 import pandas as pd, math
@@ -1635,11 +1635,14 @@ my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
                                                                                                   CodeLocation(5, 26)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == {"math", "pandas", "numpy", "datetime"}
-    assert test_output.referenced_modules["math"] == {CodeLocation(2, 21)}
-    assert test_output.referenced_modules["pandas"] == {CodeLocation(2, 7)}
-    assert test_output.referenced_modules["numpy"] == {CodeLocation(3, 7)}
-    assert test_output.referenced_modules["datetime"] == {CodeLocation(4, 7)}
+    assert test_output.referenced_modules.keys() == {ModuleInformation("math"),
+                                                     ModuleInformation("pandas", "pd"),
+                                                     ModuleInformation("numpy", "np"),
+                                                     ModuleInformation("datetime")}
+    assert test_output.referenced_modules[ModuleInformation("math")] == {CodeLocation(2, 21)}
+    assert test_output.referenced_modules[ModuleInformation("pandas", "pd")] == {CodeLocation(2, 7)}
+    assert test_output.referenced_modules[ModuleInformation("numpy", "np")] == {CodeLocation(3, 7)}
+    assert test_output.referenced_modules[ModuleInformation("datetime")] == {CodeLocation(4, 7)}
     assert test_output.referenced_flags.keys() == set()
 
 
