@@ -564,7 +564,7 @@ return ff1 > x"""
     assert test_output.referenced_modules == {ModuleInformation("math"): {CodeLocation(2, 7)}}
     assert test_output.referenced_flags.keys() == set()
 
-#TODO
+
 def test_math_expression_3_CodeLocation():
     logic = """
 import math
@@ -603,8 +603,8 @@ else:
     assert test_output.referenced_functions[VariableInformation.create_var(["y_list", "append"])] == {CodeLocation(7, 8)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == {"math"}
-    assert test_output.referenced_modules["math"] == {CodeLocation(2, 7)}
+    assert test_output.referenced_modules.keys() == {ModuleInformation("math")}
+    assert test_output.referenced_modules[ModuleInformation("math")] == {CodeLocation(2, 7)}
     assert test_output.referenced_flags.keys() == set()
 
 #TODO
