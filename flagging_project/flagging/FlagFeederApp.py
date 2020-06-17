@@ -1,4 +1,5 @@
 from flagging.VariableInformation import VariableInformation
+from flagging.ModuleInformation import ModuleInformation
 import ast
 import contextlib
 from ast import NodeVisitor
@@ -114,7 +115,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
         with self.handle_node_stack(node):
             offset = len("import ")
             for name in node.names:
-                code_location_helper(self.referenced_modules, name.name,
+                code_location_helper(self.referenced_modules, ModuleInformation(name.name, name.asname),
                                      CodeLocation(line_number=node.lineno,
                                                   column_offset=node.col_offset+offset))
 
@@ -132,7 +133,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
     def visit_ImportFrom(self, node):
         with self.handle_node_stack(node):
             for name in node.names:
-                code_location_helper(self.referenced_modules, node.module,
+                code_location_helper(self.referenced_modules, ModuleInformation(node.module),
                                                                CodeLocation(line_number=node.lineno,
                                                                             column_offset=node.col_offset + len("from ")))
             ast.NodeVisitor.generic_visit(self, node)
