@@ -1756,27 +1756,46 @@ from math import (cos as c, sin as s)
 x = c(10)
 y = s(10)"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == set()
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
+    assert test_output.assigned_variables.keys() == {VariableInformation("x"),
+                                                     VariableInformation("y")}
+    assert test_output.assigned_variables[VariableInformation("x")] == {CodeLocation(3, 0)}
+    assert test_output.assigned_variables[VariableInformation("y")] == {CodeLocation(4, 0)}
+    assert test_output.referenced_functions.keys() == {VariableInformation("c"),
+                                                       VariableInformation("s")}
+    assert test_output.referenced_functions[VariableInformation("c")] == {CodeLocation(3, 4)}
+    assert test_output.referenced_functions[VariableInformation("s")] == {CodeLocation(4, 4)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_modules.keys() == {ModuleInformation("math")}
+    assert test_output.referenced_modules[ModuleInformation("math")] == {CodeLocation(2, 5)}
     assert test_output.referenced_flags.keys() == set()
 
 
 def test_import_with_as_5_CodeLocation():
     logic = """
-from math import sqrt as sq
+import math as m
+from m import sqrt as sq
 x = m.sqrt(10)
 y = m.sqrt(x)"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == set()
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
+    assert test_output.used_variables.keys() == {VariableInformation("m"),
+                                                 VariableInformation("x")}
+    assert test_output.used_variables[VariableInformation("m")] == {CodeLocation(4, 4),
+                                                                    CodeLocation(5, 4)}
+    assert test_output.used_variables[VariableInformation("x")] == {CodeLocation(5, 11)}
+    assert test_output.assigned_variables.keys() == {VariableInformation("x"),
+                                                     VariableInformation("y")}
+    assert test_output.assigned_variables[VariableInformation("x")] == {CodeLocation(4, 0)}
+    assert test_output.assigned_variables[VariableInformation("y")] == {CodeLocation(5, 0)}
+    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["m", "sqrt"])}
+    assert test_output.referenced_functions[VariableInformation.create_var(["m", "sqrt"])] == {CodeLocation(4, 4),
+                                                                                               CodeLocation(5, 4)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_modules.keys() == {ModuleInformation("math", "m"),
+                                                     ModuleInformation("m")}
+    assert test_output.referenced_modules[ModuleInformation("math", "m")] == {CodeLocation(2, 7)}
+    assert test_output.referenced_modules[ModuleInformation("m")] == {CodeLocation(3, 5)}
     assert test_output.referenced_flags.keys() == set()
 
 
