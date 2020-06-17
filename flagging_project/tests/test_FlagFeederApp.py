@@ -1696,10 +1696,7 @@ import math as m
 x = m.sqrt(10)
 y = m.sqrt(x)"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("m"),
-                                                 VariableInformation("x")}
-    assert test_output.used_variables[VariableInformation("m")] == {CodeLocation(3, 4),
-                                                                    CodeLocation(4, 4)}
+    assert test_output.used_variables.keys() == {VariableInformation("x")}
     assert test_output.assigned_variables.keys() == {VariableInformation("x"),
                                                      VariableInformation("y")}
     assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["m", "sqrt"])}
