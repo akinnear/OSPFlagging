@@ -1664,7 +1664,7 @@ my_func(math.PI, math.E)"""
     assert test_output.referenced_modules[ModuleInformation("math")] == {CodeLocation(2, 7)}
     assert test_output.referenced_flags.keys() == set()
 
-#TODO
+
 def test_import_from_CodeLocation():
     logic = """
 from sqlalchemy import create_engine
@@ -1679,12 +1679,14 @@ engine = create_engine('oracle+cx_oracle://' + username + ':' + password + '@' +
     assert test_output.used_variables[VariableInformation("dsn_tns")] == {CodeLocation(4, 81)}
     assert test_output.assigned_variables.keys() == {VariableInformation("engine")}
     assert test_output.assigned_variables["engine"] == {CodeLocation(4, 0)}
-    assert test_output.referenced_functions.keys() == set()
+    assert test_output.referenced_functions.keys() == {VariableInformation("create_engine")}
+    assert test_output.referenced_functions[VariableInformation("create_engine")] == {CodeLocation(4, 9)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == {"sqlalchemy", "flask"}
-    assert test_output.referenced_modules["sqlalchemy"] == {CodeLocation(2, 5)}
-    assert test_output.referenced_modules["flask"] == {CodeLocation(3, 5)}
+    assert test_output.referenced_modules.keys() == {ModuleInformation("sqlalchemy"),
+                                                     ModuleInformation("flask")}
+    assert test_output.referenced_modules[ModuleInformation("sqlalchemy")] == {CodeLocation(2, 5)}
+    assert test_output.referenced_modules[ModuleInformation("flask")] == {CodeLocation(3, 5)}
     assert test_output.referenced_flags.keys() == set()
 
 
