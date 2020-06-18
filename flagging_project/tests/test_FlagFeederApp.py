@@ -1754,6 +1754,7 @@ from math import (cos as c, sin as s)
 x = c(10)
 y = s(10)"""
     test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == set()
     assert test_output.assigned_variables.keys() == {VariableInformation("x"),
                                                      VariableInformation("y")}
     assert test_output.assigned_variables[VariableInformation("x")] == {CodeLocation(3, 0)}
@@ -1799,12 +1800,15 @@ def test_special_lambda_CodeLocation():
 high_ord_func = lambda x, func: x + func(x)
 return high_ord_func(ff1, lambda x: x * x) > ff2"""
     test_output = determine_variables(logic)
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
+    ass
+    assert test_output.assigned_variables.keys() == {VariableInformation("x"),
+                                                     VariableInformation("ff1"),
+                                                     VariableInformation("ff2")}
+    # assert test_output.referenced_functions.keys() == set()
+    # assert test_output.defined_functions.keys() == set()
+    # assert test_output.defined_classes.keys() == set()
+    # assert test_output.referenced_modules.keys() == set()
+    # assert test_output.referenced_flags.keys() == set()
 
 
 
