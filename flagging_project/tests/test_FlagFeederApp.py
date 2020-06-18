@@ -1754,6 +1754,7 @@ from math import (cos as c, sin as s)
 x = c(10)
 y = s(10)"""
     test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == set()
     assert test_output.assigned_variables.keys() == {VariableInformation("x"),
                                                      VariableInformation("y")}
     assert test_output.assigned_variables[VariableInformation("x")] == {CodeLocation(3, 0)}
@@ -1792,6 +1793,33 @@ y = m.sqrt(x)"""
     assert test_output.referenced_modules[ModuleInformation("math", "m")] == {CodeLocation(2, 7)}
     assert test_output.referenced_modules[ModuleInformation("m")] == {CodeLocation(3, 5)}
     assert test_output.referenced_flags.keys() == set()
+
+
+def test_special_lambda_CodeLocation():
+    logic = """
+high_ord_func = lambda x, func: x + func(x)
+return high_ord_func(ff1, lambda x: x * x) > ff2"""
+    test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == {VariableInformation("x"),
+                                                     VariableInformation("ff1"),
+                                                     VariableInformation("ff2")}
+    assert test_output.used_variables[VariableInformation('x')] == {CodeLocation(2, 32),
+                                                                    CodeLocation(2, 41),
+                                                                    CodeLocation(3, 36),
+                                                                    CodeLocation(3, 40)}
+    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(3, 21)}
+    assert test_output.used_variables[VariableInformation("ff2")] == {CodeLocation(3, 45)}
+    assert test_output.assigned_variables.keys() == {VariableInformation("high_ord_func")}
+    assert test_output.assigned_variables[VariableInformation("high_ord_func")] == {CodeLocation(2, 0)}
+    assert test_output.referenced_functions.keys() == {VariableInformation("func"),
+                                                       VariableInformation("high_ord_func")}
+    assert test_output.referenced_functions[VariableInformation("func")] == {CodeLocation(2, 36)}
+    assert test_output.referenced_functions[VariableInformation("high_ord_func")] == {CodeLocation(3, 7)}
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == set()
+
 
 
 def test_example():
