@@ -1,7 +1,9 @@
 from flagging.VariableInformation import VariableInformation
 from flagging.ModuleInformation import ModuleInformation
+from flagging.ErrorInformation import ErrorInformation
 import ast
 import contextlib
+import re
 from ast import NodeVisitor
 
 
@@ -62,6 +64,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
         self.referenced_modules = dict()
         self.defined_classes = dict()
         self.referenced_flags = dict()
+        self.errors = []
         self._stack = []
         self._attribute_stack = []
 
@@ -275,7 +278,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
 class FlagLogicInformation:
     def __init__(self, used_variables=None, assigned_variables=None, referenced_functions=None,
                  defined_functions=None, defined_classes=None, referenced_modules=None,
-                 referenced_flags=None):
+                 referenced_flags=None, errors=None):
         self.used_variables = used_variables
         self.assigned_variables = assigned_variables
         self.referenced_functions = referenced_functions
@@ -283,30 +286,34 @@ class FlagLogicInformation:
         self.defined_classes = defined_classes
         self.referenced_modules = referenced_modules
         self.referenced_flags = referenced_flags
+        self.errors = errors
 
 
 def determine_variables(logic):
-    try:
-        root = ast.parse(logic)
-        nv = FlagFeederNodeVisitor()
-        nv.visit(root)
-    except SyntaxError as se:
-        print(se.msg)
-        print(se.text)
-        print(se.lineno)
-        print(se.offset)
-        nv = FlagFeederNodeVisitor()
-        nv.used_variables = set()
-        nv.assigned_variables = set()
-        nv.referenced_functions = set()
-        nv.defined_functions = set()
-        nv.defined_classes = set()
-        nv.referenced_modules = set()
-        nv.referenced_flags = set()
+    nv = FlagFeederNodeVisitor()
+    statement = True
+    logic_copy = logic
+    while(statement):
+        try:
+            root = ast.parse(logic_copy)
+            nv.visit(root)
+            statement = False
+        except SyntaxError as se:
+            nv.errors.append(ErrorInformation(se.msg, se.text, se.lineno, se.offset))
+            ##replace error text with "##error##"
+            re.sub(se.text, "##ErRoR##\n", logic_copy)
+            nv.used_variables = set()
+            nv.assigned_variables = set()
+            nv.referenced_functions = set()
+            nv.defined_functions = set()
+            nv.defined_classes = set()
+            nv.referenced_modules = set()
+            nv.referenced_flags = set()
     return FlagLogicInformation(used_variables=nv.used_variables,
                                 assigned_variables=nv.assigned_variables,
                                 referenced_functions=nv.referenced_functions,
                                 defined_functions=nv.defined_functions,
                                 defined_classes=nv.defined_classes,
                                 referenced_modules=nv.referenced_modules,
-                                referenced_flags=nv.referenced_flags)
+                                referenced_flags=nv.referenced_flags,
+                                errors=nv.errors)
