@@ -3,7 +3,6 @@ from flagging.ModuleInformation import ModuleInformation
 from flagging.ErrorInformation import ErrorInformation
 import ast
 import contextlib
-import re
 from ast import NodeVisitor
 
 
