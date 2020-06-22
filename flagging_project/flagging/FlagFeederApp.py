@@ -152,6 +152,13 @@ class FlagFeederNodeVisitor(NodeVisitor):
                 attributes = self._attribute_stack.copy()
                 attributes.reverse()
 
+
+                defined_functions_str = []
+                for item in self.defined_functions:
+                    defined_functions_str.append(item.name)
+                if isinstance(before_attributes, ast.FunctionDef) and before_attributes.name in defined_functions_str:
+                    before_attributes = before_attributes.body[0]
+
                 if isinstance(before_attributes, ast.Call) or isinstance(before_attributes, ast.FunctionDef):
                     function_name = attributes[-1].attr
                     post_variable_name = ".".join(map(lambda attr_node: attr_node.attr, attributes[:-1]))
@@ -190,6 +197,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
                             code_location_helper(self.used_variables, VariableInformation.create_var(variable_names[0:-1]),
                                                                        CodeLocation(line_number=node.lineno,
                                                                                     column_offset=node.col_offset))
+
                         code_location_helper(self.referenced_functions, variable_information,
                                                                    CodeLocation(line_number=node.lineno,
                                                                           column_offset=node.col_offset))
@@ -197,9 +205,14 @@ class FlagFeederNodeVisitor(NodeVisitor):
                     variable_names = [attribute.attr for attribute in attributes]
                     variable_names.insert(0, name)
                     variable_information = VariableInformation.create_var(variable_names)
-                    code_location_helper(self.used_variables, variable_information,
-                                                               CodeLocation(line_number=node.lineno,
-                                                                            column_offset=node.col_offset))
+                    if isinstance(before_attributes, ast.Assign):
+                        code_location_helper(self.assigned_variables, variable_information,
+                                             CodeLocation(line_number=node.lineno,
+                                                          column_offset=node.col_offset))
+                    else:
+                        code_location_helper(self.used_variables, variable_information,
+                                                                   CodeLocation(line_number=node.lineno,
+                                                                                column_offset=node.col_offset))
             elif isinstance(parent, ast.Call):
                 args = map(lambda x: x.id, filter(lambda y: isinstance(y, ast.Name), parent.args))
                 if name in args:
