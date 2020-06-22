@@ -1824,34 +1824,20 @@ return high_ord_func(ff1, lambda x: x * x) > ff2"""
 def test_invalid():
     logic = """
 improper 
-x = = ' f
-sx -f """
-    test_output = determine_variables(logic)
-    print('hello')
-    assert test_output.used_variables.keys() == set()
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-
-
-def test_invalid_2():
-    logic = """
-improper 
 x = =  f
-sx -f 
+x = 12
 y = = =  q2@"""
     test_output = determine_variables(logic)
-    print('hello')
-    assert test_output.used_variables.keys() == set()
-    assert test_output.assigned_variables.keys() == set()
+    assert test_output.used_variables.keys() == {VariableInformation("improper")}
+    assert test_output.used_variables[VariableInformation("improper")] == {CodeLocation(2, 0)}
+    assert test_output.assigned_variables.keys() == {VariableInformation('x')}
+    assert test_output.assigned_variables[VariableInformation('x')] == {CodeLocation(4, 0)}
     assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
+    assert len(test_output.errors) == 2
 
 
 def test_odd_text():
