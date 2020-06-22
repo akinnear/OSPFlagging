@@ -301,7 +301,7 @@ def determine_variables(logic):
         except SyntaxError as se:
             nv.errors.append(ErrorInformation(se.msg, se.text, se.lineno, se.offset))
             ##replace error text with "##error##"
-            re.sub(se.text, "##ErRoR##\n", logic_copy)
+            logic_copy = logic_copy.replace(se.text.strip(), "##ErRoR##")
             nv.used_variables = set()
             nv.assigned_variables = set()
             nv.referenced_functions = set()
