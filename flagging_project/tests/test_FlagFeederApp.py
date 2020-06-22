@@ -1821,6 +1821,13 @@ return high_ord_func(ff1, lambda x: x * x) > ff2"""
     assert test_output.referenced_flags.keys() == set()
 
 
+def test_invalid():
+    logic = """
+improper 
+x = = ' f
+sx -f """
+    test_output = determine_variables(logic)
+    print('hello')
 
 def test_example():
     """Imagine code is:
