@@ -1840,9 +1840,9 @@ sx -f """
 def test_invalid_2():
     logic = """
 improper 
-x = = ' f
+x = =  f
 sx -f 
-y = = = '  q2@"""
+y = = =  q2@"""
     test_output = determine_variables(logic)
     print('hello')
     assert test_output.used_variables.keys() == set()
