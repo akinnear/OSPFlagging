@@ -291,24 +291,16 @@ class FlagLogicInformation:
 
 def determine_variables(logic):
     nv = FlagFeederNodeVisitor()
-    statement = True
+    invalid_check = True
     logic_copy = logic
-    while(statement):
+    while(invalid_check):
         try:
             root = ast.parse(logic_copy)
             nv.visit(root)
-            statement = False
+            invalid_check = False
         except SyntaxError as se:
             nv.errors.append(ErrorInformation(se.msg, se.text, se.lineno, se.offset))
-            ##replace error text with "##error##"
             logic_copy = logic_copy.replace(se.text.strip(), "##ErRoR##")
-            nv.used_variables = set()
-            nv.assigned_variables = set()
-            nv.referenced_functions = set()
-            nv.defined_functions = set()
-            nv.defined_classes = set()
-            nv.referenced_modules = set()
-            nv.referenced_flags = set()
     return FlagLogicInformation(used_variables=nv.used_variables,
                                 assigned_variables=nv.assigned_variables,
                                 referenced_functions=nv.referenced_functions,
