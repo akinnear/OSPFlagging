@@ -286,9 +286,23 @@ class FlagLogicInformation:
 
 
 def determine_variables(logic):
-    root = ast.parse(logic)
-    nv = FlagFeederNodeVisitor()
-    nv.visit(root)
+    try:
+        root = ast.parse(logic)
+        nv = FlagFeederNodeVisitor()
+        nv.visit(root)
+    except SyntaxError as se:
+        print(se.msg)
+        print(se.text)
+        print(se.lineno)
+        print(se.offset)
+        nv = FlagFeederNodeVisitor()
+        nv.used_variables = set()
+        nv.assigned_variables = set()
+        nv.referenced_functions = set()
+        nv.defined_functions = set()
+        nv.defined_classes = set()
+        nv.referenced_modules = set()
+        nv.referenced_flags = set()
     return FlagLogicInformation(used_variables=nv.used_variables,
                                 assigned_variables=nv.assigned_variables,
                                 referenced_functions=nv.referenced_functions,
