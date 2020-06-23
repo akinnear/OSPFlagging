@@ -313,6 +313,7 @@ def determine_variables(logic):
         except SyntaxError as se:
             nv.errors.append(ErrorInformation(se.msg, se.text, se.lineno, se.offset))
             logic_copy = logic_copy.replace(se.text.strip(), "##ErRoR##")
+    type_return_results = _validate_returns_boolean(logic_copy)
     return FlagLogicInformation(used_variables=nv.used_variables,
                                 assigned_variables=nv.assigned_variables,
                                 referenced_functions=nv.referenced_functions,
@@ -321,3 +322,27 @@ def determine_variables(logic):
                                 referenced_modules=nv.referenced_modules,
                                 referenced_flags=nv.referenced_flags,
                                 errors=nv.errors)
+
+
+def _validate_returns_boolean(flag_logic):
+    """
+    This function will attempt to run mypy and get the results out.
+    A resulting warning is something like this:
+    "Expected type 'bool', got 'int' instead"
+
+    If nothing is returned from mypy then the result is valid else we return
+    an error.
+
+    :param flag_logic: The logic to test
+    :return: An error object that shows possible typing errors
+    """
+
+    typed_flag_logic_function = f"""def flag_function() -> bool:
+    {flag_logic}"""
+
+    pass
+
+
+def flag_function():
+    def flag_function_2() -> bool:
+        return 1
