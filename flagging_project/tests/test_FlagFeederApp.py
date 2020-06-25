@@ -58,8 +58,7 @@ return cat < 10"""
 
 
 def test_determine_flag_feeder_if_statement_CodeLocation():
-    logic = """
-x = (ff1 or ff2)
+    logic = """x = (ff1 or ff2)
 y = (ff3 + ff4)
 if y > 100:
     return ff5 != x
@@ -70,19 +69,19 @@ else:
                                                  VariableInformation("ff1", None), VariableInformation('ff2', None),
                                                  VariableInformation("ff3", None), VariableInformation("ff4", None),
                                                  VariableInformation("ff5", None)}
-    assert test_output.used_variables[VariableInformation("y", None)] == {CodeLocation(line_number=4, column_offset=3)}
-    assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(line_number=5, column_offset=18),
-                                                                          CodeLocation(line_number=7, column_offset=18)}
-    assert test_output.used_variables[VariableInformation("ff1", None)] == {CodeLocation(2, 5)}
-    assert test_output.used_variables[VariableInformation("ff2", None)] == {CodeLocation(2, 12)}
-    assert test_output.used_variables[VariableInformation("ff3", None)] == {CodeLocation(3, 5)}
-    assert test_output.used_variables[VariableInformation("ff4", None)] == {CodeLocation(3, 11)}
+    assert test_output.used_variables[VariableInformation("y", None)] == {CodeLocation(line_number=3, column_offset=3)}
+    assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(line_number=4, column_offset=18),
+                                                                          CodeLocation(line_number=6, column_offset=18)}
+    assert test_output.used_variables[VariableInformation("ff1", None)] == {CodeLocation(1, 5)}
+    assert test_output.used_variables[VariableInformation("ff2", None)] == {CodeLocation(1, 12)}
+    assert test_output.used_variables[VariableInformation("ff3", None)] == {CodeLocation(2, 5)}
+    assert test_output.used_variables[VariableInformation("ff4", None)] == {CodeLocation(2, 11)}
     assert test_output.used_variables[VariableInformation("ff5", None)] == {
-        CodeLocation(line_number=5, column_offset=11),
-        CodeLocation(line_number=7, column_offset=11)}
+        CodeLocation(line_number=4, column_offset=11),
+        CodeLocation(line_number=6, column_offset=11)}
     assert test_output.assigned_variables.keys() == {VariableInformation("y", None), VariableInformation("x", None)}
-    assert test_output.assigned_variables["y"] == {CodeLocation(line_number=3, column_offset=0)}
-    assert test_output.assigned_variables["x"] == {CodeLocation(line_number=2, column_offset=0)}
+    assert test_output.assigned_variables["y"] == {CodeLocation(line_number=2, column_offset=0)}
+    assert test_output.assigned_variables["x"] == {CodeLocation(line_number=1, column_offset=0)}
     assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
