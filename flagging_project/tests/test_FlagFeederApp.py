@@ -114,14 +114,14 @@ return ff1 > z"""
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {VariableInformation("ff1", None), VariableInformation("z", None),
                                                  VariableInformation("x", None), VariableInformation("y", None)}
-    assert test_output.used_variables[VariableInformation('ff1', None)] == {CodeLocation(4, 7)}
-    assert test_output.used_variables[VariableInformation("z", None)] == {CodeLocation(4, 13)}
-    assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(2, 25)}
-    assert test_output.used_variables[VariableInformation("y", None)] == {CodeLocation(2, 29)}
+    assert test_output.used_variables[VariableInformation('ff1', None)] == {CodeLocation(3, 7)}
+    assert test_output.used_variables[VariableInformation("z", None)] == {CodeLocation(3, 13)}
+    assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(1, 25)}
+    assert test_output.used_variables[VariableInformation("y", None)] == {CodeLocation(1, 29)}
     assert test_output.assigned_variables.keys() == {VariableInformation("x", None), VariableInformation("y", None),
                                                      VariableInformation("z", None)}
-    assert test_output.assigned_variables[VariableInformation("x", None)] == {CodeLocation(2, 11)}
-    assert test_output.assigned_variables[VariableInformation("y")] == {CodeLocation(2, 14)}
+    assert test_output.assigned_variables[VariableInformation("x", None)] == {CodeLocation(1, 11)}
+    assert test_output.assigned_variables[VariableInformation("y")] == {CodeLocation(1, 14)}
     assert test_output.referenced_functions.keys() == {"my_add"}
     assert test_output.defined_functions.keys() == {"my_add"}
     assert test_output.defined_classes.keys() == set()
