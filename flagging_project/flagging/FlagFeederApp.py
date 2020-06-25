@@ -304,6 +304,7 @@ class FlagLogicInformation:
 def determine_variables(logic):
     nv = FlagFeederNodeVisitor()
     invalid_check = True
+    logic.strip()
     logic_copy = logic
     while(invalid_check):
         try:
