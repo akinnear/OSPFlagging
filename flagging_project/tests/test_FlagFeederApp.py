@@ -40,16 +40,15 @@ def test_determine_flag_feeders_logic_or_CodeLocation():
 
 
 def test_determine_flag_feeder_conditional_CodeLocation():
-    logic = """
-cat = 100
+    logic = """cat = 100
 return cat < 10"""
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {VariableInformation("cat", None)}
     assert test_output.used_variables[VariableInformation("cat", None)] == {
-        CodeLocation(line_number=3, column_offset=7)}
+        CodeLocation(line_number=2, column_offset=7)}
     assert test_output.assigned_variables.keys() == {VariableInformation("cat", None)}
     assert test_output.assigned_variables[VariableInformation("cat", None)] == {
-        CodeLocation(line_number=2, column_offset=0)}
+        CodeLocation(line_number=1, column_offset=0)}
     assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
