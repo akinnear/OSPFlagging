@@ -373,18 +373,18 @@ else:
                                                  VariableInformation("a", None),
                                                  VariableInformation("b", None),
                                                  VariableInformation("f", None)}
-    assert test_output.used_variables[VariableInformation("f", None)] == {CodeLocation(3, 10), CodeLocation(4, 24),
-                                                                          CodeLocation(6, 24)}
-    assert test_output.used_variables[VariableInformation("a", None)] == {CodeLocation(2, 16), CodeLocation(2, 22)}
-    assert test_output.used_variables[VariableInformation("b", None)] == {CodeLocation(2, 26), CodeLocation(2, 34)}
-    assert test_output.used_variables[VariableInformation("ff1", None)] == {CodeLocation(4, 11)}
-    assert test_output.used_variables[VariableInformation("ff2", None)] == {CodeLocation(6, 11)}
+    assert test_output.used_variables[VariableInformation("f", None)] == {CodeLocation(2, 10), CodeLocation(3, 24),
+                                                                          CodeLocation(5, 24)}
+    assert test_output.used_variables[VariableInformation("a", None)] == {CodeLocation(1, 16), CodeLocation(1, 22)}
+    assert test_output.used_variables[VariableInformation("b", None)] == {CodeLocation(1, 26), CodeLocation(1, 34)}
+    assert test_output.used_variables[VariableInformation("ff1", None)] == {CodeLocation(3, 11)}
+    assert test_output.used_variables[VariableInformation("ff2", None)] == {CodeLocation(5, 11)}
     assert test_output.assigned_variables.keys() == {VariableInformation("f", None)}
-    assert test_output.assigned_variables == {VariableInformation("f", None): {CodeLocation(2, 0)}}
+    assert test_output.assigned_variables == {VariableInformation("f", None): {CodeLocation(1, 0)}}
     assert test_output.referenced_functions.keys() == {VariableInformation("reduce", None)}
-    assert test_output.referenced_functions[VariableInformation("reduce", None)] == {CodeLocation(3, 3),
-                                                                                     CodeLocation(4, 17),
-                                                                                     CodeLocation(6, 17)}
+    assert test_output.referenced_functions[VariableInformation("reduce", None)] == {CodeLocation(2, 3),
+                                                                                     CodeLocation(3, 17),
+                                                                                     CodeLocation(5, 17)}
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
