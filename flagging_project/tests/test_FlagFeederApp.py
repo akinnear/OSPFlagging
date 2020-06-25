@@ -22,15 +22,14 @@ def test_determine_flag_feeders_logic_and_CodeLocation():
 
 
 def test_determine_flag_feeders_logic_or_CodeLocation():
-    logic = """
-man or woman"""
+    logic = """man or woman"""
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {VariableInformation("man", None),
                                                  VariableInformation("woman", None)}
     assert test_output.used_variables[VariableInformation("man", None)] == {
-        CodeLocation(line_number=2, column_offset=0)}
+        CodeLocation(line_number=1, column_offset=0)}
     assert test_output.used_variables[VariableInformation("woman", None)] == {
-        CodeLocation(line_number=2, column_offset=7)}
+        CodeLocation(line_number=1, column_offset=7)}
     assert test_output.assigned_variables.keys() == set()
     assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
@@ -2080,6 +2079,19 @@ def test_odd_text():
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+
+
+def test_empty_space_clean_up():
+    logic = """    
+
+x = 10
+
+
+return ff1 > x"""
+    test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == {VariableInformation("x"),
+                                                 VariableInformation('ff1')}
+    assert test_output.used_variables[VariableInformation("x")] == {CodeLocation(6, 13)}
 
 
 def test_example():
