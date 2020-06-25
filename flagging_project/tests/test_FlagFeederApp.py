@@ -186,13 +186,13 @@ return ff3 < test_1"""
     assert test_output.used_variables.keys() == {VariableInformation("ff1", None), VariableInformation("ff2", None),
                                                  VariableInformation("ff3", None), VariableInformation("test_1", None)}
     assert test_output.used_variables == {
-        VariableInformation("test_1", None): {CodeLocation(line_number=3, column_offset=13)},
-        VariableInformation("ff1", None): {CodeLocation(line_number=2, column_offset=9)},
-        VariableInformation("ff2", None): {CodeLocation(line_number=2, column_offset=15)},
-        VariableInformation("ff3", None): {CodeLocation(line_number=3, column_offset=7)}}
+        VariableInformation("test_1", None): {CodeLocation(line_number=2, column_offset=13)},
+        VariableInformation("ff1", None): {CodeLocation(line_number=1, column_offset=9)},
+        VariableInformation("ff2", None): {CodeLocation(line_number=1, column_offset=15)},
+        VariableInformation("ff3", None): {CodeLocation(line_number=2, column_offset=7)}}
     assert test_output.assigned_variables.keys() == {VariableInformation("test_1", None)}
     assert test_output.assigned_variables == {
-        VariableInformation("test_1", None): {CodeLocation(line_number=2, column_offset=0)}}
+        VariableInformation("test_1", None): {CodeLocation(line_number=1, column_offset=0)}}
     assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
