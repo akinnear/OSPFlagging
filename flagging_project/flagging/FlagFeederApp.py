@@ -4,7 +4,6 @@ from flagging.ErrorInformation import ErrorInformation
 import ast
 import contextlib
 from ast import NodeVisitor
-import os
 
 
 
@@ -304,11 +303,13 @@ class FlagLogicInformation:
 
 def determine_variables(logic):
     nv = FlagFeederNodeVisitor()
-    invalid_check = True
-    logic = logic.strip()
-    logic = os.linesep.join([s for s in logic.splitlines() if s])
+
+    # Determine if we have a single line
+    single_line_statement = len(logic.strip().splitlines()) == 1
+
     logic_copy = logic
-    print(logic_copy)
+
+    invalid_check = True
     while(invalid_check):
         try:
             root = ast.parse(logic_copy)
