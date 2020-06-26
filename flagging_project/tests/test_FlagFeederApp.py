@@ -2082,44 +2082,66 @@ def test_odd_text():
     assert test_output.errors == []
 
 
-def test_example():
-    """Imagine code is:
-    my_var = 1
-    my_var = 2
-    new_my_var = 3"""
-    assigned_variables = dict()
-
-    # First hit on name, imagine this code is in the visit_Name method or a helper function
-    name_1 = "my_var"
-    location_1 = CodeLocation(0, 0)  # First line
-    assigned_variables_name_set = assigned_variables.setdefault(name_1,
-                                                                set())  # Get first time if not there return empty set
-    assigned_variables_name_set.add(location_1)
-
-    # Second hit on name, imagine this code is in the visit_Name method or a helper function
-    name_2 = "my_var"
-    location_2 = CodeLocation(1, 0)  # Second line
-    assigned_variables_name_set = assigned_variables.setdefault(name_2,
-                                                                set())  # Get second time, will be there but this should be helper function
-    assigned_variables_name_set.add(location_2)
-
-    # First hit on new name, imagine this code is in the visit_Name method or a helper function
-    name_3 = "new_my_var"
-    location_3 = CodeLocation(2, 0)  # Second line
-    assigned_variables_name_set = assigned_variables.setdefault(name_3,
-                                                                set())  # Get second time, will be there but this should be helper function
-    assigned_variables_name_set.add(location_3)
-
-    # The parser comes along again and hits the same new_my_var variable
-    name_4 = "new_my_var"
-    location_4 = CodeLocation(2, 0)  # Second line
-    assigned_variables_name_set = assigned_variables.setdefault(name_4,
-                                                                set())  # Get second time, will be there but this should be helper function
-    assigned_variables_name_set.add(location_4)
-
-    print(assigned_variables)
-    assert set(assigned_variables.keys()) == {"my_var", "new_my_var"}
-    assert assigned_variables["my_var"] == {CodeLocation(0, 0), CodeLocation(1, 0)}
-    assert assigned_variables["new_my_var"] == {CodeLocation(2, 0)}
 
 
+def test_empty_space_clean_up():
+    logic = """    
+
+x = 10
+
+
+return ff1 > x"""
+    test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == {VariableInformation("x"),
+                                                 VariableInformation('ff1')}
+    assert test_output.used_variables[VariableInformation("x")] == {CodeLocation(6, 13)}
+    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(6, 7)}
+    assert test_output.assigned_variables.keys() == {VariableInformation("x")}
+    assert test_output.assigned_variables[VariableInformation("x")] == {CodeLocation(3, 0)}
+    assert test_output.referenced_functions.keys() == set()
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == set()
+    assert test_output.errors == []
+
+
+def test_empty_space_clean_up_single_line():
+    logic = """    
+
+ff1 > 10
+
+
+"""
+    test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == {VariableInformation('ff1')}
+    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(3, 0)}
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == set()
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == set()
+    assert test_output.errors == []
+
+
+def test_empty_space_clean_up_single_multi_line_return():
+    logic = """    
+
+ff1 > 10 and \
+    ff1 < 20 and \
+    ff2 > 100
+
+
+"""
+    test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == {VariableInformation('ff1'), VariableInformation('ff2')}
+    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(3, 0), CodeLocation(3, 17)}
+    assert test_output.used_variables[VariableInformation("ff2")] == {CodeLocation(3, 34)}
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == set()
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == set()
+    assert test_output.errors == []
