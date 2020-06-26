@@ -303,8 +303,13 @@ class FlagLogicInformation:
 
 def determine_variables(logic):
     nv = FlagFeederNodeVisitor()
-    invalid_check = True
+
+    # Determine if we have a single line
+    single_line_statement = len(logic.strip().splitlines()) == 1
+
     logic_copy = logic
+
+    invalid_check = True
     while(invalid_check):
         try:
             root = ast.parse(logic_copy)
