@@ -288,7 +288,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
             code_location_helper(self.return_points, "return point",
                                  CodeLocation(line_number=node.lineno,
                                               column_offset=node.col_offset))
-
+            ast.NodeVisitor.generic_visit(self, node)
 
     def generic_visit(self, node):
         with self.handle_node_stack(node):
@@ -367,7 +367,7 @@ def _validate_returns_boolean(flag_logic, is_single_line, returns=None):
     pass
 
 
-def _process_line(is_single_line, line, returns=None):
+def _process_line(is_single_line, line):
     new_line = line
     if is_single_line and line:
         # TODO add check to see if we need to add a return or not using the returns set
