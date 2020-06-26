@@ -2145,3 +2145,35 @@ ff1 > 10 and \
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+
+
+def test_boolean_flag_feeder_only():
+    logic = "ff1"
+    test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == {VariableInformation('ff1')}
+    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(1, 0)}
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == set()
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == set()
+    assert test_output.errors == []
+
+
+def test_boolean_flag_feeder_only():
+    logic = """
+     
+ff1
+
+"""
+    test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == {VariableInformation('ff1')}
+    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(3, 0)}
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == set()
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == set()
+    assert test_output.errors == []

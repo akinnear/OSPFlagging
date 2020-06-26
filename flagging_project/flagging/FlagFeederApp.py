@@ -4,7 +4,7 @@ from flagging.ErrorInformation import ErrorInformation
 import ast
 import contextlib
 from ast import NodeVisitor
-
+import os
 
 
 def _print_helper(node):
@@ -291,14 +291,14 @@ class FlagLogicInformation:
     def __init__(self, used_variables=None, assigned_variables=None, referenced_functions=None,
                  defined_functions=None, defined_classes=None, referenced_modules=None,
                  referenced_flags=None, errors=None):
-        self.used_variables = used_variables
-        self.assigned_variables = assigned_variables
-        self.referenced_functions = referenced_functions
-        self.defined_functions = defined_functions
-        self.defined_classes = defined_classes
-        self.referenced_modules = referenced_modules
-        self.referenced_flags = referenced_flags
-        self.errors = errors
+        self.used_variables = used_variables if used_variables else {}
+        self.assigned_variables = assigned_variables if assigned_variables else {}
+        self.referenced_functions = referenced_functions if referenced_functions else {}
+        self.defined_functions = defined_functions if defined_functions else {}
+        self.defined_classes = defined_classes if defined_classes else {}
+        self.referenced_modules = referenced_modules if referenced_modules else {}
+        self.referenced_flags = referenced_flags if referenced_flags else {}
+        self.errors = errors if errors else []
 
 
 def determine_variables(logic):
@@ -318,6 +318,7 @@ def determine_variables(logic):
         except SyntaxError as se:
             nv.errors.append(ErrorInformation(se.msg, se.text, se.lineno, se.offset))
             logic_copy = logic_copy.replace(se.text.strip(), "##ErRoR##")
+    type_return_results = _validate_returns_boolean(logic_copy, single_line_statement)
     return FlagLogicInformation(used_variables=nv.used_variables,
                                 assigned_variables=nv.assigned_variables,
                                 referenced_functions=nv.referenced_functions,
@@ -326,3 +327,37 @@ def determine_variables(logic):
                                 referenced_modules=nv.referenced_modules,
                                 referenced_flags=nv.referenced_flags,
                                 errors=nv.errors)
+
+
+def _validate_returns_boolean(flag_logic, is_single_line, returns=None):
+    """
+    This function will attempt to run mypy and get the results out.
+    A resulting warning is something like this:
+    "Expected type 'bool', got 'int' instead"
+
+    If nothing is returned from mypy then the result is valid else we return
+    an error.
+
+    :param flag_logic: The logic to test
+    :return: An error object that shows possible typing errors
+    """
+
+    spaced_flag_logic = os.linesep.join(
+        [_process_line(is_single_line, line) for line in flag_logic.splitlines()])
+
+    typed_flag_logic_function = f"""def flag_function(f: Dict[str, bool]) -> bool:
+{spaced_flag_logic}"""
+
+    # TODO we need to run typed_flag_logic_function through mypy to determine if it is valid
+
+    # TODO based on the outputs of above we need to determine if there are any errors
+    pass
+
+
+def _process_line(is_single_line, line, returns=None):
+    new_line = line
+    if is_single_line and line:
+        # TODO add check to see if we need to add a return or not using the returns set
+        new_line = f"return {line}"
+
+    return f"\t{new_line}"
