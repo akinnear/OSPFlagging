@@ -342,7 +342,7 @@ def determine_variables(logic):
                                 errors=nv.errors)
 
 
-def _validate_returns_boolean(flag_logic, is_single_line, returns=None):
+def _validate_returns_boolean(flag_logic, is_single_line):
     """
     This function will attempt to run mypy and get the results out.
     A resulting warning is something like this:
