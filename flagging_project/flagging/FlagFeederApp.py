@@ -4,7 +4,7 @@ from flagging.ErrorInformation import ErrorInformation
 import ast
 import contextlib
 from ast import NodeVisitor
-
+import os
 
 
 def _print_helper(node):
@@ -329,7 +329,7 @@ def determine_variables(logic):
                                 errors=nv.errors)
 
 
-def _validate_returns_boolean(flag_logic):
+def _validate_returns_boolean(flag_logic, is_single_line, returns):
     """
     This function will attempt to run mypy and get the results out.
     A resulting warning is something like this:
@@ -342,12 +342,22 @@ def _validate_returns_boolean(flag_logic):
     :return: An error object that shows possible typing errors
     """
 
-    typed_flag_logic_function = f"""def flag_function() -> bool:
-    {flag_logic}"""
+    spaced_flag_logic = os.linesep.join(
+        [_process_line(is_single_line, line) for line in flag_logic.splitlines()])
 
+    typed_flag_logic_function = f"""def flag_function(f: Dict[str, bool]) -> bool:
+{spaced_flag_logic}"""
+
+    # TODO we need to run typed_flag_logic_function through mypy to determine if it is valid
+
+    # TODO based on the outputs of above we need to determine if there are any errors
     pass
 
 
-def flag_function():
-    def flag_function_2() -> bool:
-        return 1
+def _process_line(is_single_line, line, returns=None):
+    new_line = line
+    if is_single_line and line:
+        # TODO add check to see if we need to add a return or not using the returns set
+        new_line = f"return {line}"
+
+    return f"\t{new_line}"
