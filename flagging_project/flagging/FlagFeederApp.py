@@ -318,7 +318,7 @@ def determine_variables(logic):
         except SyntaxError as se:
             nv.errors.append(ErrorInformation(se.msg, se.text, se.lineno, se.offset))
             logic_copy = logic_copy.replace(se.text.strip(), "##ErRoR##")
-    type_return_results = _validate_returns_boolean(logic_copy)
+    type_return_results = _validate_returns_boolean(logic_copy, single_line_statement)
     return FlagLogicInformation(used_variables=nv.used_variables,
                                 assigned_variables=nv.assigned_variables,
                                 referenced_functions=nv.referenced_functions,
@@ -329,7 +329,7 @@ def determine_variables(logic):
                                 errors=nv.errors)
 
 
-def _validate_returns_boolean(flag_logic, is_single_line, returns):
+def _validate_returns_boolean(flag_logic, is_single_line, returns=None):
     """
     This function will attempt to run mypy and get the results out.
     A resulting warning is something like this:
