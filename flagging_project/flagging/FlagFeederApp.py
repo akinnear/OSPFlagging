@@ -20,17 +20,20 @@ def _print_helper(node):
         return f"FunctionDef({node.name})"
     return type(node).__name__
 
-def code_location_helper(var_dict, key, cl):
-    if key in var_dict.keys():
-        var_dict[key].add(cl)
-        print(str(key) + ": " + str(cl))
-        print(var_dict)
-    else:
-        #creat new key
-        var_dict.setdefault(key, set())
-        var_dict[key].add(cl)
-        print(str(key) + ": " + str(cl))
-        print(var_dict)
+def code_location_helper(var_data, key, cl):
+    if isinstance(var_data, dict):
+        if key in var_data.keys():
+            var_data[key].add(cl)
+            print(str(key) + ": " + str(cl))
+            print(var_data)
+        else:
+            #creat new key
+            var_data.setdefault(key, set())
+            var_data[key].add(cl)
+            print(str(key) + ": " + str(cl))
+            print(var_data)
+    elif isinstance(var_data, set) and key == "return point":
+        var_data.add(cl)
 
 
 class CodeLocation:
@@ -63,6 +66,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
         self.referenced_modules = dict()
         self.defined_classes = dict()
         self.referenced_flags = dict()
+        self.return_points = set()
         self.errors = []
         self._stack = []
         self._attribute_stack = []
@@ -277,7 +281,14 @@ class FlagFeederNodeVisitor(NodeVisitor):
         with self.handle_node_stack(node):
             code_location_helper(self.defined_classes, node.name,
                                                        CodeLocation(line_number=node.lineno,
-                                                                    column_offset=node.col_offset+6))
+                                                                    column_offset=node.col_offset + 6))
+
+    def visit_Return(self, node):
+        with self.handle_node_stack(node):
+            code_location_helper(self.return_points, "return point",
+                                 CodeLocation(line_number=node.lineno,
+                                              column_offset=node.col_offset))
+            ast.NodeVisitor.generic_visit(self, node)
 
     def generic_visit(self, node):
         with self.handle_node_stack(node):
@@ -290,7 +301,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
 class FlagLogicInformation:
     def __init__(self, used_variables=None, assigned_variables=None, referenced_functions=None,
                  defined_functions=None, defined_classes=None, referenced_modules=None,
-                 referenced_flags=None, errors=None):
+                 referenced_flags=None, return_points=None, errors=None):
         self.used_variables = used_variables if used_variables else {}
         self.assigned_variables = assigned_variables if assigned_variables else {}
         self.referenced_functions = referenced_functions if referenced_functions else {}
@@ -298,6 +309,7 @@ class FlagLogicInformation:
         self.defined_classes = defined_classes if defined_classes else {}
         self.referenced_modules = referenced_modules if referenced_modules else {}
         self.referenced_flags = referenced_flags if referenced_flags else {}
+        self.return_points = return_points if return_points else set()
         self.errors = errors if errors else []
 
 
@@ -326,10 +338,11 @@ def determine_variables(logic):
                                 defined_classes=nv.defined_classes,
                                 referenced_modules=nv.referenced_modules,
                                 referenced_flags=nv.referenced_flags,
+                                return_points=nv.return_points,
                                 errors=nv.errors)
 
 
-def _validate_returns_boolean(flag_logic, is_single_line, returns=None):
+def _validate_returns_boolean(flag_logic, is_single_line):
     """
     This function will attempt to run mypy and get the results out.
     A resulting warning is something like this:
@@ -354,7 +367,7 @@ def _validate_returns_boolean(flag_logic, is_single_line, returns=None):
     pass
 
 
-def _process_line(is_single_line, line, returns=None):
+def _process_line(is_single_line, line):
     new_line = line
     if is_single_line and line:
         # TODO add check to see if we need to add a return or not using the returns set
