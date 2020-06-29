@@ -5,6 +5,7 @@ import ast
 import contextlib
 from ast import NodeVisitor
 import os
+import enforce
 
 
 def _print_helper(node):
@@ -358,7 +359,7 @@ def _validate_returns_boolean(flag_logic, is_single_line, return_points):
     spaced_flag_logic = os.linesep.join(
         [_process_line(is_single_line, line, return_points) for line in flag_logic.splitlines()])
 
-    typed_flag_logic_function = f"""def flag_function(f: Dict[str, bool]) -> bool:
+    typed_flag_logic_function = f"""@enforce.runtime_validation\ndef flag_function(f: Dict[str, bool]) -> bool:\
 {spaced_flag_logic}"""
 
     # TODO we need to run typed_flag_logic_function through mypy to determine if it is valid
