@@ -330,7 +330,7 @@ def determine_variables(logic):
         except SyntaxError as se:
             nv.errors.append(ErrorInformation(se.msg, se.text, se.lineno, se.offset))
             logic_copy = logic_copy.replace(se.text.strip(), "##ErRoR##")
-    type_return_results = _validate_returns_boolean(logic_copy, single_line_statement)
+    type_return_results = _validate_returns_boolean(logic_copy, single_line_statement, nv.return_points)
     return FlagLogicInformation(used_variables=nv.used_variables,
                                 assigned_variables=nv.assigned_variables,
                                 referenced_functions=nv.referenced_functions,
@@ -342,7 +342,7 @@ def determine_variables(logic):
                                 errors=nv.errors)
 
 
-def _validate_returns_boolean(flag_logic, is_single_line):
+def _validate_returns_boolean(flag_logic, is_single_line, return_points):
     """
     This function will attempt to run mypy and get the results out.
     A resulting warning is something like this:
@@ -356,7 +356,7 @@ def _validate_returns_boolean(flag_logic, is_single_line):
     """
 
     spaced_flag_logic = os.linesep.join(
-        [_process_line(is_single_line, line) for line in flag_logic.splitlines()])
+        [_process_line(is_single_line, line, return_points) for line in flag_logic.splitlines()])
 
     typed_flag_logic_function = f"""def flag_function(f: Dict[str, bool]) -> bool:
 {spaced_flag_logic}"""
@@ -367,10 +367,11 @@ def _validate_returns_boolean(flag_logic, is_single_line):
     pass
 
 
-def _process_line(is_single_line, line):
+def _process_line(is_single_line, line, return_points):
     new_line = line
-    if is_single_line and line:
+    if is_single_line and line and len(return_points) == 0:
         # TODO add check to see if we need to add a return or not using the returns set
+        # DONE
         new_line = f"return {line}"
 
     return f"\t{new_line}"
