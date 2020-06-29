@@ -332,6 +332,7 @@ def determine_variables(logic):
             nv.errors.append(ErrorInformation(se.msg, se.text, se.lineno, se.offset))
             logic_copy = logic_copy.replace(se.text.strip(), "##ErRoR##")
     type_return_results = _validate_returns_boolean(logic_copy, single_line_statement, nv.return_points)
+    print(type_return_results)
     return FlagLogicInformation(used_variables=nv.used_variables,
                                 assigned_variables=nv.assigned_variables,
                                 referenced_functions=nv.referenced_functions,
@@ -363,9 +364,15 @@ def _validate_returns_boolean(flag_logic, is_single_line, return_points):
 {spaced_flag_logic}"""
 
     # TODO we need to run typed_flag_logic_function through mypy to determine if it is valid
+    validation_errors = []
+    try:
+        exec(typed_flag_logic_function)
+    except Exception as e:
+        validation_errors.append(e)
 
     # TODO based on the outputs of above we need to determine if there are any errors
-    pass
+    return validation_errors
+
 
 
 def _process_line(is_single_line, line, return_points):
