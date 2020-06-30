@@ -19,6 +19,7 @@ def test_determine_flag_feeders_logic_and_CodeLocation():
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert test_output.validation_results.validation_errors == []
 
 
 def test_determine_flag_feeders_logic_or_CodeLocation():
@@ -2182,6 +2183,20 @@ ff1
 
 def test_determine_invalid_return():
     logic = """return 10 + 20"""
+    test_output = determine_variables(logic)
+    assert test_output.used_variables.keys() == set()
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == set()
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == set()
+    assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) != 0
+
+
+def test_determine_invalid_return_2():
+    logic = """return cat + dog"""
     test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == set()
     assert test_output.assigned_variables.keys() == set()
