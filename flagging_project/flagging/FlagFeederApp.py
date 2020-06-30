@@ -8,6 +8,8 @@ import os
 import enforce
 
 
+
+
 def _print_helper(node):
     if isinstance(node, ast.Name):
         return f"Name({node.id})"
@@ -344,6 +346,21 @@ def determine_variables(logic):
                                 errors=nv.errors)
 
 
+class TypeValidationResults:
+    def __init__(self, validation_errors=None, other_errors=None, warnings=None):
+        self.validation_errors = validation_errors if validation_errors else []
+        self.other_errors = other_errors if other_errors else []
+        self.warnings = warnings if warnings else []
+
+    def add_validation_error(self, error):
+        self.validation_errors.append(error)
+
+    def add_other_error(self, error):
+        self.other_errors.append(error)
+
+    def add_warning(self, warning):
+        self.warnings.append(warning)
+
 def _validate_returns_boolean(flag_logic, is_single_line, return_points):
     """
     This function will attempt to run mypy and get the results out.
@@ -360,18 +377,25 @@ def _validate_returns_boolean(flag_logic, is_single_line, return_points):
     spaced_flag_logic = os.linesep.join(
         [_process_line(is_single_line, line, return_points) for line in flag_logic.splitlines()])
 
-    typed_flag_logic_function = f"""@enforce.runtime_validation\ndef flag_function(f: Dict[str, bool]) -> bool:\
-{spaced_flag_logic}"""
+    typed_flag_logic_function = f"""@enforce.runtime_validation\ndef flag_function() -> bool:
+    {spaced_flag_logic}\n\nflag_function()"""
+
+
 
     # TODO we need to run typed_flag_logic_function through mypy to determine if it is valid
-    validation_errors = []
+    type_validation = TypeValidationResults()
     try:
         exec(typed_flag_logic_function)
+    except Warning as w:
+        type_validation.add_warning(w)
     except Exception as e:
-        validation_errors.append(e)
+        if type(e).__name__ == "RuntimeTypeError":
+            type_validation.add_validation_error(e)
+        else:
+            type_validation.add_other_error(e)
 
     # TODO based on the outputs of above we need to determine if there are any errors
-    return validation_errors
+    return type_validation
 
 
 
