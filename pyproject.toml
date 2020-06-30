@@ -9,6 +9,8 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.8.3"
+mypy = "^0.782"
+enforce = "^0.3.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.6"
