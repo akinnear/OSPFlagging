@@ -11,6 +11,7 @@ packages = [
 python = "^3.8.3"
 mypy = "^0.782"
 enforce = "^0.3.4"
+typeguard = "^2.9.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.6"

@@ -1,11 +1,11 @@
 from flagging.VariableInformation import VariableInformation
 from flagging.ModuleInformation import ModuleInformation
 from flagging.ErrorInformation import ErrorInformation
+from typeguard import typechecked
 import ast
 import contextlib
 from ast import NodeVisitor
 import os
-import enforce
 
 
 
@@ -380,10 +380,12 @@ def _validate_returns_boolean(flag_logic, is_single_line, return_points):
     spaced_flag_logic = os.linesep.join(
         [_process_line(is_single_line, line, return_points) for line in flag_logic.splitlines()])
 
-    typed_flag_logic_function = f"""@enforce.runtime_validation\ndef flag_function() -> bool:
-    {spaced_flag_logic}\n\nflag_function()"""
+    typed_flag_logic_function = f"""\
+@typechecked
+def flag_function() -> bool:
+    {spaced_flag_logic}
 
-
+flag_function()"""
 
     # TODO we need to run typed_flag_logic_function through mypy to determine if it is valid
     type_validation = TypeValidationResults()
@@ -392,14 +394,13 @@ def _validate_returns_boolean(flag_logic, is_single_line, return_points):
     except Warning as w:
         type_validation.add_warning(w)
     except Exception as e:
-        if type(e).__name__ == "RuntimeTypeError":
+        if type(e).__name__ == "TypeError":
             type_validation.add_validation_error(e)
         else:
             type_validation.add_other_error(e)
 
     # TODO based on the outputs of above we need to determine if there are any errors
     return type_validation
-
 
 
 def _process_line(is_single_line, line, return_points):
