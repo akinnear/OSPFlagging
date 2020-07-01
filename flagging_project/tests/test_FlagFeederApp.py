@@ -2293,6 +2293,55 @@ def test_determine_known_flag_feeders_wrong_type():
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) != 0
 
+def test_determine_known_flag_feeders_wrong_type_2():
+    logic = """cat or dog"""
+    test_output = determine_variables(logic, {"cat": int, "dog": int})
+    assert test_output.used_variables == {
+        VariableInformation("cat"): {CodeLocation(1, 0)},
+        VariableInformation("dog"): {CodeLocation(1, 7)},
+    }
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == set()
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == set()
+    assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) != 0
+
+
+def test_determine_known_flag_feeders_wrong_type_3():
+    logic = """cat or dog"""
+    test_output = determine_variables(logic, {"cat": bool, "dog": int})
+    assert test_output.used_variables == {
+        VariableInformation("cat"): {CodeLocation(1, 0)},
+        VariableInformation("dog"): {CodeLocation(1, 7)},
+    }
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == set()
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == set()
+    assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) != 0
+
+def test_determine_known_flag_feeders_wrong_type_4():
+    logic = """return cat or dog"""
+    test_output = determine_variables(logic, {"cat": bool, "dog": int})
+    assert test_output.used_variables == {
+        VariableInformation("cat"): {CodeLocation(1, 7)},
+        VariableInformation("dog"): {CodeLocation(1, 14)},
+    }
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == set()
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == set()
+    assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) != 0
+
 
 def test_determine_known_flag_feeders_invalid_type_for_math():
     logic = """return cat + dog"""
