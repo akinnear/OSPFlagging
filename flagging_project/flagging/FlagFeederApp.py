@@ -329,7 +329,7 @@ def determine_variables(logic):
     invalid_check = True
     while(invalid_check):
         try:
-            root = ast.parse(logic_copy)
+            root = ast.parse(logic_copy, type_comments=True)
             nv.visit(root)
             invalid_check = False
         except SyntaxError as se:
