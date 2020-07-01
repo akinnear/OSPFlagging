@@ -420,11 +420,9 @@ def flag_function({func_variables}) -> bool:
         for error in errors:
             orig_code_location = error[:error.find("error")-2]
             error_code_location_line = int(orig_code_location[:orig_code_location.find(":")]) - 1
-            if len(return_points) == 0:
-                error_code_location_col_offset = int(orig_code_location[orig_code_location.find(":")+1:]) - 12
-            else:
-                error_code_location_col_offset = int(orig_code_location[orig_code_location.find(":") + 1:]) - 5
-
+            offset_change = 12 if len(return_points) == 0 else 5
+            error_code_location_col_offset = int(orig_code_location[orig_code_location.find(":")+1:]) - offset_change
+            
             type_validation.add_validation_error(CodeLocation(line_number=error_code_location_line,
                                                               column_offset=error_code_location_col_offset))
 
