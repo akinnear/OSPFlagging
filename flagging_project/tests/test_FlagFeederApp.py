@@ -2257,7 +2257,7 @@ def test_determine_one_dynamic_flag_feeders():
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
-    assert len(test_output.validation_results.validation_errors) != 0
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_determine_known_flag_feeders():
