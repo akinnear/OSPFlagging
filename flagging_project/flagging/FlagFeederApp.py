@@ -422,7 +422,7 @@ def flag_function({func_variables}) -> bool:
             error_code_location_line = int(orig_code_location[:orig_code_location.find(":")]) - 1
             offset_change = 12 if len(return_points) == 0 else 5
             error_code_location_col_offset = int(orig_code_location[orig_code_location.find(":")+1:]) - offset_change
-            
+
             type_validation.add_validation_error(CodeLocation(line_number=error_code_location_line,
                                                               column_offset=error_code_location_col_offset))
 
