@@ -407,6 +407,9 @@ def flag_function({func_variables}) -> bool:
 
     # see if we have an error
     type_validation = TypeValidationResults()
+
+    # TODO parse the result so it is actually usable. Need to get the error location out and put in a CodeLocation object
+    # Update tests to check for proper return checking
     if result[2] != 0:
         errors = [line.replace("<string>:", "") for line in result[0].split("\n") if line]
         type_validation.add_validation_error(errors)
