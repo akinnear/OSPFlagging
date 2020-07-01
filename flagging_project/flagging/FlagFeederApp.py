@@ -329,7 +329,7 @@ def determine_variables(logic, flag_feeders=None):
     invalid_check = True
     while(invalid_check):
         try:
-            root = ast.parse(logic_copy, type_comments=True)
+            root = ast.parse(logic_copy)
             nv.visit(root)
             invalid_check = False
         except SyntaxError as se:
@@ -410,10 +410,23 @@ def flag_function({func_variables}) -> bool:
 
     # TODO parse the result so it is actually usable. Need to get the error location out and put in a CodeLocation object
     # Update tests to check for proper return checking
-    # change CodeLocation to not include function header added
+
+
     if result[2] != 0:
         errors = [line.replace("<string>:", "") for line in result[0].split("\n") if line]
-        type_validation.add_validation_error(errors)
+        #TODO
+        # change CodeLocation to not include function header added
+        # need to know if return keyword was added
+        for error in errors:
+            orig_code_location = error[:error.find("error")-2]
+            error_code_location_line = int(orig_code_location[:orig_code_location.find(":")]) - 1
+            if len(return_points) == 0:
+                error_code_location_col_offset = int(orig_code_location[orig_code_location.find(":")+1:]) - 12
+            else:
+                error_code_location_col_offset = int(orig_code_location[orig_code_location.find(":") + 1:]) - 5
+
+            type_validation.add_validation_error(CodeLocation(line_number=error_code_location_line,
+                                                              column_offset=error_code_location_col_offset))
 
     # TODO based on the outputs of above we need to determine if there are any errors
     return type_validation
