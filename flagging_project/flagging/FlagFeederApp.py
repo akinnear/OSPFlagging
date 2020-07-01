@@ -403,7 +403,10 @@ def _validate_returns_boolean(flag_logic, is_single_line, return_points, nv: Fla
 def flag_function({func_variables}) -> bool:
 {spaced_flag_logic}"""
 
-    result = api.run(["--ignore-missing-imports", "--no-error-summary", "--strict-equality", "--show-column-numbers", "--warn-return-any", "--warn-unreachable", "-c", typed_flag_logic_function])
+
+    #NOTE
+    # --always-True-NAME could be used to hard code flagFeeders to True
+    result = api.run(["--show-error-codes", "--ignore-missing-imports", "--no-error-summary", "--strict-equality", "--show-column-numbers", "--warn-return-any", "--warn-unreachable", "-c", typed_flag_logic_function])
 
     # see if we have an error
     type_validation = TypeValidationResults()
@@ -418,13 +421,19 @@ def flag_function({func_variables}) -> bool:
         # change CodeLocation to not include function header added
         # need to know if return keyword was added
         for error in errors:
+            error_key = error[error.find("error:"):]
             orig_code_location = error[:error.find("error")-2]
             error_code_location_line = int(orig_code_location[:orig_code_location.find(":")]) - 1
-            offset_change = 12 if len(return_points) == 0 else 5
-            error_code_location_col_offset = int(orig_code_location[orig_code_location.find(":")+1:]) - offset_change
-
-            type_validation.add_validation_error({error[error.find("error:"):]: CodeLocation(line_number=error_code_location_line,
+            offset_change = 5 if len(return_points) == 0 else 12
+            error_code_location_col_offset = int(orig_code_location[orig_code_location.find(":") + 1:]) - offset_change
+            if "incompatible return value type" in error_key.lower():
+                type_validation.add_validation_error({error_key: CodeLocation(line_number=error_code_location_line,
                                                               column_offset=error_code_location_col_offset)})
+            else:
+                type_validation.add_other_error({error_key: CodeLocation(line_number=error_code_location_line,
+                                                              column_offset=error_code_location_col_offset)})
+
+
 
     # TODO based on the outputs of above we need to determine if there are any errors
     return type_validation
