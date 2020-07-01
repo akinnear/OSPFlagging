@@ -423,8 +423,8 @@ def flag_function({func_variables}) -> bool:
             offset_change = 12 if len(return_points) == 0 else 5
             error_code_location_col_offset = int(orig_code_location[orig_code_location.find(":")+1:]) - offset_change
 
-            type_validation.add_validation_error(CodeLocation(line_number=error_code_location_line,
-                                                              column_offset=error_code_location_col_offset))
+            type_validation.add_validation_error({error[error.find("error:"):]: CodeLocation(line_number=error_code_location_line,
+                                                              column_offset=error_code_location_col_offset)})
 
     # TODO based on the outputs of above we need to determine if there are any errors
     return type_validation
