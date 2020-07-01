@@ -403,7 +403,7 @@ def _validate_returns_boolean(flag_logic, is_single_line, return_points, nv: Fla
 def flag_function({func_variables}) -> bool:
 {spaced_flag_logic}"""
 
-    result = api.run(["--no-error-summary", "--strict-equality", "--show-column-numbers", "--warn-return-any", "--warn-unreachable", "-c", typed_flag_logic_function])
+    result = api.run(["--ignore-missing-imports", "--no-error-summary", "--strict-equality", "--show-column-numbers", "--warn-return-any", "--warn-unreachable", "-c", typed_flag_logic_function])
 
     # see if we have an error
     type_validation = TypeValidationResults()
