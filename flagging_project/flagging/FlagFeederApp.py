@@ -1,7 +1,7 @@
 from flagging.VariableInformation import VariableInformation
 from flagging.ModuleInformation import ModuleInformation
 from flagging.ErrorInformation import ErrorInformation
-from typeguard import typechecked
+from mypy import api
 import ast
 import contextlib
 from ast import NodeVisitor
@@ -318,7 +318,7 @@ class FlagLogicInformation:
         self.validation_results = validation_results
 
 
-def determine_variables(logic):
+def determine_variables(logic, flag_feeders=None):
     nv = FlagFeederNodeVisitor()
 
     # Determine if we have a single line
@@ -335,7 +335,9 @@ def determine_variables(logic):
         except SyntaxError as se:
             nv.errors.append(ErrorInformation(se.msg, se.text, se.lineno, se.offset))
             logic_copy = logic_copy.replace(se.text.strip(), "##ErRoR##")
-    type_return_results = _validate_returns_boolean(logic_copy, single_line_statement, nv.return_points)
+
+    type_return_results = _validate_returns_boolean(logic_copy, single_line_statement, nv.return_points,
+                                                    nv, flag_feeders if flag_feeders else {})
     print(type_return_results)
     return FlagLogicInformation(used_variables=nv.used_variables,
                                 assigned_variables=nv.assigned_variables,
@@ -364,7 +366,8 @@ class TypeValidationResults:
     def add_warning(self, warning):
         self.warnings.append(warning)
 
-def _validate_returns_boolean(flag_logic, is_single_line, return_points):
+def _validate_returns_boolean(flag_logic, is_single_line, return_points, nv: FlagFeederNodeVisitor,
+                              flag_feeders):
     """
     This function will attempt to run mypy and get the results out.
     A resulting warning is something like this:
@@ -380,24 +383,33 @@ def _validate_returns_boolean(flag_logic, is_single_line, return_points):
     spaced_flag_logic = os.linesep.join(
         [_process_line(is_single_line, line, return_points) for line in flag_logic.splitlines()])
 
+    used_var_names = {str(var) for var in nv.used_variables}
+    assigned_var_names = {str(var) for var in nv.assigned_variables}
+
+    must_define_flag_feeders = used_var_names - assigned_var_names
+
+    function_params = [f"{flag_feeder_name}: {flag_feeder_type.__name__}"
+                       for (flag_feeder_name, flag_feeder_type) in flag_feeders.items()
+                       if flag_feeder_name in must_define_flag_feeders]
+
+    flag_feeder_names = {name for name in flag_feeders}
+    must_define_flag_feeders = must_define_flag_feeders - flag_feeder_names
+
+    function_params.extend([name for name in must_define_flag_feeders])
+
+    func_variables = ", ".join(function_params)
+
     typed_flag_logic_function = f"""\
-@typechecked
-def flag_function() -> bool:
-    {spaced_flag_logic}
+def flag_function({func_variables}) -> bool:
+{spaced_flag_logic}"""
 
-flag_function()"""
+    result = api.run(["--show-column-numbers", "--warn-return-any", "-c", typed_flag_logic_function])
 
-    # TODO we need to run typed_flag_logic_function through mypy to determine if it is valid
+    # see if we have an error
     type_validation = TypeValidationResults()
-    try:
-        exec(typed_flag_logic_function)
-    except Warning as w:
-        type_validation.add_warning(w)
-    except Exception as e:
-        if type(e).__name__ == "TypeError":
-            type_validation.add_validation_error(e)
-        else:
-            type_validation.add_other_error(e)
+    if result[2] != 0:
+        errors = [line.replace("<string>:", "") for line in result[0].split("\n") if line]
+        type_validation.add_validation_error(errors)
 
     # TODO based on the outputs of above we need to determine if there are any errors
     return type_validation
@@ -410,4 +422,4 @@ def _process_line(is_single_line, line, return_points):
         # DONE
         new_line = f"return {line}"
 
-    return f"\t{new_line}"
+    return f"    {new_line}"
