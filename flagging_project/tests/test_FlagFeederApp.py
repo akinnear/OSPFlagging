@@ -2309,3 +2309,57 @@ def test_determine_known_flag_feeders_invalid_type_for_math():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) != 0
+
+
+def test_unreachable():
+    logic = """\
+if True or cat:
+    return True
+    
+return dog"""
+    test_output = determine_variables(logic, {"cat": bool, "dog": bool})
+    assert test_output.used_variables == {
+        VariableInformation("cat"): {CodeLocation(1, 11)},
+        VariableInformation("dog"): {CodeLocation(4, 7)},
+    }
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == set()
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == set()
+    assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) != 0
+
+
+def test_equality():
+    logic = """return dog == 'dog'"""
+    test_output = determine_variables(logic, {"dog": bool})
+    assert test_output.used_variables == {
+        VariableInformation("dog"): {CodeLocation(1, 7)},
+    }
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == set()
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == set()
+    assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) != 0
+
+
+def test_equality_any_var():
+    logic = """return dog == x"""
+    test_output = determine_variables(logic, {"dog": bool})
+    assert test_output.used_variables == {
+        VariableInformation("dog"): {CodeLocation(1, 7)},
+        VariableInformation("x"): {CodeLocation(1, 14)},
+    }
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == set()
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == set()
+    assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) != 0
