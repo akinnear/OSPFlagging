@@ -422,8 +422,6 @@ def flag_function({func_variables}) -> bool:
 def _process_line(is_single_line, line, return_points):
     new_line = line
     if is_single_line and line and len(return_points) == 0:
-        # TODO add check to see if we need to add a return or not using the returns set
-        # DONE
         new_line = f"return {line}"
 
     return f"    {new_line}"
