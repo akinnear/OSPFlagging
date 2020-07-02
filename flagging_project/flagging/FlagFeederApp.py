@@ -411,16 +411,11 @@ def flag_function({func_variables}) -> bool:
 
     # see if we have an error
     type_validation = TypeValidationResults()
-
-    # TODO parse the result so it is actually usable. Need to get the error location out and put in a CodeLocation object
-    # Update tests to check for proper return checking
+# Update tests to check for proper return checking
 
 
     if result[2] != 0:
         errors = [line.replace("<string>:", "") for line in result[0].split("\n") if line]
-        #TODO
-        # change CodeLocation to not include function header added
-        # need to know if return keyword was added
         for error in errors:
             error_code = error[error.find("[")+1:error.find("]")]
             error_code_full = error_code + ", " + error[error.find("error: ") + len("error: ")
@@ -440,10 +435,6 @@ def flag_function({func_variables}) -> bool:
                 type_validation.add_other_error({error_code_full: CodeLocation(line_number=error_code_location_line,
                                                                                column_offset=error_code_location_col_offset)})
 
-
-
-
-    # TODO based on the outputs of above we need to determine if there are any errors
     return type_validation
 
 
@@ -451,5 +442,4 @@ def _process_line(is_single_line, line, return_points):
     new_line = line
     if is_single_line and line and len(return_points) == 0:
         new_line = f"return {line}"
-
     return f"    {new_line}"
