@@ -1,10 +1,13 @@
 from flagging.VariableInformation import VariableInformation
 from flagging.ModuleInformation import ModuleInformation
 from flagging.ErrorInformation import ErrorInformation
+from mypy import api
 import ast
 import contextlib
 from ast import NodeVisitor
 import os
+
+
 
 
 def _print_helper(node):
@@ -70,6 +73,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
         self.errors = []
         self._stack = []
         self._attribute_stack = []
+        self.validation_results = None
 
     @contextlib.contextmanager
     def handle_node_stack(self, node):
@@ -301,7 +305,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
 class FlagLogicInformation:
     def __init__(self, used_variables=None, assigned_variables=None, referenced_functions=None,
                  defined_functions=None, defined_classes=None, referenced_modules=None,
-                 referenced_flags=None, return_points=None, errors=None):
+                 referenced_flags=None, return_points=None, errors=None, validation_results=None):
         self.used_variables = used_variables if used_variables else {}
         self.assigned_variables = assigned_variables if assigned_variables else {}
         self.referenced_functions = referenced_functions if referenced_functions else {}
@@ -311,9 +315,10 @@ class FlagLogicInformation:
         self.referenced_flags = referenced_flags if referenced_flags else {}
         self.return_points = return_points if return_points else set()
         self.errors = errors if errors else []
+        self.validation_results = validation_results
 
 
-def determine_variables(logic):
+def determine_variables(logic, flag_feeders=None):
     nv = FlagFeederNodeVisitor()
 
     # Determine if we have a single line
@@ -330,7 +335,10 @@ def determine_variables(logic):
         except SyntaxError as se:
             nv.errors.append(ErrorInformation(se.msg, se.text, se.lineno, se.offset))
             logic_copy = logic_copy.replace(se.text.strip(), "##ErRoR##")
-    type_return_results = _validate_returns_boolean(logic_copy, single_line_statement)
+
+    type_return_results = _validate_returns_boolean(logic_copy, single_line_statement, nv.return_points,
+                                                    nv, flag_feeders if flag_feeders else {})
+    print(type_return_results)
     return FlagLogicInformation(used_variables=nv.used_variables,
                                 assigned_variables=nv.assigned_variables,
                                 referenced_functions=nv.referenced_functions,
@@ -339,10 +347,27 @@ def determine_variables(logic):
                                 referenced_modules=nv.referenced_modules,
                                 referenced_flags=nv.referenced_flags,
                                 return_points=nv.return_points,
-                                errors=nv.errors)
+                                errors=nv.errors,
+                                validation_results=type_return_results)
 
 
-def _validate_returns_boolean(flag_logic, is_single_line):
+class TypeValidationResults:
+    def __init__(self, validation_errors=None, other_errors=None, warnings=None):
+        self.validation_errors = validation_errors if validation_errors else []
+        self.other_errors = other_errors if other_errors else []
+        self.warnings = warnings if warnings else []
+
+    def add_validation_error(self, error):
+        self.validation_errors.append(error)
+
+    def add_other_error(self, error):
+        self.other_errors.append(error)
+
+    def add_warning(self, warning):
+        self.warnings.append(warning)
+
+def _validate_returns_boolean(flag_logic, is_single_line, return_points, nv: FlagFeederNodeVisitor,
+                              flag_feeders):
     """
     This function will attempt to run mypy and get the results out.
     A resulting warning is something like this:
@@ -356,21 +381,83 @@ def _validate_returns_boolean(flag_logic, is_single_line):
     """
 
     spaced_flag_logic = os.linesep.join(
-        [_process_line(is_single_line, line) for line in flag_logic.splitlines()])
+        [_process_line(is_single_line, line, return_points) for line in flag_logic.splitlines()])
 
-    typed_flag_logic_function = f"""def flag_function(f: Dict[str, bool]) -> bool:
+    used_var_names = {str(var) for var in nv.used_variables}
+    assigned_var_names = {str(var) for var in nv.assigned_variables}
+
+    must_define_flag_feeders = used_var_names - assigned_var_names
+
+    function_params = [f"{flag_feeder_name}: {flag_feeder_type.__name__}"
+                       for (flag_feeder_name, flag_feeder_type) in flag_feeders.items()
+                       if flag_feeder_name in must_define_flag_feeders]
+
+    flag_feeder_names = {name for name in flag_feeders}
+    must_define_flag_feeders = must_define_flag_feeders - flag_feeder_names
+
+    function_params.extend([name for name in must_define_flag_feeders])
+
+    func_variables = ", ".join(function_params)
+
+    typed_flag_logic_function = f"""\
+def flag_function({func_variables}) -> bool:
 {spaced_flag_logic}"""
-
-    # TODO we need to run typed_flag_logic_function through mypy to determine if it is valid
-
-    # TODO based on the outputs of above we need to determine if there are any errors
-    pass
+    flag_function_lines = spaced_flag_logic.split('\n')
 
 
-def _process_line(is_single_line, line):
+    #NOTE
+    # --always-True-NAME could be used to hard code flagFeeders to True
+    result = api.run(["--show-error-codes", "--ignore-missing-imports", "--no-error-summary", "--strict-equality", "--show-column-numbers", "--warn-return-any", "--warn-unreachable", "-c", typed_flag_logic_function])
+
+    # see if we have an error
+    type_validation = TypeValidationResults()
+# Update tests to check for proper return checking
+
+
+    if result[2] != 0:
+        errors = [line.replace("<string>:", "") for line in result[0].split("\n") if line]
+        for error in errors:
+            error_code = error[error.find("[")+1:error.find("]")]
+            error_code_full = error_code + ", " + error[error.find("error: ") + len("error: ")
+                                                       : error.find(" [") - 1]
+            orig_code_location = error[:error.find("error")-2]
+            error_code_location_line = int(orig_code_location[:orig_code_location.find(":")]) - 1
+            if error_code == "return-value":
+                #incompatible return types, return something other than bool
+                #column offset for "return" keyword
+                error_code_location_col_offset = flag_function_lines[error_code_location_line-1].lower().find("return") - 4
+                type_validation.add_validation_error({error_code_full: CodeLocation(line_number=error_code_location_line,
+                                                                               column_offset=error_code_location_col_offset)})
+            elif error_code == "no-any-return":
+                #incompatible return type, returning any
+                #column offset for "return" keyword
+                error_code_location_col_offset = flag_function_lines[error_code_location_line-1].lower().find("return") - 4
+                type_validation.add_other_error({error_code_full: CodeLocation(line_number=error_code_location_line,
+                                                                               column_offset=error_code_location_col_offset)})
+            elif error_code == 'return':
+                #mising return statement
+                #column offset default at start of line
+                error_code_location_col_offset = 0
+                type_validation.add_other_error({error_code_full: CodeLocation(line_number=error_code_location_line,
+                                                              column_offset=error_code_location_col_offset)})
+            elif error_code == 'name-defined':
+                #undefined name, e.g. "reduce" is undefined
+                #column offset for undefined name
+                sub_string_start = error[error.find("Name \'") + len("Name \'"):]
+                undefined_name = sub_string_start[:sub_string_start.find("\'")]
+                error_code_location_col_offset = flag_function_lines[error_code_location_line-1].lower().find(undefined_name.lower()) - 4
+                type_validation.add_other_error({error_code_full: CodeLocation(line_number=error_code_location_line,
+                                                                           column_offset=error_code_location_col_offset)})
+            else:
+                error_code_location_col_offset = 1
+                type_validation.add_other_error({error_code_full: CodeLocation(line_number=error_code_location_line,
+                                                                               column_offset=error_code_location_col_offset)})
+
+    return type_validation
+
+
+def _process_line(is_single_line, line, return_points):
     new_line = line
-    if is_single_line and line:
-        # TODO add check to see if we need to add a return or not using the returns set
+    if is_single_line and line and len(return_points) == 0:
         new_line = f"return {line}"
-
-    return f"\t{new_line}"
+    return f"    {new_line}"
