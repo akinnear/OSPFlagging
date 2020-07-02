@@ -426,6 +426,10 @@ def flag_function({func_variables}) -> bool:
                 error_code_location_col_offset = flag_function_lines[error_code_location_line-1].lower().find("return") - 4
                 type_validation.add_validation_error({error_code_full: CodeLocation(line_number=error_code_location_line,
                                                                                column_offset=error_code_location_col_offset)})
+            elif error_code == "no-any-return":
+                error_code_location_col_offset = flag_function_lines[error_code_location_line-1].lower().find("return") - 4
+                type_validation.add_other_error({error_code_full: CodeLocation(line_number=error_code_location_line,
+                                                                               column_offset=error_code_location_col_offset)})
             elif error_code == 'return':
                 error_code_location_col_offset = 1
                 type_validation.add_other_error({error_code_full: CodeLocation(line_number=error_code_location_line,
