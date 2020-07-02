@@ -418,6 +418,9 @@ def flag_function({func_variables}) -> bool:
         errors = [line.replace("<string>:", "") for line in result[0].split("\n") if line]
         for error in errors:
             error_code = error[error.find("[")+1:error.find("]")]
+            #TODO
+            # error_code_full, provides more information to
+            # front end user to identify source of error
             error_code_full = error_code + ", " + error[error.find("error: ") + len("error: ")
                                                        : error.find(" [") - 1]
             orig_code_location = error[:error.find("error")-2]
@@ -425,33 +428,11 @@ def flag_function({func_variables}) -> bool:
             if error_code == "return-value":
                 #incompatible return types, return something other than bool
                 #column offset for "return" keyword
-                error_code_location_col_offset = flag_function_lines[error_code_location_line-1].lower().find("return") - 4
-                type_validation.add_validation_error({error_code_full: CodeLocation(line_number=error_code_location_line,
-                                                                               column_offset=error_code_location_col_offset)})
-            elif error_code == "no-any-return":
-                #incompatible return type, returning any
-                #column offset for "return" keyword
-                error_code_location_col_offset = flag_function_lines[error_code_location_line-1].lower().find("return") - 4
-                type_validation.add_other_error({error_code_full: CodeLocation(line_number=error_code_location_line,
-                                                                               column_offset=error_code_location_col_offset)})
-            elif error_code == 'return':
-                #mising return statement
-                #column offset default at start of line
-                error_code_location_col_offset = 0
-                type_validation.add_other_error({error_code_full: CodeLocation(line_number=error_code_location_line,
-                                                              column_offset=error_code_location_col_offset)})
-            elif error_code == 'name-defined':
-                #undefined name, e.g. "reduce" is undefined
-                #column offset for undefined name
-                sub_string_start = error[error.find("Name \'") + len("Name \'"):]
-                undefined_name = sub_string_start[:sub_string_start.find("\'")]
-                error_code_location_col_offset = flag_function_lines[error_code_location_line-1].lower().find(undefined_name.lower()) - 4
-                type_validation.add_other_error({error_code_full: CodeLocation(line_number=error_code_location_line,
-                                                                           column_offset=error_code_location_col_offset)})
+                type_validation.add_validation_error({error_code: CodeLocation(line_number=error_code_location_line,
+                                                                               column_offset=0)})
             else:
-                error_code_location_col_offset = 1
-                type_validation.add_other_error({error_code_full: CodeLocation(line_number=error_code_location_line,
-                                                                               column_offset=error_code_location_col_offset)})
+                type_validation.add_other_error({error_code: CodeLocation(line_number=error_code_location_line,
+                                                                               column_offset=0)})
 
     return type_validation
 
