@@ -2412,3 +2412,4 @@ def test_equality_any_var():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) != 0
+
