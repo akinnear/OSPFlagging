@@ -402,6 +402,7 @@ def _validate_returns_boolean(flag_logic, is_single_line, return_points, nv: Fla
     typed_flag_logic_function = f"""\
 def flag_function({func_variables}) -> bool:
 {spaced_flag_logic}"""
+    flag_function_lines = spaced_flag_logic.split('\n')
 
 
     #NOTE
@@ -422,13 +423,22 @@ def flag_function({func_variables}) -> bool:
         # need to know if return keyword was added
         for error in errors:
             error_code = error[error.find("[")+1:error.find("]")]
+            error_code_full = error_code + ", " + error[error.find("error: ") + len("error: ")
+                                                       : error.find(" [") - 1]
             orig_code_location = error[:error.find("error")-2]
             error_code_location_line = int(orig_code_location[:orig_code_location.find(":")]) - 1
-            # offset_change = 5 if len(return_points) == 0 else 12
-            offset_change = 5
-            error_code_location_col_offset = int(orig_code_location[orig_code_location.find(":") + 1:]) - offset_change
-            type_validation.add_validation_error({error_code: CodeLocation(line_number=error_code_location_line,
+            if error_code == "return-value":
+                error_code_location_col_offset = flag_function_lines[error_code_location_line-1].lower().find("return") - 4
+                type_validation.add_validation_error({error_code_full: CodeLocation(line_number=error_code_location_line,
+                                                                               column_offset=error_code_location_col_offset)})
+            elif error_code == 'return':
+                error_code_location_col_offset = 1
+                type_validation.add_other_error({error_code_full: CodeLocation(line_number=error_code_location_line,
                                                               column_offset=error_code_location_col_offset)})
+            else:
+                error_code_location_col_offset = 1
+                type_validation.add_other_error({error_code_full: CodeLocation(line_number=error_code_location_line,
+                                                                               column_offset=error_code_location_col_offset)})
 
 
 
