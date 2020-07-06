@@ -1,4 +1,5 @@
-from FlagFeederApp import FlagFeederNodeVisitor, CodeLocation
+from flagging.FlaggingNodeVisitor import FlagFeederNodeVisitor, CodeLocation
+import os
 from mypy import api
 
 class TypeValidationResults:
