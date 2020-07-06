@@ -1,6 +1,5 @@
 from flagging.VariableInformation import VariableInformation
 from flagging.ModuleInformation import ModuleInformation
-
 import ast
 from ast import NodeVisitor
 import contextlib
@@ -19,6 +18,7 @@ def _print_helper(node):
         return f"FunctionDef({node.name})"
     return type(node).__name__
 
+
 def code_location_helper(var_data, key, cl):
     if isinstance(var_data, dict):
         if key in var_data.keys():
@@ -33,6 +33,7 @@ def code_location_helper(var_data, key, cl):
             print(var_data)
     elif isinstance(var_data, set) and key == "return point":
         var_data.add(cl)
+
 
 class CodeLocation:
     ## constructor
@@ -53,6 +54,7 @@ class CodeLocation:
 
     def __hash__(self):
         return hash((self.line_number, self.column_offset))
+
 
 class FlagFeederNodeVisitor(NodeVisitor):
     def __init__(self):
@@ -153,8 +155,6 @@ class FlagFeederNodeVisitor(NodeVisitor):
                 before_attributes = self._stack[-1*(len(self._attribute_stack) + 2)]
                 attributes = self._attribute_stack.copy()
                 attributes.reverse()
-
-
                 defined_functions_str = []
                 for item in self.defined_functions:
                     defined_functions_str.append(item.name)
@@ -169,13 +169,11 @@ class FlagFeederNodeVisitor(NodeVisitor):
                         variable_name += f".{post_variable_name}"
                     full_name = f"{variable_name}.{function_name}"
 
-
                     variable_names = [attribute.attr for attribute in attributes]
                     variable_names.insert(0, name)
                     variable_information = VariableInformation.create_var(variable_names)
 
                     pre_variable_name = ".".join(variable_names[:-1])
-
                     possible_args = self._call_args_to_names(before_attributes.args)
 
                     if full_name == "f.get":

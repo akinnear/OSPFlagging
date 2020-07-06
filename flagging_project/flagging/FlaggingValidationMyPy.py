@@ -54,16 +54,8 @@ def _validate_returns_boolean(flag_logic, is_single_line, return_points, nv: Fla
 def flag_function({func_variables}) -> bool:
 {spaced_flag_logic}"""
     flag_function_lines = spaced_flag_logic.split('\n')
-
-
-    #NOTE
-    # --always-True-NAME could be used to hard code flagFeeders to True
     result = api.run(["--show-error-codes", "--ignore-missing-imports", "--no-error-summary", "--strict-equality", "--show-column-numbers", "--warn-return-any", "--warn-unreachable", "-c", typed_flag_logic_function])
-
-    # see if we have an error
     type_validation = TypeValidationResults()
-# Update tests to check for proper return checking
-
 
     if result[2] != 0:
         errors = [line.replace("<string>:", "") for line in result[0].split("\n") if line]

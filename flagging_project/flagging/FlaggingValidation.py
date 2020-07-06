@@ -25,6 +25,7 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info):
 
     return results
 
+
 class FlaggingValidationResults:
 
     def __init__(self, errors=None, warnings=None):
