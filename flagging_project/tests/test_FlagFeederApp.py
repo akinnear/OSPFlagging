@@ -1,4 +1,5 @@
-from flagging.FlagFeederApp import determine_variables, CodeLocation
+from flagging.FlagFeederApp import determine_variables
+from flagging.FlaggingNodeVisitor import CodeLocation
 from flagging.VariableInformation import VariableInformation
 from flagging.ModuleInformation import ModuleInformation
 

@@ -6,7 +6,6 @@ class ErrorInformation:
         self.lineno = lineno
         self.offset = offset
 
-
     # object representation
     def __repr__(self):
         return f"ErrorInformation({self.msg}, {self.text}, {self.lineno}, {self.offset})"
