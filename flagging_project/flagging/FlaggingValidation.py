@@ -6,6 +6,8 @@ def validate_flag_logic(flag_logic):
 
 
 def validate_flag_logic_information(flag_feeders, flag_logic_info):
+    #TODO
+    # include mypy output flagging validation
     results = FlaggingValidationResults()
     used_variables = dict(flag_logic_info.used_variables)
     for used_var in flag_logic_info.used_variables:
