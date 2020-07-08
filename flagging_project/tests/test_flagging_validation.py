@@ -141,7 +141,7 @@ def test_determine_validation_location_4():
     assert len(test_output.validation_results.validation_errors) == 0
 
 def test_mypy_integration():
-    flag_feeders = {'cat', 'dog'}
+    flag_feeders = {'cat'}
     logic = """return cat or dog"""
     test_output = determine_variables(logic, {"cat": bool, "dog": int})
     flag_info = FlagLogicInformation(
