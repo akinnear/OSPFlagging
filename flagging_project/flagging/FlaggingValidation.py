@@ -12,6 +12,7 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info):
 
     #TODO
     # include mypy output flagging validation
+    # done
     my_py_output = flag_logic_info.validation_results
     #
 
