@@ -1,5 +1,6 @@
-from flagging.flagging_validation import validate_flag_logic_information
-from flagging.FlagFeederApp import FlagLogicInformation, VariableInformation, CodeLocation, determine_variables
+from flagging.FlaggingValidation import validate_flag_logic_information
+from flagging.FlaggingNodeVisitor import CodeLocation
+from flagging.FlagFeederApp import FlagLogicInformation, determine_variables
 from flagging.VariableInformation import VariableInformation
 from flagging.ModuleInformation import ModuleInformation
 
@@ -138,3 +139,17 @@ def test_determine_validation_location_4():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+
+def test_mypy_integration():
+    flag_feeders = {'cat'}
+    logic = """return cat or dog"""
+    test_output = determine_variables(logic, {"cat": bool, "dog": int})
+    flag_info = FlagLogicInformation(
+        used_variables=test_output.used_variables,
+        assigned_variables=test_output.assigned_variables,
+        validation_results=test_output.validation_results
+    )
+    result = validate_flag_logic_information(flag_feeders, flag_info)
+
+    assert len(result.errors) == 0
+    assert len(result.warnings) == 0
