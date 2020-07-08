@@ -35,6 +35,7 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info):
     if my_py_output:
         #TODO
         # errors are a mix of VariableInformation objects and mypy dictionary output
+        # check with Adam if that needs to change
         if my_py_output.validation_errors:
             for validation_error in my_py_output.validation_errors:
                 results.add_error(validation_error)
