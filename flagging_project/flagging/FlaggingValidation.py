@@ -1,14 +1,20 @@
 from flagging.FlagFeederApp import determine_variables
 
 
+
 def validate_flag_logic(flag_logic):
     return validate_flag_logic_information(determine_variables(flag_logic))
 
 
 def validate_flag_logic_information(flag_feeders, flag_logic_info):
+
+    results = FlaggingValidationResults()
+
     #TODO
     # include mypy output flagging validation
-    results = FlaggingValidationResults()
+    my_py_output = flag_logic_info.validation_results
+    #
+
     used_variables = dict(flag_logic_info.used_variables)
     for used_var in flag_logic_info.used_variables:
         if used_var.name in flag_feeders:
@@ -24,6 +30,19 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info):
     if used_variables:
         for unused in used_variables:
             results.add_error(unused)
+
+    if my_py_output:
+        print("hello in my py error portion of results")
+        if my_py_output.validation_errors:
+            for validation_error in my_py_output.validation_errors:
+                results.add_error(validation_error)
+        if my_py_output.other_errors:
+            for other_error in my_py_output.other_errors:
+                results.add_error(other_error)
+        if my_py_output.warnings:
+            for warning in my_py_output.warnings:
+                results.add_warning(warning)
+
 
     return results
 
