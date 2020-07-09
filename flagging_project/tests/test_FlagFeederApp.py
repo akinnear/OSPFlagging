@@ -42,6 +42,7 @@ man or woman"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_determine_flag_feeder_conditional_CodeLocation():
@@ -62,6 +63,7 @@ return cat < 10"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_determine_flag_feeder_if_statement_CodeLocation():
@@ -98,6 +100,7 @@ else:
     assert test_output.return_points == {CodeLocation(5, 4), CodeLocation(7, 4)}
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_normal_expression_keys():
@@ -115,6 +118,7 @@ return ff1 > z"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_normal_expression_CodeLocation():
@@ -140,6 +144,7 @@ return ff1 > z"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_equals_operation_CodeLocation():
@@ -157,6 +162,7 @@ def test_equals_operation_CodeLocation():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_less_than_operation_CodeLocation():
@@ -174,6 +180,7 @@ def test_less_than_operation_CodeLocation():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_greater_than_operation_CodeLocation():
@@ -215,6 +222,7 @@ return ff3 < test_1"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_subtraction_operation_CodeLocation():
@@ -244,6 +252,7 @@ return ff3 < test_1"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_multiplication_operation_CodeLocation():
@@ -273,6 +282,7 @@ return ff3 < test_1"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_division_operation_CodeLocation():
@@ -302,6 +312,7 @@ return ff3 < test_1"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_modulo_operation_CodeLocation():
@@ -331,6 +342,7 @@ return ff3 < test_1"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_determine_flag_feeder_for_loop_CodeLocation():
@@ -379,6 +391,7 @@ else:
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_reduce_lambda_CodeLocation():
@@ -412,6 +425,7 @@ else:
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 
@@ -442,6 +456,7 @@ return sum > 10"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_map_expression_CodeLocation():
@@ -486,6 +501,7 @@ else:
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_map_lambda_CodeLocation():
@@ -525,6 +541,7 @@ my_map_list = list(map(lambda x,y,z:x+y-z, a,b,c))"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_lambda_expression_CodeLocation():
@@ -549,6 +566,7 @@ return ff1 == add"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_math_expression_CodeLocation():
@@ -605,6 +623,7 @@ else:
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 #TODO
@@ -631,6 +650,7 @@ return ff1 > math"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_math_expression_2_CodeLocation():
@@ -657,6 +677,7 @@ return ff1 > x"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_math_expression_3_CodeLocation():
@@ -711,6 +732,7 @@ else:
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_math_expression_4_CodeLocation():
@@ -737,6 +759,7 @@ return ff1 > x.y"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_tuple_assignment_2_CodeLocation():
@@ -798,6 +821,7 @@ else:
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_tuple_assignment_CodeLocation():
@@ -818,6 +842,7 @@ def test_tuple_assignment_CodeLocation():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_object_CodeLocation():
@@ -835,6 +860,7 @@ a.b.c.d.e > 10"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_object_function_CodeLocation():
@@ -850,6 +876,7 @@ a.b.c() > 10"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_object_function_2_CodeLocation():
@@ -866,6 +893,7 @@ a.b.c > 10"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_feeder_function_function_CodeLocation():
@@ -880,6 +908,7 @@ def test_feeder_function_function_CodeLocation():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_determine_flag_feeders_CodeLocation():
@@ -904,6 +933,7 @@ return cat < 10 and fish > 100"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_map_filter_lambda_2_CodeLocation():
@@ -974,6 +1004,7 @@ else:
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_map_filter_lambda_CodeLocation():
@@ -1054,6 +1085,7 @@ else:
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_variables_in_list_CodeLocation():
@@ -1078,6 +1110,7 @@ return cat in animals"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_with_no_as_CodeLocation():
@@ -1098,6 +1131,7 @@ with method(item):
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_with_using_as_CodeLocation():
@@ -1121,6 +1155,7 @@ with method(ff1, ff2) as my_with:
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_func_CodeLocation():
@@ -1144,6 +1179,7 @@ myfunc(ff1) > 10"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_list_comprehension_CodeLocation():
@@ -1189,6 +1225,7 @@ return ff1 in names"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_class_reference_CodeLocation():
@@ -1208,6 +1245,7 @@ isinstance(ff1, int)"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_complex_class_reference_CodeLocation():
@@ -1227,6 +1265,7 @@ isinstance(a.b.Class, ff1)"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_complex_object_reference_CodeLocation():
@@ -1246,6 +1285,7 @@ my_function(a.b.c, c.d.e)"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_complex_object_reference_complex_function_CodeLocation():
@@ -1267,6 +1307,7 @@ a.b.c.my_function(a.b.c, c.d.e)"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_complex_object_function_reference_complex_function_CodeLocation():
@@ -1293,6 +1334,7 @@ a.b.c.my_function(a.b.c(), c.d.e())"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_generator_CodeLocation():
@@ -1358,6 +1400,7 @@ return 1 in my_gen()"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_comprehension_2_CodeLocation():
@@ -1380,6 +1423,7 @@ return 10 in eggs"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_fizzbuzz_comprehension_CodeLocation():
@@ -1416,6 +1460,7 @@ return 'not in' in fizzbuzz"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_simple_set_return_another_CodeLocation():
@@ -1434,6 +1479,7 @@ return ff1"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_simple_function_dont_use_CodeLocation():
@@ -1455,6 +1501,7 @@ return ff1"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_simple_function_dont_use_complex_CodeLocation():
@@ -1476,6 +1523,7 @@ return ff1"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_complex_assign():
@@ -1492,6 +1540,7 @@ x.y.z = 5"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_complex_use():
@@ -1508,6 +1557,7 @@ x.y.z > 10"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_complex_in_function_CodeLocation():
@@ -1532,6 +1582,7 @@ return ff1"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 #TODO
 # update test
@@ -1541,6 +1592,7 @@ x.y.z = 5"""
     test_output = determine_variables(logic)
     assert test_output.assigned_variables.keys() == {VariableInformation.create_var(["x", "y", "z"])}
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_simple_function_dont_use_complex_2_CodeLocation():
@@ -1564,6 +1616,7 @@ return ff1"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_unused_var_CodeLocation():
@@ -1582,6 +1635,7 @@ return ff1"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_try_except_finally_CodeLocation():
@@ -1663,6 +1717,7 @@ finally:
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_try_except_finally_in_defined_function_CodeLocation():
@@ -1750,6 +1805,7 @@ return my_func()"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_unused_class_CodeLocation():
@@ -1769,6 +1825,7 @@ return ff1"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_used_class_CodeLocation():
@@ -1794,6 +1851,7 @@ return my_val.val"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_dictionary_CodeLocation():
@@ -1812,6 +1870,7 @@ dict[ff] > 10"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_list_slice_CodeLocation():
@@ -1831,6 +1890,7 @@ len(list[ff:]) > 10"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_simple_flag_CodeLocation():
@@ -1848,6 +1908,7 @@ f["MY_FLAG"]"""
     assert test_output.referenced_flags["MY_FLAG"] == {CodeLocation(2, 3)}
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_simple_flag_get():
@@ -1864,6 +1925,7 @@ f.get("MY_FLAG")"""
     assert test_output.referenced_flags["MY_FLAG"] == {CodeLocation(2, 7)}
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_function_with_vars_CodeLocation():
@@ -1882,6 +1944,7 @@ def test_function_with_vars_CodeLocation():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_function_with_vars_using_import_function_CodeLocation():
@@ -1906,6 +1969,7 @@ my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_function_with_vars_using_import_function_2_CodeLocation():
@@ -1938,6 +2002,7 @@ my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_function_with_vars_using_import_value_CodeLocation():
@@ -1958,6 +2023,7 @@ my_func(math.PI, math.E)"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_import_from_CodeLocation():
@@ -1985,6 +2051,7 @@ engine = create_engine('oracle+cx_oracle://' + username + ':' + password + '@' +
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_import_with_as_CodeLocation():
@@ -2006,6 +2073,7 @@ y = m.sqrt(x)"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_import_with_as_2_CodeLocation():
@@ -2025,6 +2093,7 @@ return sq(ff1) > 10"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_import_with_as_3_CodeLocation():
@@ -2049,6 +2118,7 @@ y = s(10)"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_import_with_as_4_CodeLocation():
@@ -2073,6 +2143,7 @@ y = s(10)"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_import_with_as_5_CodeLocation():
@@ -2100,6 +2171,7 @@ y = m.sqrt(x)"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_special_lambda_CodeLocation():
@@ -2128,6 +2200,7 @@ return high_ord_func(ff1, lambda x: x * x) > ff2"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_invalid():
@@ -2148,6 +2221,7 @@ y = = =  q2@"""
     assert test_output.referenced_flags.keys() == set()
     assert len(test_output.errors) == 2
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_odd_text():
@@ -2163,6 +2237,7 @@ def test_odd_text():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 
@@ -2188,6 +2263,7 @@ return ff1 > x"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_empty_space_clean_up_single_line():
@@ -2208,6 +2284,7 @@ ff1 > 10
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_empty_space_clean_up_single_multi_line_return():
@@ -2231,6 +2308,7 @@ ff1 > 10 and \
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_boolean_flag_feeder_only():
@@ -2246,6 +2324,7 @@ def test_boolean_flag_feeder_only():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_boolean_flag_feeder_only():
@@ -2265,6 +2344,7 @@ ff1
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_determine_invalid_return():
@@ -2279,6 +2359,7 @@ def test_determine_invalid_return():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) != 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_hardcoded_boolean():
@@ -2293,6 +2374,7 @@ def test_hardcoded_boolean():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
 def test_determine_invalid_return_2():
@@ -2310,6 +2392,7 @@ def test_determine_invalid_return_2():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) != 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_determine_dynamic_flag_feeders():
@@ -2327,6 +2410,7 @@ def test_determine_dynamic_flag_feeders():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_determine_one_dynamic_flag_feeders():
@@ -2344,6 +2428,7 @@ def test_determine_one_dynamic_flag_feeders():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_determine_known_flag_feeders():
@@ -2361,6 +2446,7 @@ def test_determine_known_flag_feeders():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_determine_known_flag_feeders_wrong_type():
@@ -2378,6 +2464,7 @@ def test_determine_known_flag_feeders_wrong_type():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) != 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 def test_determine_known_flag_feeders_wrong_type_2():
     logic = """cat or dog"""
@@ -2394,6 +2481,7 @@ def test_determine_known_flag_feeders_wrong_type_2():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) != 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_determine_known_flag_feeders_wrong_type_3():
@@ -2411,6 +2499,7 @@ def test_determine_known_flag_feeders_wrong_type_3():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) != 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 def test_determine_known_flag_feeders_wrong_type_4():
     logic = """return cat or dog"""
@@ -2427,6 +2516,7 @@ def test_determine_known_flag_feeders_wrong_type_4():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) != 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_determine_known_flag_feeders_invalid_type_for_math():
@@ -2444,6 +2534,7 @@ def test_determine_known_flag_feeders_invalid_type_for_math():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) != 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_unreachable():
@@ -2465,6 +2556,7 @@ return dog"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+    assert len(test_output.validation_results.other_errors) == 0
 
 
 def test_equality():
