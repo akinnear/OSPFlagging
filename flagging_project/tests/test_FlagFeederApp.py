@@ -42,7 +42,7 @@ man or woman"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 
 def test_determine_flag_feeder_conditional_CodeLocation():
@@ -74,7 +74,7 @@ if y > 100:
     return ff5 != x
 else:
     return ff5 == x"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff5": bool})
     assert test_output.used_variables.keys() == {VariableInformation("y", None), VariableInformation("x", None),
                                                  VariableInformation("ff1", None), VariableInformation('ff2', None),
                                                  VariableInformation("ff3", None), VariableInformation("ff4", None),
@@ -100,7 +100,7 @@ else:
     assert test_output.return_points == {CodeLocation(5, 4), CodeLocation(7, 4)}
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 
 def test_normal_expression_keys():
@@ -118,7 +118,7 @@ return ff1 > z"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 
 def test_normal_expression_CodeLocation():
