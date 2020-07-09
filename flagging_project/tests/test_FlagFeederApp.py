@@ -149,7 +149,7 @@ return ff1 > z"""
 
 def test_equals_operation_CodeLocation():
     logic = """return ff1 == ff2"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff1": int, "ff2": int})
     assert test_output.used_variables.keys() == {VariableInformation("ff1", None), VariableInformation("ff2", None)}
     assert test_output.used_variables == {
         VariableInformation("ff1", None): {CodeLocation(line_number=1, column_offset=7)},
