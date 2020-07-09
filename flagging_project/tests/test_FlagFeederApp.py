@@ -40,6 +40,7 @@ man or woman"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_determine_flag_feeder_conditional_CodeLocation():
@@ -59,6 +60,7 @@ return cat < 10"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_determine_flag_feeder_if_statement_CodeLocation():
@@ -94,6 +96,7 @@ else:
     assert test_output.referenced_flags.keys() == set()
     assert test_output.return_points == {CodeLocation(5, 4), CodeLocation(7, 4)}
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_normal_expression_keys():
@@ -110,6 +113,7 @@ return ff1 > z"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_normal_expression_CodeLocation():
@@ -134,6 +138,7 @@ return ff1 > z"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_equals_operation_CodeLocation():
@@ -150,6 +155,7 @@ def test_equals_operation_CodeLocation():
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_less_than_operation_CodeLocation():
@@ -166,6 +172,7 @@ def test_less_than_operation_CodeLocation():
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_greater_than_operation_CodeLocation():
@@ -182,6 +189,7 @@ def test_greater_than_operation_CodeLocation():
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_add_operation_CodeLocation():
@@ -205,6 +213,7 @@ return ff3 < test_1"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_subtraction_operation_CodeLocation():
@@ -233,6 +242,7 @@ return ff3 < test_1"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_multiplication_operation_CodeLocation():
@@ -261,6 +271,7 @@ return ff3 < test_1"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_division_operation_CodeLocation():
@@ -289,6 +300,7 @@ return ff3 < test_1"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_modulo_operation_CodeLocation():
@@ -317,6 +329,7 @@ return ff3 < test_1"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_determine_flag_feeder_for_loop_CodeLocation():
@@ -364,6 +377,7 @@ else:
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_reduce_lambda_CodeLocation():
@@ -396,6 +410,8 @@ else:
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
+
 
 
 def test_comprehension_CodeLocation():
@@ -424,6 +440,7 @@ return sum > 10"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_map_expression_CodeLocation():
@@ -467,6 +484,7 @@ else:
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_map_lambda_CodeLocation():
@@ -505,6 +523,7 @@ my_map_list = list(map(lambda x,y,z:x+y-z, a,b,c))"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_lambda_expression_CodeLocation():
@@ -528,6 +547,7 @@ return ff1 == add"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_math_expression_CodeLocation():
@@ -583,6 +603,7 @@ else:
     assert test_output.referenced_modules == {ModuleInformation("math"): {CodeLocation(2, 7)}}
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 #TODO
@@ -608,6 +629,7 @@ return ff1 > math"""
     assert test_output.referenced_modules == {ModuleInformation("math"): {CodeLocation(2, 7)}}
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_math_expression_2_CodeLocation():
@@ -633,6 +655,7 @@ return ff1 > x"""
     assert test_output.referenced_modules == {ModuleInformation("math"): {CodeLocation(2, 7)}}
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_math_expression_3_CodeLocation():
@@ -686,6 +709,7 @@ else:
     assert test_output.referenced_modules[ModuleInformation("math")] == {CodeLocation(2, 7)}
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_math_expression_4_CodeLocation():
@@ -711,6 +735,7 @@ return ff1 > x.y"""
     assert test_output.referenced_modules == {ModuleInformation("math"): {CodeLocation(2, 7)}}
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_tuple_assignment_2_CodeLocation():
@@ -771,6 +796,7 @@ else:
     assert test_output.referenced_modules == {ModuleInformation("math"): {CodeLocation(2, 7)}}
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_tuple_assignment_CodeLocation():
@@ -790,6 +816,7 @@ def test_tuple_assignment_CodeLocation():
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_object_CodeLocation():
@@ -806,6 +833,7 @@ a.b.c.d.e > 10"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_object_function_CodeLocation():
@@ -820,6 +848,7 @@ a.b.c() > 10"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_object_function_2_CodeLocation():
@@ -835,6 +864,7 @@ a.b.c > 10"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_feeder_function_function_CodeLocation():
@@ -848,6 +878,7 @@ def test_feeder_function_function_CodeLocation():
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_determine_flag_feeders_CodeLocation():
@@ -871,6 +902,7 @@ return cat < 10 and fish > 100"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_map_filter_lambda_2_CodeLocation():
@@ -940,6 +972,7 @@ else:
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_map_filter_lambda_CodeLocation():
