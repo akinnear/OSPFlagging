@@ -1052,6 +1052,7 @@ else:
     assert test_output.referenced_modules[ModuleInformation("pandas")] == {CodeLocation(3, 7)}
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_variables_in_list_CodeLocation():
@@ -1075,6 +1076,7 @@ return cat in animals"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_with_no_as_CodeLocation():
@@ -1094,6 +1096,7 @@ with method(item):
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_with_using_as_CodeLocation():
@@ -1116,6 +1119,7 @@ with method(ff1, ff2) as my_with:
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_func_CodeLocation():
@@ -1138,6 +1142,7 @@ myfunc(ff1) > 10"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_list_comprehension_CodeLocation():
@@ -1182,6 +1187,7 @@ return ff1 in names"""
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+    assert len(test_output.validation_results.validation_errors) == 0
 
 
 def test_class_reference_CodeLocation():
