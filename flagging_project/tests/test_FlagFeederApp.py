@@ -6,7 +6,7 @@ from flagging.ModuleInformation import ModuleInformation
 
 def test_determine_flag_feeders_logic_and_CodeLocation():
     logic = """cat and dog"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {'cat': bool, "dog": bool})
     assert test_output.used_variables.keys() == {VariableInformation("cat", None),
                                                  VariableInformation("dog", None)}
     assert test_output.used_variables[VariableInformation("cat", None)] == {
