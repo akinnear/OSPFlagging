@@ -180,7 +180,7 @@ def test_less_than_operation_CodeLocation():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 
 def test_greater_than_operation_CodeLocation():
@@ -222,14 +222,14 @@ return ff3 < test_1"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 
 def test_subtraction_operation_CodeLocation():
     logic = """
 test_1 = ff1 - ff2
 return ff3 < test_1"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"test_1": int, "ff1": int, "ff2": int, "ff3": int})
     assert test_output.used_variables.keys() == {VariableInformation("ff1", None),
                                                  VariableInformation("ff2", None),
                                                  VariableInformation("ff3", None),
