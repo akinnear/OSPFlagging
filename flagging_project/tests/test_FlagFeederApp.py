@@ -289,7 +289,7 @@ def test_division_operation_CodeLocation():
     logic = """
 test_1 = ff1 / ff2
 return ff3 < test_1"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"test_1": float, "ff1": int , "ff2": float, "ff3": int})
     assert test_output.used_variables.keys() == {VariableInformation("ff1", None),
                                                  VariableInformation("ff2", None),
                                                  VariableInformation("ff3", None),
