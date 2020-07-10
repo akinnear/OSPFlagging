@@ -401,7 +401,7 @@ if reduce(f, [47,11,42,102,13]) > 100:
     return ff1 > reduce(f, [47,11,42,102,13])    
 else:                                            
     return ff2 < reduce(f, [47,11,42,102,13])"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff1": int, "ff2": int, "f": int, "a": int, "b": int})
     assert test_output.used_variables.keys() == {VariableInformation("ff1", None),
                                                  VariableInformation("ff2", None),
                                                  VariableInformation("a", None),
@@ -425,7 +425,7 @@ else:
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 
 
