@@ -548,7 +548,7 @@ def test_lambda_expression_CodeLocation():
     logic = """                               
 add = (lambda x, y: x + y)(2, 3)              
 return ff1 == add"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff1": bool})
     assert test_output.used_variables.keys() == {VariableInformation("add", None),
                                                  VariableInformation("ff1", None),
                                                  VariableInformation("x", None),
