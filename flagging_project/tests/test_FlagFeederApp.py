@@ -467,7 +467,7 @@ if ff1 in list(result):
     return ff2 > max(list(result))
 else:
     return ff3 < min(list(result))"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff2": int, "ff3": int})
     assert test_output.used_variables.keys() == {VariableInformation("numbers", None),
                                                  VariableInformation("result", None),
                                                  VariableInformation("x", None),
