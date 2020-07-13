@@ -1497,15 +1497,14 @@ return ff1"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 def test_simple_function_dont_use_CodeLocation():
     logic = """
 def my_function():
     k = 4
     return 1
 return ff1"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff1": bool})
     assert test_output.used_variables.keys() == {VariableInformation("ff1")}
     assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(5, 7)}
     assert test_output.assigned_variables.keys() == {VariableInformation("k")}
