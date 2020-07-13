@@ -692,7 +692,7 @@ if ff1 == (max(a_list)):
     return ff1
 else:
     return ff2 > min(list(map(lambda x: x**2, a_list)))"""
-    test_output = determine_variables(logic, {"ff1": int, "ff2": int})
+    test_output = determine_variables(logic, {"ff1": bool, "ff2": int})
     assert test_output.used_variables.keys() == {VariableInformation("a_list", None),
                                                  VariableInformation("y_list", None),
                                                  VariableInformation("a", None), VariableInformation("ff1", None),
@@ -732,7 +732,7 @@ else:
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 
 def test_math_expression_4_CodeLocation():
