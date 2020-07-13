@@ -1619,7 +1619,7 @@ def my_function():
     a.b.k()
     return 1
 return ff1"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff1": bool})
     assert test_output.used_variables.keys() == {VariableInformation("ff1"),
                                                  VariableInformation.create_var(["a", "b"])}
     assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(5, 7)}
@@ -1636,13 +1636,12 @@ return ff1"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 def test_unused_var_CodeLocation():
     logic = """
 k = 4
 return ff1"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff1": bool})
     assert test_output.used_variables.keys() == {VariableInformation("ff1")}
     assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(3, 7)}
     assert test_output.assigned_variables.keys() == {VariableInformation("k")}
