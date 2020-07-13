@@ -2280,8 +2280,7 @@ def test_odd_text():
 
 
 
-#TODO
-# update test
+
 def test_empty_space_clean_up():
     logic = """    
 
@@ -2289,7 +2288,7 @@ x = 10
 
 
 return ff1 > x"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff1": int})
     assert test_output.used_variables.keys() == {VariableInformation("x"),
                                                  VariableInformation('ff1')}
     assert test_output.used_variables[VariableInformation("x")] == {CodeLocation(6, 13)}
