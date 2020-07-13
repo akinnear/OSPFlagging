@@ -957,7 +957,7 @@ elif max(b) in reduce_step:
     return ff1 < 10
 else: 
     return ff1 + ff2"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff2": int, "ff1": int})
     assert test_output.used_variables.keys() == {VariableInformation("a", None),
                                                  VariableInformation("b", None),
                                                  VariableInformation("c", None),
@@ -1126,7 +1126,7 @@ def test_with_no_as_CodeLocation():
     logic = """
 with method(item):
     return ff1 > 100"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"item": object, "ff1": int})
     assert test_output.used_variables.keys() == {VariableInformation("ff1"),
                                                  VariableInformation("item")}
     assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(3, 11)}
@@ -1174,7 +1174,7 @@ def test_func_CodeLocation():
 def myfunc(xyz):
     return xyz+10
 myfunc(ff1) > 10"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff1": int})
     assert test_output.used_variables.keys() == {VariableInformation("ff1"),
                                                  VariableInformation("xyz")}
     assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(4, 7)}
@@ -1478,13 +1478,12 @@ return 'not in' in fizzbuzz"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 def test_simple_set_return_another_CodeLocation():
     logic = """
 k = 4
 return ff1"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff1": bool})
     assert test_output.used_variables.keys() == {VariableInformation("ff1")}
     assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(3, 7)}
     assert test_output.assigned_variables.keys() == {VariableInformation("k")}
