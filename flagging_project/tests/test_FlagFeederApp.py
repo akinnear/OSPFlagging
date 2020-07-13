@@ -659,7 +659,7 @@ import math
 x = 10
 y = math.sqrt(10)
 return ff1 > x"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"x": int, "y": int, "ff1": int})
     assert test_output.used_variables.keys() == {VariableInformation("x", None),
                                                  VariableInformation("ff1", None)}
     assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(5, 13)}
@@ -688,11 +688,11 @@ y_list = [1]
 for a in a_list:
     if math.sqrt(abs(a)) <= 4:
         y_list.append(math.sqrt(a))
-if ff1 in (max(a_list)):
+if ff1 == (max(a_list)):
     return ff1
 else:
     return ff2 > min(list(map(lambda x: x**2, a_list)))"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff1": int, "ff2": int})
     assert test_output.used_variables.keys() == {VariableInformation("a_list", None),
                                                  VariableInformation("y_list", None),
                                                  VariableInformation("a", None), VariableInformation("ff1", None),
