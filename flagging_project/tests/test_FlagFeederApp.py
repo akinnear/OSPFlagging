@@ -1856,7 +1856,7 @@ class MyClass():
         self.val = val
 my_val = MyClass(ff1)
 return my_val.val"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"my_val.val": bool})
     assert test_output.used_variables.keys() == {VariableInformation("ff1"),
                                                  VariableInformation.create_var(["my_val", "val"])}
     assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(5, 17)}
@@ -1919,7 +1919,7 @@ len(list[ff:]) > 10"""
 def test_simple_flag_CodeLocation():
     logic = """
 f["MY_FLAG"]"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"""f["MY_FLAG"]""": bool})
     assert test_output.used_variables.keys() == {VariableInformation("f")}
     assert test_output.used_variables[VariableInformation("f")] == {CodeLocation(2, 0)}
     assert test_output.assigned_variables.keys() == set()
@@ -2110,7 +2110,7 @@ def test_import_with_as_2_CodeLocation():
     logic = """
 from math import sqrt as sq
 return sq(ff1) > 10"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff1": float})
     assert test_output.used_variables.keys() == {VariableInformation("ff1")}
     assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(3, 10)}
     assert test_output.assigned_variables.keys() == set()
@@ -2125,15 +2125,16 @@ return sq(ff1) > 10"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 def test_import_with_as_3_CodeLocation():
     logic = """
 from math import cos as c, sin as s
 x = c(10)
-y = s(10)"""
+y = s(10)
+return x > 10"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == set()
+    assert test_output.used_variables.keys() == {VariableInformation("x")}
+    assert test_output.used_variables[VariableInformation("x")] == {CodeLocation(5, 7)}
     assert test_output.assigned_variables.keys() == {VariableInformation("x"),
                                                      VariableInformation("y")}
     assert test_output.assigned_variables[VariableInformation("x")] == {CodeLocation(3, 0)}
@@ -2151,15 +2152,16 @@ y = s(10)"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 def test_import_with_as_4_CodeLocation():
     logic = """
 from math import (cos as c, sin as s)
 x = c(10)
-y = s(10)"""
+y = s(10)
+return y > 10"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == set()
+    assert test_output.used_variables.keys() == {VariableInformation("y")}
+    assert test_output.used_variables[VariableInformation("y")] == {CodeLocation(5, 7)}
     assert test_output.assigned_variables.keys() == {VariableInformation("x"),
                                                      VariableInformation("y")}
     assert test_output.assigned_variables[VariableInformation("x")] == {CodeLocation(3, 0)}
