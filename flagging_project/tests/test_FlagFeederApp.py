@@ -2543,6 +2543,7 @@ def test_determine_known_flag_feeders_wrong_type_3():
     assert len(test_output.validation_results.validation_errors) != 0
     assert len(test_output.validation_results.other_errors) == 0
 
+
 def test_determine_known_flag_feeders_wrong_type_4():
     logic = """return cat or dog"""
     test_output = determine_variables(logic, {"cat": bool, "dog": int})
