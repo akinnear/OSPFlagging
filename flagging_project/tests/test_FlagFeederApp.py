@@ -916,13 +916,12 @@ def test_feeder_function_function_CodeLocation():
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 def test_determine_flag_feeders_CodeLocation():
     logic = """
 unused1, unused2 = fish, bird
 return cat < 10 and fish > 100"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"cat": int, "fish": float})
     assert test_output.used_variables.keys() == {VariableInformation("cat", None),
                                                  VariableInformation("fish", None),
                                                  VariableInformation("bird", None)}
