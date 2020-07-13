@@ -2326,8 +2326,7 @@ ff1 > 10
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 def test_empty_space_clean_up_single_multi_line_return():
     logic = """    
 
@@ -2348,8 +2347,8 @@ ff1 > 10 and \
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
-    assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.validation_errors) != 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 
 def test_boolean_flag_feeder_only():
