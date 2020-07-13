@@ -2435,11 +2435,10 @@ def test_determine_invalid_return_2():
     assert len(test_output.validation_results.validation_errors) != 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 def test_determine_dynamic_flag_feeders():
     logic = """return cat or dog"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"cat": bool, "dog": bool})
     assert test_output.used_variables == {
         VariableInformation("cat"): {CodeLocation(1, 7)},
         VariableInformation("dog"): {CodeLocation(1, 14)},
