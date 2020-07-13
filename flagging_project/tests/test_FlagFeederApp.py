@@ -734,14 +734,15 @@ else:
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) != 0
 
-
+#TODO
+# update test
 def test_math_expression_4_CodeLocation():
     logic = """
 import math
 x.y = 10
 a.b = math.sqrt(10)
 return ff1 > x.y"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff1": int, "x.y": int})
     assert test_output.used_variables.keys() == {VariableInformation.create_var(["x", "y"]),
                                                  VariableInformation("ff1", None)}
     assert test_output.used_variables[VariableInformation.create_var(["x", "y"])] == {CodeLocation(5, 13)}
@@ -761,7 +762,8 @@ return ff1 > x.y"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_tuple_assignment_2_CodeLocation():
     logic = """
 import math
@@ -823,7 +825,8 @@ else:
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_tuple_assignment_CodeLocation():
     logic = """
 (x, y, z) = (-11, 2, 3)"""
@@ -844,7 +847,8 @@ def test_tuple_assignment_CodeLocation():
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_object_CodeLocation():
     logic = """
 a.b.c.d.e > 10"""
@@ -862,7 +866,8 @@ a.b.c.d.e > 10"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_object_function_CodeLocation():
     logic = """
 a.b.c() > 10"""
@@ -878,7 +883,8 @@ a.b.c() > 10"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_object_function_2_CodeLocation():
     logic = """
 a.b.c > 10"""
@@ -898,7 +904,7 @@ a.b.c > 10"""
 
 def test_feeder_function_function_CodeLocation():
     logic = """ff1.lower() == 'my value'"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff1": str})
     assert test_output.used_variables == {VariableInformation("ff1", None): {CodeLocation(1, 0)}}
     assert test_output.assigned_variables.keys() == set()
     assert test_output.referenced_functions == {VariableInformation.create_var(["ff1", "lower"]): {CodeLocation(1, 0)}}
@@ -910,7 +916,8 @@ def test_feeder_function_function_CodeLocation():
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_determine_flag_feeders_CodeLocation():
     logic = """
 unused1, unused2 = fish, bird
@@ -935,7 +942,8 @@ return cat < 10 and fish > 100"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_map_filter_lambda_2_CodeLocation():
     logic = """    
 a = [1,2,3,4]
@@ -1006,7 +1014,8 @@ else:
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_map_filter_lambda_CodeLocation():
     logic = """
 import math
@@ -1112,7 +1121,8 @@ return cat in animals"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_with_no_as_CodeLocation():
     logic = """
 with method(item):
@@ -1133,7 +1143,8 @@ with method(item):
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_with_using_as_CodeLocation():
     logic = """
 with method(ff1, ff2) as my_with:
@@ -1157,7 +1168,8 @@ with method(ff1, ff2) as my_with:
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_func_CodeLocation():
     logic = """
 def myfunc(xyz):
@@ -1181,7 +1193,8 @@ myfunc(ff1) > 10"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_list_comprehension_CodeLocation():
     logic = """
 names = set([name.id 
@@ -1247,7 +1260,8 @@ isinstance(ff1, int)"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_complex_class_reference_CodeLocation():
     logic = """
 isinstance(a.b.Class, ff1)"""
@@ -1267,7 +1281,8 @@ isinstance(a.b.Class, ff1)"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_complex_object_reference_CodeLocation():
     logic = """
 my_function(a.b.c, c.d.e)"""
@@ -1287,7 +1302,8 @@ my_function(a.b.c, c.d.e)"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_complex_object_reference_complex_function_CodeLocation():
     logic = """
 a.b.c.my_function(a.b.c, c.d.e)"""
@@ -1309,7 +1325,8 @@ a.b.c.my_function(a.b.c, c.d.e)"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_complex_object_function_reference_complex_function_CodeLocation():
     logic = """
 a.b.c.my_function(a.b.c(), c.d.e())"""
@@ -1462,7 +1479,8 @@ return 'not in' in fizzbuzz"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_simple_set_return_another_CodeLocation():
     logic = """
 k = 4
@@ -1481,7 +1499,8 @@ return ff1"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_simple_function_dont_use_CodeLocation():
     logic = """
 def my_function():
@@ -1503,7 +1522,8 @@ return ff1"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_simple_function_dont_use_complex_CodeLocation():
     logic = """
 def my_function():
@@ -1542,7 +1562,8 @@ x.y.z = 5"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_complex_use():
     logic = """
 x.y.z > 10"""
@@ -1559,7 +1580,8 @@ x.y.z > 10"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_complex_in_function_CodeLocation():
     logic = """
 def my_function():
@@ -1594,7 +1616,8 @@ x.y.z = 5"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_simple_function_dont_use_complex_2_CodeLocation():
     logic = """
 def my_function():
@@ -1618,7 +1641,8 @@ return ff1"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_unused_var_CodeLocation():
     logic = """
 k = 4
@@ -1637,7 +1661,8 @@ return ff1"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_try_except_finally_CodeLocation():
     logic = """
 try:
@@ -1719,7 +1744,8 @@ finally:
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_try_except_finally_in_defined_function_CodeLocation():
     logic = """
 def my_func():
@@ -1807,7 +1833,8 @@ return my_func()"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_unused_class_CodeLocation():
     logic = """
 class MyClass:
@@ -1827,7 +1854,8 @@ return ff1"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_used_class_CodeLocation():
     logic = """
 class MyClass():
@@ -1853,7 +1881,8 @@ return my_val.val"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_dictionary_CodeLocation():
     logic = """
 dict[ff] > 10"""
@@ -1892,7 +1921,8 @@ len(list[ff:]) > 10"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_simple_flag_CodeLocation():
     logic = """
 f["MY_FLAG"]"""
@@ -1910,7 +1940,8 @@ f["MY_FLAG"]"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_simple_flag_get():
     logic = """
 f.get("MY_FLAG")"""
@@ -1927,7 +1958,8 @@ f.get("MY_FLAG")"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_function_with_vars_CodeLocation():
     logic = """my_func(a.b.c, x.y.z)"""
     test_output = determine_variables(logic)
@@ -1946,7 +1978,8 @@ def test_function_with_vars_CodeLocation():
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_function_with_vars_using_import_function_CodeLocation():
     logic = """
 import math
@@ -1971,7 +2004,8 @@ my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_function_with_vars_using_import_function_2_CodeLocation():
     logic = """
 import pandas as pd, math
@@ -2004,7 +2038,8 @@ my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_function_with_vars_using_import_value_CodeLocation():
     logic = """
 import math
@@ -2025,7 +2060,8 @@ my_func(math.PI, math.E)"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_import_from_CodeLocation():
     logic = """
 from sqlalchemy import create_engine
@@ -2053,7 +2089,8 @@ engine = create_engine('oracle+cx_oracle://' + username + ':' + password + '@' +
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_import_with_as_CodeLocation():
     logic = """
 import math as m
@@ -2095,7 +2132,8 @@ return sq(ff1) > 10"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_import_with_as_3_CodeLocation():
     logic = """
 from math import cos as c, sin as s
@@ -2120,7 +2158,8 @@ y = s(10)"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_import_with_as_4_CodeLocation():
     logic = """
 from math import (cos as c, sin as s)
@@ -2145,7 +2184,8 @@ y = s(10)"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_import_with_as_5_CodeLocation():
     logic = """
 import math as m
@@ -2173,7 +2213,8 @@ y = m.sqrt(x)"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_special_lambda_CodeLocation():
     logic = """
 high_ord_func = lambda x, func: x + func(x)
@@ -2202,7 +2243,8 @@ return high_ord_func(ff1, lambda x: x * x) > ff2"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_invalid():
     logic = """
 improper 
@@ -2223,7 +2265,8 @@ y = = =  q2@"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_odd_text():
     logic = "improper"
     test_output = determine_variables(logic)
@@ -2241,7 +2284,8 @@ def test_odd_text():
 
 
 
-
+#TODO
+# update test
 def test_empty_space_clean_up():
     logic = """    
 
@@ -2265,7 +2309,8 @@ return ff1 > x"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_empty_space_clean_up_single_line():
     logic = """    
 
@@ -2286,7 +2331,8 @@ ff1 > 10
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_empty_space_clean_up_single_multi_line_return():
     logic = """    
 
@@ -2326,7 +2372,8 @@ def test_boolean_flag_feeder_only():
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_boolean_flag_feeder_only():
     logic = """
      
@@ -2394,7 +2441,8 @@ def test_determine_invalid_return_2():
     assert len(test_output.validation_results.validation_errors) != 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_determine_dynamic_flag_feeders():
     logic = """return cat or dog"""
     test_output = determine_variables(logic)
@@ -2536,7 +2584,8 @@ def test_determine_known_flag_feeders_invalid_type_for_math():
     assert len(test_output.validation_results.validation_errors) != 0
     assert len(test_output.validation_results.other_errors) == 0
 
-
+#TODO
+# update test
 def test_unreachable():
     logic = """\
 if True or cat:
