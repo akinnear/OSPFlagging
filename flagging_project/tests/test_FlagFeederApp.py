@@ -2395,15 +2395,14 @@ def test_boolean_flag_feeder_only():
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 def test_boolean_flag_feeder_only():
     logic = """
      
 ff1
 
 """
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff1": bool})
     assert test_output.used_variables.keys() == {VariableInformation('ff1')}
     assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(3, 0)}
     assert test_output.assigned_variables.keys() == set()
