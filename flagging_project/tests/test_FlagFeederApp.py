@@ -765,21 +765,22 @@ return ff1 > x.y"""
     assert len(test_output.validation_results.other_errors) == 0
 
 #TODO
-# update test
+# update test,
+# int, att-defined error
 def test_tuple_assignment_2_CodeLocation():
     logic = """
 import math
 a_list = [10, 13, 16, 19, 22, -212]
 y_list = [1]
-(ff1, ff2, z) = ("potato", True, 12.8)
+(ff1, ff2, z) = (12, True, 12.8)
 for a in a_list:
     if math.sqrt(abs(a)) <= 4 and z > 10:
         y_list.add(math.sqrt(a))
 if ff1.isin(max(y_list)):
-    return ff1
+    return ff1 > 10
 else:
     return ff2 > min(list(map(lambda x: x**2, a_list)))"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff2": int, "ff1": int})
     assert test_output.used_variables.keys() == {VariableInformation("a_list", None),
                                                  VariableInformation("y_list", None),
                                                  VariableInformation("a", None),
