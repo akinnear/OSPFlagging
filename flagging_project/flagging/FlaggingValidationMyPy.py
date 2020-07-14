@@ -82,6 +82,6 @@ def flag_function({func_variables}) -> bool:
 
 def _process_line(is_single_line, line, return_points):
     new_line = line
-    if is_single_line and line and len(return_points) == 0:
+    if is_single_line and line.strip() and len(return_points) == 0:
         new_line = f"return {line}"
     return f"    {new_line}"
