@@ -1128,6 +1128,7 @@ return cat in animals"""
 
 #TODO
 # update test
+# name defined error
 def test_with_no_as_CodeLocation():
     logic = """
 with method(item):
@@ -1150,11 +1151,12 @@ with method(item):
 
 #TODO
 # update test
+# name defined error, no any return error
 def test_with_using_as_CodeLocation():
     logic = """
 with method(ff1, ff2) as my_with:
     return my_with > 100"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"my_with": int})
     assert test_output.used_variables.keys() == {VariableInformation("ff1"),
                                                  VariableInformation("ff2"),
                                                  VariableInformation("my_with")}
@@ -1175,20 +1177,21 @@ with method(ff1, ff2) as my_with:
 
 #TODO
 # update test
+# no any return error
 def test_func_CodeLocation():
     logic = """
 def myfunc(xyz):
     return xyz+10
-myfunc(ff1) > 10"""
+return myfunc(ff1) > 10"""
     test_output = determine_variables(logic, {"ff1": int})
     assert test_output.used_variables.keys() == {VariableInformation("ff1"),
                                                  VariableInformation("xyz")}
-    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(4, 7)}
+    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(4, 14)}
     assert test_output.used_variables[VariableInformation("xyz")] == {CodeLocation(3, 11)}
     assert test_output.assigned_variables.keys() == {VariableInformation("xyz")}
     assert test_output.assigned_variables[VariableInformation("xyz")] == {CodeLocation(2, 11)}
     assert test_output.referenced_functions.keys() == {VariableInformation("myfunc")}
-    assert test_output.referenced_functions[VariableInformation("myfunc")] == {CodeLocation(4, 0)}
+    assert test_output.referenced_functions[VariableInformation("myfunc")] == {CodeLocation(4, 7)}
     assert test_output.defined_functions.keys() == {VariableInformation("myfunc")}
     assert test_output.defined_functions[VariableInformation("myfunc")] == {CodeLocation(2, 4)}
     assert test_output.defined_classes.keys() == set()
@@ -1200,6 +1203,7 @@ myfunc(ff1) > 10"""
 
 #TODO
 # update test
+# syntax error
 def test_list_comprehension_CodeLocation():
     logic = """
 names = set([name.id 
@@ -1267,6 +1271,7 @@ isinstance(ff1, int)"""
 
 #TODO
 # update test
+# syntax error
 def test_complex_class_reference_CodeLocation():
     logic = """
 isinstance(a.b.Class, ff1)"""
@@ -1288,6 +1293,7 @@ isinstance(a.b.Class, ff1)"""
 
 #TODO
 # update test
+# syntax error
 def test_complex_object_reference_CodeLocation():
     logic = """
 my_function(a.b.c, c.d.e)"""
@@ -1309,6 +1315,7 @@ my_function(a.b.c, c.d.e)"""
 
 #TODO
 # update test
+# syntax error
 def test_complex_object_reference_complex_function_CodeLocation():
     logic = """
 a.b.c.my_function(a.b.c, c.d.e)"""
@@ -1332,6 +1339,7 @@ a.b.c.my_function(a.b.c, c.d.e)"""
 
 #TODO
 # update test
+# syntax error
 def test_complex_object_function_reference_complex_function_CodeLocation():
     logic = """
 a.b.c.my_function(a.b.c(), c.d.e())"""
@@ -1566,6 +1574,7 @@ x.y.z = 5"""
 
 #TODO
 # update test
+# syntax error
 def test_complex_use():
     logic = """
 x.y.z > 10"""
@@ -1609,6 +1618,7 @@ return ff1"""
 
 #TODO
 # update test
+# syntax error
 def test_complex_assign():
     logic = """
 x.y.z = 5"""
@@ -1619,6 +1629,7 @@ x.y.z = 5"""
 
 #TODO
 # update test
+# syntax error
 def test_simple_function_dont_use_complex_2_CodeLocation():
     logic = """
 def my_function():
@@ -1663,6 +1674,7 @@ return ff1"""
 
 #TODO
 # update test
+# syntax error
 def test_try_except_finally_CodeLocation():
     logic = """
 try:
@@ -1746,6 +1758,7 @@ finally:
 
 #TODO
 # update test
+# syntax error
 def test_try_except_finally_in_defined_function_CodeLocation():
     logic = """
 def my_func():
@@ -1855,6 +1868,7 @@ return ff1"""
 
 #TODO
 # update test
+# syntax error
 def test_used_class_CodeLocation():
     logic = """
 class MyClass():
@@ -1882,10 +1896,11 @@ return my_val.val"""
 
 #TODO
 # update test
+# no any return error
 def test_dictionary_CodeLocation():
     logic = """
 dict[ff] > 10"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff": int})
     assert test_output.used_variables.keys() == {VariableInformation("dict"),
                                                  VariableInformation("ff")}
     assert test_output.used_variables == {VariableInformation("dict"): {CodeLocation(2, 0)},
@@ -1922,6 +1937,7 @@ len(list[ff:]) > 10"""
 
 #TODO
 # update test
+# no any return error
 def test_simple_flag_CodeLocation():
     logic = """
 f["MY_FLAG"]"""
@@ -1941,6 +1957,7 @@ f["MY_FLAG"]"""
 
 #TODO
 # update test
+# no any return error
 def test_simple_flag_get():
     logic = """
 f.get("MY_FLAG")"""
@@ -1959,6 +1976,7 @@ f.get("MY_FLAG")"""
 
 #TODO
 # update test
+# syntax error
 def test_function_with_vars_CodeLocation():
     logic = """my_func(a.b.c, x.y.z)"""
     test_output = determine_variables(logic)
@@ -1979,6 +1997,7 @@ def test_function_with_vars_CodeLocation():
 
 #TODO
 # update test
+# syntax error
 def test_function_with_vars_using_import_function_CodeLocation():
     logic = """
 import math
@@ -2005,6 +2024,7 @@ my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
 
 #TODO
 # update test
+# syntax error
 def test_function_with_vars_using_import_function_2_CodeLocation():
     logic = """
 import pandas as pd, math
@@ -2039,6 +2059,7 @@ my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
 
 #TODO
 # update test
+# syntax error
 def test_function_with_vars_using_import_value_CodeLocation():
     logic = """
 import math
@@ -2059,8 +2080,7 @@ my_func(math.PI, math.E)"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 def test_import_from_CodeLocation():
     logic = """
 from sqlalchemy import create_engine
@@ -2086,7 +2106,7 @@ engine = create_engine('oracle+cx_oracle://' + username + ':' + password + '@' +
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 #TODO
 # update test
