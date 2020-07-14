@@ -2241,6 +2241,7 @@ return y > 10"""
 
 #TODO
 # update test
+# non any return error
 def test_special_lambda_CodeLocation():
     logic = """
 high_ord_func = lambda x, func: x + func(x)
@@ -2269,8 +2270,7 @@ return high_ord_func(ff1, lambda x: x * x) > ff2"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 def test_invalid():
     logic = """
 improper 
@@ -2289,7 +2289,7 @@ y = = =  q2@"""
     assert test_output.referenced_flags.keys() == set()
     assert len(test_output.errors) == 2
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 
 def test_odd_text():
