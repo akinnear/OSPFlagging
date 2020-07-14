@@ -1901,7 +1901,7 @@ return my_val.val"""
 def test_dictionary_CodeLocation():
     logic = """
 dict[ff] > 10"""
-    test_output = determine_variables(logic, {"ff": int})
+    test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {VariableInformation("dict"),
                                                  VariableInformation("ff")}
     assert test_output.used_variables == {VariableInformation("dict"): {CodeLocation(2, 0)},
@@ -1942,7 +1942,7 @@ len(list[ff:]) > 10"""
 def test_simple_flag_CodeLocation():
     logic = """
 f["MY_FLAG"]"""
-    test_output = determine_variables(logic, {"""f["MY_FLAG"]""": bool})
+    test_output = determine_variables(logic)
     assert test_output.used_variables.keys() == {VariableInformation("f")}
     assert test_output.used_variables[VariableInformation("f")] == {CodeLocation(2, 0)}
     assert test_output.assigned_variables.keys() == set()
