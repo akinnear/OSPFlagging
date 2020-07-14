@@ -629,6 +629,7 @@ else:
 #TODO
 # Issue #1
 # don't allow user to overwrite module
+# override module assignment error, no any return error
 def test_math_overwrite_module_CodeLocation():
     logic = """
 import math
@@ -736,6 +737,7 @@ else:
 
 #TODO
 # update test
+# name defined error, var.var
 def test_math_expression_4_CodeLocation():
     logic = """
 import math
@@ -827,6 +829,7 @@ else:
 
 #TODO
 # update test
+# syntax error
 def test_tuple_assignment_CodeLocation():
     logic = """
 (x, y, z) = (-11, 2, 3)"""
@@ -849,6 +852,7 @@ def test_tuple_assignment_CodeLocation():
 
 #TODO
 # update test
+# syntax error
 def test_object_CodeLocation():
     logic = """
 a.b.c.d.e > 10"""
@@ -868,6 +872,7 @@ a.b.c.d.e > 10"""
 
 #TODO
 # update test
+# syntax error
 def test_object_function_CodeLocation():
     logic = """
 a.b.c() > 10"""
@@ -885,6 +890,7 @@ a.b.c() > 10"""
 
 #TODO
 # update test
+# syntax error
 def test_object_function_2_CodeLocation():
     logic = """
 a.b.c > 10"""
@@ -943,6 +949,7 @@ return cat < 10 and fish > 100"""
 
 #TODO
 # update test
+# return value error, name defined error
 def test_map_filter_lambda_2_CodeLocation():
     logic = """    
 a = [1,2,3,4]
@@ -1013,12 +1020,11 @@ else:
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 def test_map_filter_lambda_CodeLocation():
     logic = """
 import math
-import pandas
+from functools import reduce
 a = [1,2,3,4]
 b = [17,12,11,10]        
 c = [-1,-4,5,9]    
@@ -1031,7 +1037,7 @@ elif max(c) in d:
     return ff1 > min(c)
 else:
     return ff3 == True"""
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff1": int, "ff2": int, "ff3": bool})
     assert test_output.used_variables.keys() == {VariableInformation("a", None),
                                                  VariableInformation("b", None),
                                                  VariableInformation("c", None),
@@ -1087,13 +1093,13 @@ else:
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == {ModuleInformation("math"),
-                                                     ModuleInformation("pandas")}
+                                                     ModuleInformation("functools")}
     assert test_output.referenced_modules[ModuleInformation("math")] == {CodeLocation(2, 7)}
-    assert test_output.referenced_modules[ModuleInformation("pandas")] == {CodeLocation(3, 7)}
+    assert test_output.referenced_modules[ModuleInformation("functools")] == {CodeLocation(3, 5)}
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 
 def test_variables_in_list_CodeLocation():
