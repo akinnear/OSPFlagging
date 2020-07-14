@@ -1853,8 +1853,7 @@ return ff1"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 # syntax error
 def test_used_class_CodeLocation():
     logic = """
@@ -1879,7 +1878,7 @@ return my_val.val"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 #TODO
 # update test
@@ -1961,8 +1960,7 @@ f.get("MY_FLAG")"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 # syntax error
 def test_function_with_vars_CodeLocation():
     logic = """my_func(a.b.c, x.y.z)"""
@@ -1980,10 +1978,9 @@ def test_function_with_vars_CodeLocation():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
-#TODO
-# update test
+
 # syntax error
 def test_function_with_vars_using_import_function_CodeLocation():
     logic = """
@@ -2007,7 +2004,7 @@ my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 #TODO
 # update test
