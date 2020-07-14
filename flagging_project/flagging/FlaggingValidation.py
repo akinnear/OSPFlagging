@@ -1,7 +1,6 @@
 from flagging.FlagFeederApp import determine_variables
 
 
-
 def validate_flag_logic(flag_logic):
     return validate_flag_logic_information(determine_variables(flag_logic))
 

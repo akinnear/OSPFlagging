@@ -2,6 +2,7 @@ from flagging.FlaggingNodeVisitor import FlagFeederNodeVisitor, CodeLocation
 import os
 from mypy import api
 
+
 class TypeValidationResults:
     def __init__(self, validation_errors=None, other_errors=None, warnings=None):
         self.validation_errors = validation_errors if validation_errors else []
@@ -16,6 +17,7 @@ class TypeValidationResults:
 
     def add_warning(self, warning):
         self.warnings.append(warning)
+
 
 def _validate_returns_boolean(flag_logic, is_single_line, return_points, nv: FlagFeederNodeVisitor,
                               flag_feeders):
