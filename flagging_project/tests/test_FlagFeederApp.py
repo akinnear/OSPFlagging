@@ -828,8 +828,7 @@ else:
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 # syntax error
 def test_tuple_assignment_CodeLocation():
     logic = """
@@ -849,10 +848,9 @@ def test_tuple_assignment_CodeLocation():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
-#TODO
-# update test
+
 # syntax error
 def test_object_CodeLocation():
     logic = """
@@ -869,7 +867,7 @@ a.b.c.d.e > 10"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 #TODO
 # update test
