@@ -869,8 +869,7 @@ a.b.c.d.e > 10"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) != 0
 
-#TODO
-# update test
+
 # syntax error
 def test_object_function_CodeLocation():
     logic = """
@@ -885,10 +884,9 @@ a.b.c() > 10"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
-#TODO
-# update test
+
 # syntax error
 def test_object_function_2_CodeLocation():
     logic = """
@@ -904,7 +902,7 @@ a.b.c > 10"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 
 def test_feeder_function_function_CodeLocation():
