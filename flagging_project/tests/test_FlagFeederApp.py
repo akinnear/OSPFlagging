@@ -2108,15 +2108,18 @@ engine = create_engine('oracle+cx_oracle://' + username + ':' + password + '@' +
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) != 0
 
-#TODO
-# update test
+
 def test_import_with_as_CodeLocation():
     logic = """
 import math as m
 x = m.sqrt(10)
-y = m.sqrt(x)"""
+y = m.sqrt(x)
+return y > 10"""
     test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("x")}
+    assert test_output.used_variables.keys() == {VariableInformation("x"),
+                                                 VariableInformation("y")}
+    assert test_output.used_variables[VariableInformation("x")] == {CodeLocation(4, 11)}
+    assert test_output.used_variables[VariableInformation("y")] == {CodeLocation(5, 7)}
     assert test_output.assigned_variables.keys() == {VariableInformation("x"),
                                                      VariableInformation("y")}
     assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["m", "sqrt"])}
