@@ -2333,8 +2333,7 @@ return ff1 > x"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 def test_empty_space_clean_up_single_line():
     logic = """    
 
@@ -2342,7 +2341,7 @@ ff1 > 10
 
 
 """
-    test_output = determine_variables(logic)
+    test_output = determine_variables(logic, {"ff1": int})
     assert test_output.used_variables.keys() == {VariableInformation('ff1')}
     assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(3, 0)}
     assert test_output.assigned_variables.keys() == set()
