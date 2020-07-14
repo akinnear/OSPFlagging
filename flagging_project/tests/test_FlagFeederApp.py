@@ -1198,8 +1198,7 @@ return myfunc(ff1) > 10"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 # syntax error
 def test_list_comprehension_CodeLocation():
     logic = """
@@ -1244,7 +1243,7 @@ return ff1 in names"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 
 def test_class_reference_CodeLocation():
@@ -1266,8 +1265,7 @@ isinstance(ff1, int)"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 # syntax error
 def test_complex_class_reference_CodeLocation():
     logic = """
@@ -1286,10 +1284,9 @@ isinstance(a.b.Class, ff1)"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
-#TODO
-# update test
+
 # syntax error
 def test_complex_object_reference_CodeLocation():
     logic = """
@@ -1308,7 +1305,7 @@ my_function(a.b.c, c.d.e)"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 #TODO
 # update test
