@@ -2610,6 +2610,7 @@ def test_determine_known_flag_feeders_invalid_type_for_math():
 
 #TODO
 # update test
+# unreachable error
 def test_unreachable():
     logic = """\
 if True or cat:
