@@ -2006,8 +2006,7 @@ my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) != 0
 
-#TODO
-# update test
+
 # syntax error
 def test_function_with_vars_using_import_function_2_CodeLocation():
     logic = """
@@ -2041,8 +2040,7 @@ my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 # syntax error
 def test_function_with_vars_using_import_value_CodeLocation():
     logic = """
@@ -2062,7 +2060,7 @@ my_func(math.PI, math.E)"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 
 def test_import_from_CodeLocation():
