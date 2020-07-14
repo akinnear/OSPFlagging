@@ -1307,8 +1307,7 @@ my_function(a.b.c, c.d.e)"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) != 0
 
-#TODO
-# update test
+
 # syntax error
 def test_complex_object_reference_complex_function_CodeLocation():
     logic = """
@@ -1329,10 +1328,9 @@ a.b.c.my_function(a.b.c, c.d.e)"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
-#TODO
-# update test
+
 # syntax error
 def test_complex_object_function_reference_complex_function_CodeLocation():
     logic = """
@@ -1358,7 +1356,7 @@ a.b.c.my_function(a.b.c(), c.d.e())"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 
 def test_generator_CodeLocation():
@@ -1566,8 +1564,7 @@ x.y.z = 5"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 # syntax error
 def test_complex_use():
     logic = """
@@ -1583,7 +1580,7 @@ x.y.z > 10"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 
 def test_complex_in_function_CodeLocation():
@@ -1610,8 +1607,7 @@ return ff1"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 # syntax error
 def test_complex_assign():
     logic = """
@@ -1619,10 +1615,9 @@ x.y.z = 5"""
     test_output = determine_variables(logic)
     assert test_output.assigned_variables.keys() == {VariableInformation.create_var(["x", "y", "z"])}
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
-#TODO
-# update test
+
 # syntax error
 def test_simple_function_dont_use_complex_2_CodeLocation():
     logic = """
@@ -1645,7 +1640,7 @@ return ff1"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 
 def test_unused_var_CodeLocation():
@@ -1666,8 +1661,7 @@ return ff1"""
     assert len(test_output.validation_results.validation_errors) == 0
     assert len(test_output.validation_results.other_errors) == 0
 
-#TODO
-# update test
+
 # syntax error
 def test_try_except_finally_CodeLocation():
     logic = """
@@ -1748,10 +1742,9 @@ finally:
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
-#TODO
-# update test
+
 # syntax error
 def test_try_except_finally_in_defined_function_CodeLocation():
     logic = """
@@ -1838,7 +1831,7 @@ return my_func()"""
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
-    assert len(test_output.validation_results.other_errors) == 0
+    assert len(test_output.validation_results.other_errors) != 0
 
 
 def test_unused_class_CodeLocation():
