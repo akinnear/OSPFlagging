@@ -3,6 +3,7 @@ from flagging.FlaggingNodeVisitor import CodeLocation
 from flagging.FlagFeederApp import FlagLogicInformation, determine_variables
 from flagging.VariableInformation import VariableInformation
 from flagging.ModuleInformation import ModuleInformation
+from flagging.FlagLogicInformation import FlagLogicInformation
 
 def test_flag_feeder_availble():
     flag_feeders = {'FF1'}
