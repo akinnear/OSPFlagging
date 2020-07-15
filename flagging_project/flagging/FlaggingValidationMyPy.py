@@ -5,7 +5,7 @@ import os
 from mypy import api
 
 
-def validate_returns_boolean(flagLogicInformation: FlagLogicInformation, flag_feeders):
+def validate_returns_boolean(flagLogicInformation: FlagLogicInformation, flag_feeders) -> TypeValidationResults:
     """
     This function will attempt to run mypy and get the results out.
     A resulting warning is something like this:

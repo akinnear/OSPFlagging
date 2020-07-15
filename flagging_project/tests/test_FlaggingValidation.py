@@ -2,8 +2,13 @@ from flagging.FlaggingValidation import validate_flag_logic_information
 from flagging.FlaggingNodeVisitor import CodeLocation, determine_variables
 from flagging.VariableInformation import VariableInformation
 from flagging.FlagLogicInformation import FlagLogicInformation
+from flagging.TypeValidationResults import TypeValidationResults
+import mock
 
-def test_flag_feeder_availble():
+
+@mock.patch('flagging.FlaggingValidationMyPy.validate_returns_boolean', return_value=TypeValidationResults())
+def test_flag_feeder_availble(func):
+    print(func)
     flag_feeders = {'FF1'}
     flag_info = FlagLogicInformation(
         used_variables={VariableInformation('FF1'): {CodeLocation()}}

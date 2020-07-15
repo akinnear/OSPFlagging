@@ -1,19 +1,16 @@
 from flagging.FlaggingNodeVisitor import determine_variables
+from flagging.FlaggingValidationMyPy import validate_returns_boolean
+
+from flagging.FlagLogicInformation import FlagLogicInformation
 
 
-def validate_flag_logic(flag_logic):
-    return validate_flag_logic_information(determine_variables(flag_logic))
+def validate_flag_logic(flag_feeders, flag_logic):
+    return validate_flag_logic_information(flag_feeders=flag_feeders, flag_logic_info=determine_variables(flag_logic))
 
 
-def validate_flag_logic_information(flag_feeders, flag_logic_info):
-
+def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInformation):
     results = FlaggingValidationResults()
-
-    #TODO
-    # include mypy output flagging validation
-    # done
-    my_py_output = flag_logic_info.validation_results
-    #
+    my_py_output = validate_returns_boolean(flag_logic_info, flag_feeders if flag_feeders else {})
 
     used_variables = dict(flag_logic_info.used_variables)
     for used_var in flag_logic_info.used_variables:
