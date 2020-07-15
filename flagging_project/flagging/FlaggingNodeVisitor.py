@@ -2,7 +2,6 @@ from flagging.VariableInformation import VariableInformation
 from flagging.ModuleInformation import ModuleInformation
 from flagging.ErrorInformation import ErrorInformation
 from flagging.FlagLogicInformation import FlagLogicInformation
-from flagging.TypeValidationResults import TypeValidationResults
 from ast import NodeVisitor
 import contextlib
 import ast
@@ -294,7 +293,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
             ast.NodeVisitor.generic_visit(self, node)
 
 
-def determine_variables(logic, flag_feeders=None):
+def determine_variables(logic):
     nv = FlagFeederNodeVisitor()
 
     logic_copy = logic
@@ -309,9 +308,6 @@ def determine_variables(logic, flag_feeders=None):
             nv.errors.append(ErrorInformation(se.msg, se.text, se.lineno, se.offset))
             logic_copy = logic_copy.replace(se.text.strip(), "##ErRoR##")
 
-    # type_return_results = _validate_returns_boolean(logic_copy, nv.return_points,
-    #                                                 nv, flag_feeders if flag_feeders else {})
-
     return FlagLogicInformation(used_variables=nv.used_variables,
                                 assigned_variables=nv.assigned_variables,
                                 referenced_functions=nv.referenced_functions,
@@ -321,4 +317,4 @@ def determine_variables(logic, flag_feeders=None):
                                 referenced_flags=nv.referenced_flags,
                                 return_points=nv.return_points,
                                 errors=nv.errors,
-                                validation_results=TypeValidationResults())
+                                flag_logic=logic_copy)

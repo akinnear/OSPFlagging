@@ -1,11 +1,11 @@
-from flagging.FlaggingNodeVisitor import FlagFeederNodeVisitor, CodeLocation
+from flagging.FlaggingNodeVisitor import CodeLocation
 from flagging.TypeValidationResults import TypeValidationResults
+from flagging.FlagLogicInformation import FlagLogicInformation
 import os
 from mypy import api
 
 
-def _validate_returns_boolean(flag_logic, return_points, nv: FlagFeederNodeVisitor,
-                              flag_feeders):
+def validate_returns_boolean(flagLogicInformation: FlagLogicInformation, flag_feeders):
     """
     This function will attempt to run mypy and get the results out.
     A resulting warning is something like this:
@@ -19,13 +19,13 @@ def _validate_returns_boolean(flag_logic, return_points, nv: FlagFeederNodeVisit
     """
 
     # Determine if we have a single line
-    is_single_line = len(flag_logic.strip().splitlines()) == 1
+    is_single_line = len(flagLogicInformation.flag_logic.strip().splitlines()) == 1
 
     spaced_flag_logic = os.linesep.join(
-        [_process_line(is_single_line, line, return_points) for line in flag_logic.splitlines()])
+        [_process_line(is_single_line, line, flagLogicInformation.return_points) for line in flagLogicInformation.flag_logic.splitlines()])
 
-    used_var_names = {str(var) for var in nv.used_variables}
-    assigned_var_names = {str(var) for var in nv.assigned_variables}
+    used_var_names = {str(var) for var in flagLogicInformation.used_variables}
+    assigned_var_names = {str(var) for var in flagLogicInformation.assigned_variables}
 
     must_define_flag_feeders = used_var_names - assigned_var_names
 
