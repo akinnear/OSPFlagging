@@ -1,8 +1,7 @@
 from flagging.FlaggingValidation import validate_flag_logic_information
 from flagging.FlaggingNodeVisitor import CodeLocation
-from flagging.FlagFeederApp import FlagLogicInformation, determine_variables
+from flagging.FlagFeederApp import determine_variables
 from flagging.VariableInformation import VariableInformation
-from flagging.ModuleInformation import ModuleInformation
 from flagging.FlagLogicInformation import FlagLogicInformation
 
 def test_flag_feeder_availble():

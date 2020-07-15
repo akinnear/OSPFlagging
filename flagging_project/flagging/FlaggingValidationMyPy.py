@@ -1,25 +1,10 @@
 from flagging.FlaggingNodeVisitor import FlagFeederNodeVisitor, CodeLocation
+from flagging.TypeValidationResults import TypeValidationResults
 import os
 from mypy import api
 
 
-class TypeValidationResults:
-    def __init__(self, validation_errors=None, other_errors=None, warnings=None):
-        self.validation_errors = validation_errors if validation_errors else []
-        self.other_errors = other_errors if other_errors else []
-        self.warnings = warnings if warnings else []
-
-    def add_validation_error(self, error):
-        self.validation_errors.append(error)
-
-    def add_other_error(self, error):
-        self.other_errors.append(error)
-
-    def add_warning(self, warning):
-        self.warnings.append(warning)
-
-
-def _validate_returns_boolean(flag_logic, is_single_line, return_points, nv: FlagFeederNodeVisitor,
+def _validate_returns_boolean(flag_logic, return_points, nv: FlagFeederNodeVisitor,
                               flag_feeders):
     """
     This function will attempt to run mypy and get the results out.
@@ -32,6 +17,9 @@ def _validate_returns_boolean(flag_logic, is_single_line, return_points, nv: Fla
     :param flag_logic: The logic to test
     :return: An error object that shows possible typing errors
     """
+
+    # Determine if we have a single line
+    is_single_line = len(flag_logic.strip().splitlines()) == 1
 
     spaced_flag_logic = os.linesep.join(
         [_process_line(is_single_line, line, return_points) for line in flag_logic.splitlines()])

@@ -11,4 +11,4 @@ class FlagLogicInformation:
         self.referenced_flags = referenced_flags if referenced_flags else {}
         self.return_points = return_points if return_points else set()
         self.errors = errors if errors else []
-        self.validation_results = validation_results
+        self.validation_results = validation_results if validation_results else {}

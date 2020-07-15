@@ -1,4 +1,4 @@
-from flagging.FlagFeederApp import determine_variables
+from flagging.FlaggingNodeVisitor import determine_variables
 
 
 def validate_flag_logic(flag_logic):

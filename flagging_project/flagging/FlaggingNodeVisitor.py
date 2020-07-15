@@ -1,8 +1,11 @@
 from flagging.VariableInformation import VariableInformation
 from flagging.ModuleInformation import ModuleInformation
-import ast
+from flagging.ErrorInformation import ErrorInformation
+from flagging.FlagLogicInformation import FlagLogicInformation
+from flagging.TypeValidationResults import TypeValidationResults
 from ast import NodeVisitor
 import contextlib
+import ast
 
 
 def _print_helper(node):
@@ -289,3 +292,33 @@ class FlagFeederNodeVisitor(NodeVisitor):
     def generic_visit(self, node):
         with self.handle_node_stack(node):
             ast.NodeVisitor.generic_visit(self, node)
+
+
+def determine_variables(logic, flag_feeders=None):
+    nv = FlagFeederNodeVisitor()
+
+    logic_copy = logic
+
+    invalid_check = True
+    while(invalid_check):
+        try:
+            root = ast.parse(logic_copy)
+            nv.visit(root)
+            invalid_check = False
+        except SyntaxError as se:
+            nv.errors.append(ErrorInformation(se.msg, se.text, se.lineno, se.offset))
+            logic_copy = logic_copy.replace(se.text.strip(), "##ErRoR##")
+
+    # type_return_results = _validate_returns_boolean(logic_copy, nv.return_points,
+    #                                                 nv, flag_feeders if flag_feeders else {})
+
+    return FlagLogicInformation(used_variables=nv.used_variables,
+                                assigned_variables=nv.assigned_variables,
+                                referenced_functions=nv.referenced_functions,
+                                defined_functions=nv.defined_functions,
+                                defined_classes=nv.defined_classes,
+                                referenced_modules=nv.referenced_modules,
+                                referenced_flags=nv.referenced_flags,
+                                return_points=nv.return_points,
+                                errors=nv.errors,
+                                validation_results=TypeValidationResults())
