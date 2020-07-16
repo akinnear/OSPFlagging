@@ -6,9 +6,10 @@ from flagging.FlagLogicInformation import FlagLogicInformation
 
 def validate_flag_logic(flag_feeders, flag_logic):
     #TODO
-    # need to mock determine_variables
-    return validate_flag_logic_information(flag_feeders=flag_feeders, flag_logic_info=determine_variables(flag_logic))
+    # need to mock determine_variables in
+    # mocker.patch('application.is_windows', return_value=True)
 
+    return validate_flag_logic_information(flag_feeders=flag_feeders, flag_logic_info=determine_variables(flag_logic))
 
 def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInformation):
     results = FlaggingValidationResults()
@@ -61,3 +62,4 @@ class FlaggingValidationResults:
 
     def add_warning(self, warning):
         self.warnings.append(warning)
+
