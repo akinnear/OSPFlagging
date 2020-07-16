@@ -61,11 +61,11 @@ def flag_function({func_variables}) -> bool:
             if error_code == "return-value":
                 #incompatible return types, return something other than bool
                 #column offset for "return" keyword
-                type_validation.add_validation_error({error_code: CodeLocation(line_number=error_code_location_line,
-                                                                               column_offset=0)})
+                type_validation.add_validation_error(error_code, CodeLocation(line_number=error_code_location_line,
+                                                                               column_offset=0))
             else:
-                type_validation.add_other_error({error_code: CodeLocation(line_number=error_code_location_line,
-                                                                               column_offset=0)})
+                type_validation.add_other_error(error_code, CodeLocation(line_number=error_code_location_line,
+                                                                               column_offset=0))
 
     return type_validation
 
