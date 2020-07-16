@@ -11,6 +11,7 @@ packages = [
 python = "^3.8.3"
 mypy = "^0.782"
 pytest-mock = "^3.2.0"
+mock = "^4.0.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.6"
