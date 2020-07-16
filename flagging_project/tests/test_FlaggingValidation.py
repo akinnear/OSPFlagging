@@ -5,8 +5,6 @@ from flagging.VariableInformation import VariableInformation
 from flagging.FlagLogicInformation import FlagLogicInformation
 from flagging.TypeValidationResults import TypeValidationResults
 from unittest import mock
-from mock import patch
-from unittest.mock import MagicMock
 
 
 
@@ -25,79 +23,61 @@ def test_flag_feeder_availble(func):
     assert len(result.errors) == 0
     assert len(result.warnings) == 0
 
-#TODO
-# test fails
-@mock.patch(FlaggingValidation.determine_variables, return_value=FlagLogicInformation(), autospec=True)
-@mock.patch(FlaggingValidation.validate_returns_boolean, return_value=TypeValidationResults(), autospec=True)
-def test_flag_feeder_not_availble(mock_determine_variables, mock_validate_returns_boolean):
-    flag_feeders = {}
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+def test_flag_feeder_not_available(mock_determine_variables, mock_validate_returns_boolean):
+    flag_feeders = {"FF1"}
     flag_info = FlagLogicInformation(
         used_variables={VariableInformation('FF1'): {CodeLocation()}}
     )
     result = validate_flag_logic_information(flag_feeders, flag_info)
-
     assert len(result.errors) == 0
     assert len(result.warnings) == 0
 
-#TODO
-# test fails
-# @patch.object(FlaggingValidation.determine_variables, autospec=True, return_value=FlagLogicInformation())
-# @patch.object(FlaggingValidation.validate_returns_boolean, autospec=True, return_value=TypeValidationResults())
-def test_variable_defined_and_used(FlaggingValidation, mocker):
-    # mocker.patch.object(FlaggingValidation.determine_variables, return_value=FlagLogicInformation())
-    # mocker.patch.object(FlaggingValidation.validate_returns_boolean, return_value=TypeValidationResults())
 
-    mocker.patch.object(FlaggingValidation, 'determine_variables', return_value=FlagLogicInformation())
-    mocker.patch.object(FlaggingValidation, 'validate_returns_boolean', return_value=TypeValidationResults())
-    # mocker.patch(FlaggingValidation, "determine_variables", return_value=FlagLogicInformation())
-    # mocker.patch(FlaggingValidation, "validate_returns_boolean", return_value=TypeValidationResults())
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+def test_variable_defined_and_used_2(mock_determine_variables, mock_validate_returns_boolean):
     flag_feeders = {}
     flag_info = FlagLogicInformation(
         used_variables={VariableInformation('x'): {CodeLocation()}},
         assigned_variables={VariableInformation('x'): {CodeLocation()}}
     )
     result = validate_flag_logic_information(flag_feeders, flag_info)
-
-
-
     assert len(result.errors) == 0
     assert len(result.warnings) == 0
 
-#TODO
-# test fails
-def test_variable_defined_and_not_used():
-    FlaggingValidation.determine_variables = MagicMock(return_value=FlagLogicInformation())
-    FlaggingValidation.validate_returns_boolean = MagicMock(return_value=TypeValidationResults())
+
+
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+def test_variable_defined_and_not_used(mock_determine_variables, mock_validate_returns_boolean):
     flag_feeders = {}
     flag_info = FlagLogicInformation(
         assigned_variables={VariableInformation('x'): {CodeLocation()}}
     )
     result = validate_flag_logic_information(flag_feeders, flag_info)
-
     assert len(result.errors) == 0
     assert len(result.warnings) == 1
 
-def test_variable_valid_return(mocker):
 
-    mocker.patch.object(FlaggingValidation, 'determine_variables')
-    FlaggingValidation.determine_variables.return_value = FlagLogicInformation()
-
-    mocker.patch.object(FlaggingValidation, 'validate_returns_boolean')
-    FlaggingValidation.validate_returns_boolean.return_value = TypeValidationResults()
-
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+def test_variable_valid_return(mock_determine_variables, mock_validate_returns_boolean):
     flag_feeders = {}
     flag_info = FlagLogicInformation(
         assigned_variables={VariableInformation('x'): {CodeLocation()}}
     )
     result = validate_flag_logic_information(flag_feeders, flag_info)
-
     assert len(result.errors) == 0
     assert len(result.warnings) == 1
+
 
 def test_variable_numerical_compare():
     logic = """return FF1 > 10 """
     test_output = determine_variables(logic)
     assert len(test_output.validation_results.validation_errors) == 0
+
 
 #TODO
 # test fails
@@ -106,12 +86,14 @@ def test_variable_numerical_invalid():
     test_output = determine_variables(logic)
     assert len(test_output.validation_results.validation_errors) != 0
 
+
 #TODO
 # test fails
 def test_variable_any():
     logic = """return FF1"""
     test_output = determine_variables(logic)
     assert len(test_output.validation_results.validation_errors) != 0
+
 
 def test_determine_validation_location_1():
     logic = """cat and dog"""
@@ -131,6 +113,7 @@ def test_determine_validation_location_1():
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
 
+
 def test_determine_validation_location_2():
     logic = """return cat and dog"""
     test_output = determine_variables(logic)
@@ -148,6 +131,7 @@ def test_determine_validation_location_2():
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
+
 
 def test_determine_validation_location_3():
     logic = """c and d"""
@@ -167,6 +151,7 @@ def test_determine_validation_location_3():
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
 
+
 def test_determine_validation_location_4():
     logic = """return c and d"""
     test_output = determine_variables(logic)
@@ -185,6 +170,7 @@ def test_determine_validation_location_4():
     assert test_output.errors == []
     assert len(test_output.validation_results.validation_errors) == 0
 
+
 #TODO
 # test fails
 def test_mypy_integration():
@@ -197,6 +183,5 @@ def test_mypy_integration():
         validation_results=test_output.validation_results
     )
     result = validate_flag_logic_information(flag_feeders, flag_info)
-
     assert len(result.errors) == 0
     assert len(result.warnings) == 0
