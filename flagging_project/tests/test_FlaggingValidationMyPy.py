@@ -7,18 +7,18 @@ from flagging.FlaggingValidationMyPy import validate_returns_boolean
 def test_mypy_explicit_fail():
     logic = """cat and dog"""
     test_output = validate_returns_boolean(determine_variables(logic), {"cat": int, "dog": bool})
-    assert test_output.other_errors == []
-    assert test_output.validation_errors != []
-    assert test_output.warnings == []
+    assert test_output.other_errors == {}
+    assert test_output.validation_errors != {}
+    assert test_output.warnings == {}
 
 
 def test_mypy_explicit_pass():
     logic = """
 man or woman"""
     test_output = validate_returns_boolean(determine_variables(logic), {"man": bool, "woman": bool})
-    assert test_output.validation_errors == []
-    assert test_output.other_errors == []
-    assert test_output.warnings == []
+    assert test_output.validation_errors == {}
+    assert test_output.other_errors == {}
+    assert test_output.warnings == {}
 
 
 def test_mypy_explicit_int():
@@ -26,9 +26,9 @@ def test_mypy_explicit_int():
 cat = 100
 return cat < 10"""
     test_output = validate_returns_boolean(determine_variables(logic), {"cat": int})
-    assert test_output.validation_errors == []
-    assert test_output.other_errors == []
-    assert test_output.warnings == []
+    assert test_output.validation_errors == {}
+    assert test_output.other_errors == {}
+    assert test_output.warnings == {}
 
 
 def test_mypy_non_explicit_int():
@@ -36,11 +36,11 @@ def test_mypy_non_explicit_int():
 cat = 100
 return cat < 10"""
     test_output = validate_returns_boolean(determine_variables(logic), {})
-    assert test_output.validation_errors == []
-    assert test_output.other_errors == []
-    assert test_output.warnings == []
+    assert test_output.validation_errors == {}
+    assert test_output.other_errors == {}
+    assert test_output.warnings == {}
 
-def test_determine_flag_feeder_if_statement_CodeLocation():
+def test_mypy_if_statement_explicit():
     logic = """
 x = (ff1 or ff2)
 y = (ff3 + ff4)
@@ -48,31 +48,23 @@ if y > 100:
     return ff5 != x
 else:
     return ff5 == x"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("y", None), VariableInformation("x", None),
-                                                 VariableInformation("ff1", None), VariableInformation('ff2', None),
-                                                 VariableInformation("ff3", None), VariableInformation("ff4", None),
-                                                 VariableInformation("ff5", None)}
-    assert test_output.used_variables[VariableInformation("y", None)] == {CodeLocation(line_number=4, column_offset=3)}
-    assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(line_number=5, column_offset=18),
-                                                                          CodeLocation(line_number=7, column_offset=18)}
-    assert test_output.used_variables[VariableInformation("ff1", None)] == {CodeLocation(2, 5)}
-    assert test_output.used_variables[VariableInformation("ff2", None)] == {CodeLocation(2, 12)}
-    assert test_output.used_variables[VariableInformation("ff3", None)] == {CodeLocation(3, 5)}
-    assert test_output.used_variables[VariableInformation("ff4", None)] == {CodeLocation(3, 11)}
-    assert test_output.used_variables[VariableInformation("ff5", None)] == {
-        CodeLocation(line_number=5, column_offset=11),
-        CodeLocation(line_number=7, column_offset=11)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("y", None), VariableInformation("x", None)}
-    assert test_output.assigned_variables["y"] == {CodeLocation(line_number=3, column_offset=0)}
-    assert test_output.assigned_variables["x"] == {CodeLocation(line_number=2, column_offset=0)}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.return_points == {CodeLocation(5, 4), CodeLocation(7, 4)}
-    assert test_output.errors == []
+    test_output = validate_returns_boolean(determine_variables(logic), {"ff5": bool, "ff1": bool, "ff2": bool, "ff3": int, "ff4": int})
+    assert test_output.validation_errors == {}
+    assert test_output.other_errors == {}
+    assert test_output.warnings == {}
+
+def test_mypy_if_statement_nonexplicit():
+    logic = """
+x = (ff1 or ff2)
+y = (ff3 + ff4)
+if y > 100:
+    return ff5 != x
+else:
+    return ff5 == x"""
+    test_output = validate_returns_boolean(determine_variables(logic), {})
+    assert test_output.validation_errors == {}
+    assert test_output.other_errors == {"no-any-return": {CodeLocation(5, 0), CodeLocation(7, 0)}}
+    assert test_output.warnings == {}
 
 
 def test_normal_expression_keys():
