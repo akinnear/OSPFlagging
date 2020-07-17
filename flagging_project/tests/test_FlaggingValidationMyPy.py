@@ -83,9 +83,7 @@ return ff1 > z"""
     assert test_output.other_errors == {"non-any-return": {CodeLocation(4, 0)}}
     assert test_output.warnings == {}
 
-#TODO
-# BUG fix
-# non any return error persisting despite flag_feeder declartions
+
 def test_mypy_normal_expression_explicit():
     logic = """
 def my_add(x, y): return x + y
@@ -98,60 +96,25 @@ return ff1 > z"""
     assert test_output.warnings == {}
 
 
-def test_normal_expression_CodeLocation():
-    logic = """
-def my_add(x, y): return x + y
-z = my_add(2, 3)
-return ff1 > z"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1", None), VariableInformation("z", None),
-                                                 VariableInformation("x", None), VariableInformation("y", None)}
-    assert test_output.used_variables[VariableInformation('ff1', None)] == {CodeLocation(4, 7)}
-    assert test_output.used_variables[VariableInformation("z", None)] == {CodeLocation(4, 13)}
-    assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(2, 25)}
-    assert test_output.used_variables[VariableInformation("y", None)] == {CodeLocation(2, 29)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("x", None), VariableInformation("y", None),
-                                                     VariableInformation("z", None)}
-    assert test_output.assigned_variables[VariableInformation("x", None)] == {CodeLocation(2, 11)}
-    assert test_output.assigned_variables[VariableInformation("y")] == {CodeLocation(2, 14)}
-    assert test_output.referenced_functions.keys() == {"my_add"}
-    assert test_output.defined_functions.keys() == {"my_add"}
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
 
-
-def test_equals_operation_CodeLocation():
+def test_mypy_equals_operation():
     logic = """return ff1 == ff2"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1", None), VariableInformation("ff2", None)}
-    assert test_output.used_variables == {
-        VariableInformation("ff1", None): {CodeLocation(line_number=1, column_offset=7)},
-        VariableInformation("ff2", None): {CodeLocation(line_number=1, column_offset=14)}}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    flag_feeders = {"ff1": str, "ff2": str}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.validation_errors == {}
+    assert test_output.other_errors == {}
+    assert test_output.warnings == {}
 
 
-def test_less_than_operation_CodeLocation():
+
+def test_mypy_less_than_operation():
     logic = """return ff1 >= ff2"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1", None), VariableInformation("ff2", None)}
-    assert test_output.used_variables == {
-        VariableInformation("ff1", None): {CodeLocation(line_number=1, column_offset=7)},
-        VariableInformation("ff2", None): {CodeLocation(line_number=1, column_offset=14)}}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    flag_feeders = {"ff1": float, "ff2": int}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.validation_errors == {}
+    assert test_output.other_errors == {}
+    assert test_output.warnings == {}
+
 
 
 def test_greater_than_operation_CodeLocation():
