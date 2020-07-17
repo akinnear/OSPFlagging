@@ -1,21 +1,22 @@
-from flagging.FlaggingNodeVisitor import determine_variables
-from flagging.FlaggingNodeVisitor import CodeLocation
+from flagging.FlaggingNodeVisitor import determine_variables, CodeLocation
 from flagging.VariableInformation import VariableInformation
-from flagging.FlaggingValidationMyPy import validate_returns_boolean
+from flagging.FlaggingValidation import validate_returns_boolean
 
 
 def test_mypy_explicit_fail():
     logic = """cat and dog"""
-    test_output = validate_returns_boolean(determine_variables(logic), {"cat": int, "dog": bool})
+    flag_feeders = {"cat": int, "dog": bool}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.validation_errors == {"return-value": {CodeLocation(1, 0)}}
     assert test_output.other_errors == {}
-    assert test_output.validation_errors != {}
     assert test_output.warnings == {}
 
 
 def test_mypy_explicit_pass():
     logic = """
 man or woman"""
-    test_output = validate_returns_boolean(determine_variables(logic), {"man": bool, "woman": bool})
+    flag_feeders = {"man": bool, "woman": bool}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
     assert test_output.validation_errors == {}
     assert test_output.other_errors == {}
     assert test_output.warnings == {}
@@ -25,7 +26,8 @@ def test_mypy_explicit_int():
     logic = """
 cat = 100
 return cat < 10"""
-    test_output = validate_returns_boolean(determine_variables(logic), {"cat": int})
+    flag_feeders = {"cat": int}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
     assert test_output.validation_errors == {}
     assert test_output.other_errors == {}
     assert test_output.warnings == {}
@@ -35,7 +37,8 @@ def test_mypy_non_explicit_int():
     logic = """
 cat = 100
 return cat < 10"""
-    test_output = validate_returns_boolean(determine_variables(logic), {})
+    flag_feeders = {}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
     assert test_output.validation_errors == {}
     assert test_output.other_errors == {}
     assert test_output.warnings == {}
@@ -48,7 +51,8 @@ if y > 100:
     return ff5 != x
 else:
     return ff5 == x"""
-    test_output = validate_returns_boolean(determine_variables(logic), {"ff5": bool, "ff1": bool, "ff2": bool, "ff3": int, "ff4": int})
+    flag_feeders = {"ff5": bool, "ff1": bool, "ff2": bool, "ff3": int, "ff4": int}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
     assert test_output.validation_errors == {}
     assert test_output.other_errors == {}
     assert test_output.warnings == {}
@@ -61,7 +65,8 @@ if y > 100:
     return ff5 != x
 else:
     return ff5 == x"""
-    test_output = validate_returns_boolean(determine_variables(logic), {})
+    flag_feeders = {}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
     assert test_output.validation_errors == {}
     assert test_output.other_errors == {"no-any-return": {CodeLocation(5, 0), CodeLocation(7, 0)}}
     assert test_output.warnings == {}
