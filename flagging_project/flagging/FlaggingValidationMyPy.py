@@ -32,6 +32,19 @@ def validate_returns_boolean(flagLogicInformation: FlagLogicInformation, flag_fe
     function_params = [f"{flag_feeder_name}: {flag_feeder_type.__name__}"
                        for (flag_feeder_name, flag_feeder_type) in flag_feeders.items()
                        if flag_feeder_name in must_define_flag_feeders]
+    #TODO
+    # ask Adam about inclusion of "account for extra passed parameters to pass mypy testing"
+    # else assigned variables can cause "no-any-return other_error"
+    # see test_FlaggingValidationMypy.test_mypy_normal_expression_explicit and remove "z:int" and
+    # "account for extra passed parameters to pass mypy testing" code portion
+    # to show error/issue
+    ##account for extra passed parameters to pass mypy testing
+    extra_function_params = [f"{flag_feeder_name}: {flag_feeder_type.__name__}"
+                             for (flag_feeder_name, flag_feeder_type) in flag_feeders.items()
+                             if flag_feeder_name not in must_define_flag_feeders]
+    ##
+
+
 
     flag_feeder_names = {name for name in flag_feeders}
     must_define_flag_feeders = must_define_flag_feeders - flag_feeder_names
@@ -39,6 +52,16 @@ def validate_returns_boolean(flagLogicInformation: FlagLogicInformation, flag_fe
     function_params.extend([name for name in must_define_flag_feeders])
 
     func_variables = ", ".join(function_params)
+
+    #TODO
+    # ask Adam about inclusion of "account for extra passed parameters to pass mypy testing"
+    # else assigned variables can cause "no-any-return other_error"
+    # see test_FlaggingValidationMypy.test_mypy_normal_expression_explicit and remove "z:int" and
+    # "account for extra passed parameters to pass mypy testing" code portion
+    # to show error/issue
+    ##account for extra passed parameters to pass mypy testing
+    func_variables = func_variables + ", " + ", ".join(extra_function_params)
+    ##
 
     typed_flag_logic_function = f"""\
 def flag_function({func_variables}) -> bool:
