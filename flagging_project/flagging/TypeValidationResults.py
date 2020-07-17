@@ -5,7 +5,7 @@ class TypeValidationResults:
         self.warnings = warnings if warnings else dict()
 
     def add_validation_error(self, error_code, cl):
-        if error_code in self.validation_errors.keys()():
+        if error_code in self.validation_errors.keys():
             self.validation_errors[error_code].add(cl)
         else:
             self.validation_errors.setdefault(error_code, set())
