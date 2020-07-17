@@ -7,8 +7,8 @@ def test_mypy_explicit_fail():
     logic = """cat and dog"""
     flag_feeders = {"cat": int, "dog": bool}
     test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
-    assert test_output.validation_errors == {"return-value": {CodeLocation(1, 0)}}
     assert test_output.other_errors == {}
+    assert test_output.validation_errors == {"return-value": {CodeLocation(1, 0)}}
     assert test_output.warnings == {}
 
 
@@ -17,8 +17,8 @@ def test_mypy_explicit_pass():
 man or woman"""
     flag_feeders = {"man": bool, "woman": bool}
     test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
-    assert test_output.validation_errors == {}
     assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
 
@@ -39,8 +39,8 @@ cat = 100
 return cat < 10"""
     flag_feeders = {}
     test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
-    assert test_output.validation_errors == {}
     assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
 def test_mypy_if_statement_explicit():
@@ -53,8 +53,8 @@ else:
     return ff5 == x"""
     flag_feeders = {"ff5": bool, "ff1": bool, "ff2": bool, "ff3": int, "ff4": int}
     test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
-    assert test_output.validation_errors == {}
     assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
 def test_mypy_if_statement_nonexplicit():
@@ -67,8 +67,8 @@ else:
     return ff5 == x"""
     flag_feeders = {}
     test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
-    assert test_output.validation_errors == {}
     assert test_output.other_errors == {"no-any-return": {CodeLocation(5, 0), CodeLocation(7, 0)}}
+    assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
 
@@ -79,8 +79,8 @@ z = my_add(2, 3)
 return ff1 > z"""
     flag_feeders = {}
     test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
-    assert test_output.validation_errors == {}
     assert test_output.other_errors == {"non-any-return": {CodeLocation(4, 0)}}
+    assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
 
@@ -91,8 +91,8 @@ z = my_add(2, 3)
 return ff1 > z"""
     flag_feeders = {"ff1": float, "z": int}
     test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
-    assert test_output.validation_errors == {}
     assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
 
@@ -101,8 +101,8 @@ def test_mypy_equals_operation():
     logic = """return ff1 == ff2"""
     flag_feeders = {"ff1": str, "ff2": str}
     test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
-    assert test_output.validation_errors == {}
     assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
 
@@ -111,43 +111,41 @@ def test_mypy_less_than_operation():
     logic = """return ff1 >= ff2"""
     flag_feeders = {"ff1": float, "ff2": int}
     test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
-    assert test_output.validation_errors == {}
     assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
 
-#TODO
-# why does this pass?
+
 def test_mypy_greater_than_operation():
     logic = """return ff1 <= ff2"""
     flag_feeders = {"ff1": bool, "ff2": int}
     test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
-    assert test_output.validation_errors == {}
     assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
 
-def test_add_operation_CodeLocation():
+def test_mypy_add_operation():
     logic = """
 test_1 = ff1 + ff2
 return ff3 < test_1"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1", None), VariableInformation("ff2", None),
-                                                 VariableInformation("ff3", None), VariableInformation("test_1", None)}
-    assert test_output.used_variables == {
-        VariableInformation("test_1", None): {CodeLocation(line_number=3, column_offset=13)},
-        VariableInformation("ff1", None): {CodeLocation(line_number=2, column_offset=9)},
-        VariableInformation("ff2", None): {CodeLocation(line_number=2, column_offset=15)},
-        VariableInformation("ff3", None): {CodeLocation(line_number=3, column_offset=7)}}
-    assert test_output.assigned_variables.keys() == {VariableInformation("test_1", None)}
-    assert test_output.assigned_variables == {
-        VariableInformation("test_1", None): {CodeLocation(line_number=2, column_offset=0)}}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    flag_feeders = {"ff1": bool, "ff3": bool}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {"no-any-return": {CodeLocation(3, 0)}}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
+
+
+def test_mypy_add_operation_2():
+    logic = """
+test_1 = ff1 + ff2
+return ff3 < test_1"""
+    flag_feeders = {"ff1": bool, "ff2": str, "ff3": bool}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {"operator": {CodeLocation(2, 0)}}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
 def test_subtraction_operation_CodeLocation():
