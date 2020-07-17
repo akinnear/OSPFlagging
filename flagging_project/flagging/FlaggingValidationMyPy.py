@@ -60,7 +60,8 @@ def validate_returns_boolean(flagLogicInformation: FlagLogicInformation, flag_fe
     # "account for extra passed parameters to pass mypy testing" code portion
     # to show error/issue
     ##account for extra passed parameters to pass mypy testing
-    func_variables = func_variables + ", " + ", ".join(extra_function_params)
+    if extra_function_params:
+        func_variables = func_variables + ", " + ", ".join(extra_function_params)
     ##
 
     typed_flag_logic_function = f"""\
