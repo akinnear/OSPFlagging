@@ -377,47 +377,23 @@ a.b.c.d.e > 10"""
 
 
 # syntax error
-def test_object_function_CodeLocation():
+def test_mypy_object_function():
     logic = """
 a.b.c() > 10"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables == {VariableInformation.create_var(["a", "b"]): {CodeLocation(2, 0)}}
-    assert test_output.assigned_variables == {}
-    assert test_output.referenced_functions == {VariableInformation.create_var(["a", "b", "c"]): {CodeLocation(2, 0)}}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    flag_feeders = {}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {"syntax": {CodeLocation(0, 0)}}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
-# syntax error
-def test_object_function_2_CodeLocation():
-    logic = """
-a.b.c > 10"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation.create_var(["a", "b", "c"])}
-    assert test_output.used_variables == {VariableInformation.create_var(["a", "b", "c"]): {CodeLocation(2, 0)}}
-    assert test_output.assigned_variables == {}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
-
-def test_feeder_function_function_CodeLocation():
+def test_mypy_feeder_function_function():
     logic = """ff1.lower() == 'my value'"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables == {VariableInformation("ff1", None): {CodeLocation(1, 0)}}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions == {VariableInformation.create_var(["ff1", "lower"]): {CodeLocation(1, 0)}}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    flag_feeders = {"ff1": str}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
 def test_determine_flag_feeders_CodeLocation():
