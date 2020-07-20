@@ -247,42 +247,18 @@ else:
     assert test_output.warnings == {}
 
 
-def test_map_lambda_CodeLocation():
+def test_mypy_map_lambda():
     logic = """
 a = [1,2,3,4]
 b = [17,12,11,10]
 c = [-1,-4,5,9]
-my_map_list = list(map(lambda x,y,z:x+y-z, a,b,c))"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("a", None),
-                                                 VariableInformation("b", None),
-                                                 VariableInformation("c", None),
-                                                 VariableInformation("x", None),
-                                                 VariableInformation("y", None),
-                                                 VariableInformation("z", None)}
-    assert test_output.used_variables[VariableInformation("a", None)] == {CodeLocation(5, 43)}
-    assert test_output.used_variables[VariableInformation("b", None)] == {CodeLocation(5, 45)}
-    assert test_output.used_variables[VariableInformation("c", None)] == {CodeLocation(5, 47)}
-    assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(5, 36)}
-    assert test_output.used_variables[VariableInformation("y", None)] == {CodeLocation(5, 38)}
-    assert test_output.used_variables[VariableInformation("z", None)] == {CodeLocation(5, 40)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("a", None),
-                                                     VariableInformation("b", None),
-                                                     VariableInformation("c", None),
-                                                     VariableInformation("my_map_list", None)}
-    assert test_output.assigned_variables[VariableInformation("a", None)] == {CodeLocation(2, 0)}
-    assert test_output.assigned_variables[VariableInformation("b", None)] == {CodeLocation(3, 0)}
-    assert test_output.assigned_variables[VariableInformation("c", None)] == {CodeLocation(4, 0)}
-    assert test_output.assigned_variables[VariableInformation("my_map_list", None)] == {CodeLocation(5, 0)}
-    assert test_output.referenced_functions.keys() == {VariableInformation("list", None),
-                                                       VariableInformation("map", None)}
-    assert test_output.referenced_functions[VariableInformation("list", None)] == {CodeLocation(5, 14)}
-    assert test_output.referenced_functions[VariableInformation("map", None)] == {CodeLocation(5, 19)}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+my_map_list = list(map(lambda x,y,z:x+y-z, a,b,c))
+return ff1 > max(my_map_list)"""
+    flag_feeders = {"ff1": int}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
 def test_lambda_expression_CodeLocation():
