@@ -487,29 +487,17 @@ with method(ff1, ff2) as my_with:
     assert test_output.warnings == {}
 
 
-# TODO
-# update test
-# no any return error
-def test_func_CodeLocation():
+
+def test_mypy_func():
     logic = """
 def myfunc(xyz):
     return xyz+10
 return myfunc(ff1) > 10"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1"),
-                                                 VariableInformation("xyz")}
-    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(4, 14)}
-    assert test_output.used_variables[VariableInformation("xyz")] == {CodeLocation(3, 11)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("xyz")}
-    assert test_output.assigned_variables[VariableInformation("xyz")] == {CodeLocation(2, 11)}
-    assert test_output.referenced_functions.keys() == {VariableInformation("myfunc")}
-    assert test_output.referenced_functions[VariableInformation("myfunc")] == {CodeLocation(4, 7)}
-    assert test_output.defined_functions.keys() == {VariableInformation("myfunc")}
-    assert test_output.defined_functions[VariableInformation("myfunc")] == {CodeLocation(2, 4)}
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    flag_feeders = {}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {"no-any-return": {CodeLocation(4, 0)}}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
 # syntax error
