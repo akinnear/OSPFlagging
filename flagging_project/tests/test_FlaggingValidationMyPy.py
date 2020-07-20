@@ -346,7 +346,7 @@ return ff1 > x.y"""
 # TODO
 # update test,
 # int, att-defined error
-def test_tuple_assignment_2_CodeLocation():
+def test_mypy_tuple_assignment_2():
     logic = """
 import math
 a_list = [10, 13, 16, 19, 22, -212]
@@ -354,56 +354,17 @@ y_list = [1]
 (ff1, ff2, z) = (12, True, 12.8)
 for a in a_list:
     if math.sqrt(abs(a)) <= 4 and z > 10:
-        y_list.add(math.sqrt(a))
-if ff1.isin(max(y_list)):
+        y_list.append(int(math.sqrt(a)))
+if ff1 in y_list:
     return ff1 > 10
 else:
     return ff2 > min(list(map(lambda x: x**2, a_list)))"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("a_list", None),
-                                                 VariableInformation("y_list", None),
-                                                 VariableInformation("a", None),
-                                                 VariableInformation("ff1", None),
-                                                 VariableInformation("ff2", None),
-                                                 VariableInformation("x", None),
-                                                 VariableInformation("z", None)}
-    assert test_output.used_variables[VariableInformation("a_list", None)] == {CodeLocation(6, 9), CodeLocation(12, 46)}
-    assert test_output.used_variables[VariableInformation("y_list", None)] == {CodeLocation(8, 8), CodeLocation(9, 16)}
-    assert test_output.used_variables[VariableInformation("a", None)] == {CodeLocation(6, 4), CodeLocation(7, 21),
-                                                                          CodeLocation(8, 29)}
-    assert test_output.used_variables[VariableInformation("ff1", None)] == {CodeLocation(9, 3), CodeLocation(10, 11)}
-    assert test_output.used_variables[VariableInformation("ff2", None)] == {CodeLocation(12, 11)}
-    assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(12, 40)}
-    assert test_output.used_variables[VariableInformation("z", None)] == {CodeLocation(7, 34)}
-    assert test_output.assigned_variables.keys() == {"a_list", "y_list", "ff1", "ff2", "z"}
-    assert test_output.assigned_variables["a_list"] == {CodeLocation(3, 0)}
-    assert test_output.assigned_variables["y_list"] == {CodeLocation(4, 0)}
-    assert test_output.assigned_variables["ff1"] == {CodeLocation(5, 1)}
-    assert test_output.assigned_variables["ff2"] == {CodeLocation(5, 6)}
-    assert test_output.assigned_variables["z"] == {CodeLocation(5, 11)}
-    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["math", "sqrt"]),
-                                                       VariableInformation.create_var(["ff1", "isin"]),
-                                                       VariableInformation("abs", None),
-                                                       VariableInformation("max", None),
-                                                       VariableInformation("min", None),
-                                                       VariableInformation("list", None),
-                                                       VariableInformation("map", None),
-                                                       VariableInformation.create_var(["y_list", "add"])}
-    assert test_output.referenced_functions[VariableInformation.create_var(["math", "sqrt"])] == {CodeLocation(7, 7),
-                                                                                                  CodeLocation(8, 19)}
-    assert test_output.referenced_functions[VariableInformation.create_var(["ff1", "isin"])] == {CodeLocation(9, 3)}
-    assert test_output.referenced_functions["abs"] == {CodeLocation(7, 17)}
-    assert test_output.referenced_functions["max"] == {CodeLocation(9, 12)}
-    assert test_output.referenced_functions["min"] == {CodeLocation(12, 17)}
-    assert test_output.referenced_functions["list"] == {CodeLocation(12, 21)}
-    assert test_output.referenced_functions["map"] == {CodeLocation(12, 26)}
-    assert test_output.referenced_functions[VariableInformation.create_var(["y_list", "add"])] == {CodeLocation(8, 8)}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == {ModuleInformation("math")}
-    assert test_output.referenced_modules == {ModuleInformation("math"): {CodeLocation(2, 7)}}
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    flag_feeders = {"ff1": int, "ff2": int}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
+
 
 
 # syntax error
