@@ -407,76 +407,27 @@ return cat < 10 and fish > 100"""
     assert test_output.warnings == {}
 
 
-# TODO
-# update test
-# return value error, name defined error
-def test_map_filter_lambda_2_CodeLocation():
-    logic = """    
+
+def test_mypy_map_filter_lambda_2():
+    logic = """
+from functools import reduce    
 a = [1,2,3,4]
 b = [17,12,11,10]        
 c = [-1,-4,5,9]
 map_step = list(map(lambda x,y,z:x+y-z, a,b,c))
 filter_step = list(filter(lambda x: x > 4, map_step))
-reduce_step = list(reduce(lambda x, y: x if x>y else y, filter_step))
-if max(a) in reduce_step:
+reduce_step = reduce(lambda x, y: x if x>y else y, filter_step)
+if max(a) == reduce_step:
     return ff2 > 10
-elif max(b) in reduce_step:
+elif max(b) == reduce_step:
     return ff1 < 10
 else: 
-    return ff1 + ff2"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("a", None),
-                                                 VariableInformation("b", None),
-                                                 VariableInformation("c", None),
-                                                 VariableInformation("map_step", None),
-                                                 VariableInformation("filter_step", None),
-                                                 VariableInformation("reduce_step", None),
-                                                 VariableInformation("x", None),
-                                                 VariableInformation("y", None),
-                                                 VariableInformation("z", None),
-                                                 VariableInformation("ff1", None),
-                                                 VariableInformation("ff2", None)}
-    assert test_output.used_variables[VariableInformation("a", None)] == {CodeLocation(5, 40), CodeLocation(8, 7)}
-    assert test_output.used_variables[VariableInformation("b", None)] == {CodeLocation(5, 42), CodeLocation(10, 9)}
-    assert test_output.used_variables[VariableInformation("c", None)] == {CodeLocation(5, 44)}
-    assert test_output.used_variables[VariableInformation("map_step", None)] == {CodeLocation(6, 43)}
-    assert test_output.used_variables[VariableInformation("filter_step", None)] == {CodeLocation(7, 56)}
-    assert test_output.used_variables[VariableInformation("reduce_step", None)] == {CodeLocation(8, 13),
-                                                                                    CodeLocation(10, 15)}
-    assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(5, 33), CodeLocation(6, 36),
-                                                                          CodeLocation(7, 39), CodeLocation(7, 44)}
-    assert test_output.used_variables[VariableInformation("y", None)] == {CodeLocation(5, 35), CodeLocation(7, 46),
-                                                                          CodeLocation(7, 53)}
-    assert test_output.used_variables[VariableInformation("z", None)] == {CodeLocation(5, 37)}
-    assert test_output.used_variables[VariableInformation("ff1", None)] == {CodeLocation(11, 11), CodeLocation(13, 11)}
-    assert test_output.used_variables[VariableInformation("ff2", None)] == {CodeLocation(9, 11), CodeLocation(13, 17)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("a", None),
-                                                     VariableInformation("b", None),
-                                                     VariableInformation("c", None),
-                                                     VariableInformation("map_step", None),
-                                                     VariableInformation("filter_step", None),
-                                                     VariableInformation("reduce_step", None)}
-    assert test_output.assigned_variables[VariableInformation("a", None)] == {CodeLocation(2, 0)}
-    assert test_output.assigned_variables[VariableInformation("b", None)] == {CodeLocation(3, 0)}
-    assert test_output.assigned_variables[VariableInformation("c", None)] == {CodeLocation(4, 0)}
-    assert test_output.referenced_functions.keys() == {VariableInformation("list", None),
-                                                       VariableInformation("map", None),
-                                                       VariableInformation("filter", None),
-                                                       VariableInformation("reduce", None),
-                                                       VariableInformation("max", None)}
-    assert test_output.referenced_functions[VariableInformation("list", None)] == {CodeLocation(5, 11),
-                                                                                   CodeLocation(6, 14),
-                                                                                   CodeLocation(7, 14)}
-    assert test_output.referenced_functions[VariableInformation("map", None)] == {CodeLocation(5, 16)}
-    assert test_output.referenced_functions[VariableInformation("filter", None)] == {CodeLocation(6, 19)}
-    assert test_output.referenced_functions[VariableInformation("reduce", None)] == {CodeLocation(7, 19)}
-    assert test_output.referenced_functions[VariableInformation("max", None)] == {CodeLocation(8, 3),
-                                                                                  CodeLocation(10, 5)}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    return ff3 > ff1 + ff2"""
+    flag_feeders = {"ff1": int, "ff2": int, "ff3": int}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
 def test_map_filter_lambda_CodeLocation():
