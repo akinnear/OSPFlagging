@@ -611,36 +611,16 @@ return ff1 > 0"""
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
-def test_complex_assign():
-    logic = """
-x.y.z = 5"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == set()
-    assert test_output.assigned_variables.keys() == {VariableInformation.create_var(["x", "y", "z"])}
-    assert test_output.assigned_variables[VariableInformation.create_var(["x", "y", "z"])] == {CodeLocation(2, 0)}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
 
 # syntax error
-def test_complex_use():
+def test_mypy_complex_use():
     logic = """
 x.y.z > 10"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation.create_var(["x", "y", "z"])}
-    assert test_output.used_variables[VariableInformation.create_var(["x", "y", "z"])] == {CodeLocation(2, 0)}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
+    flag_feeders = {"x.y.z": int}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {"syntax": {CodeLocation(0,0)}}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 def test_complex_in_function_CodeLocation():
     logic = """
