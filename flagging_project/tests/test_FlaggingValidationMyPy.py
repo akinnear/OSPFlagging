@@ -365,43 +365,15 @@ else:
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
-
-
 # syntax error
-def test_tuple_assignment_CodeLocation():
-    logic = """
-(x, y, z) = (-11, 2, 3)"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == set()
-    assert test_output.assigned_variables.keys() == {VariableInformation("x", None),
-                                                     VariableInformation("y", None),
-                                                     VariableInformation("z", None)}
-    assert test_output.assigned_variables == {VariableInformation("x", None): {CodeLocation(2, 1)},
-                                              VariableInformation("y", None): {CodeLocation(2, 4)},
-                                              VariableInformation("z", None): {CodeLocation(2, 7)}}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
-
-# syntax error
-def test_object_CodeLocation():
+def test_mypy_object():
     logic = """
 a.b.c.d.e > 10"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation.create_var(["a", "b", "c", "d", "e"])}
-    assert test_output.used_variables == {
-        VariableInformation.create_var(["a", "b", "c", "d", "e"]): {CodeLocation(2, 0)}}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    flag_feeders = {}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {"syntax": {CodeLocation(0, 0)}}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
 # syntax error
