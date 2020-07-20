@@ -514,7 +514,6 @@ return ff1 in names"""
     assert test_output.warnings == {}
 
 
-
 def test_generator_mypy():
     logic = """
 eggs = (x*2 for x in [1, 2, 3, 4, 5])
@@ -526,7 +525,7 @@ return 10 in eggs"""
     assert test_output.warnings == {}
 
 
-def test_generator_with_yield_CodeLocation():
+def test_mypy_generator_with_yield():
     logic = """
 # A simple generator function
 def my_gen():
@@ -542,30 +541,11 @@ def my_gen():
     yield ff1
 
 return 1 in my_gen()"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("n"),
-                                                 VariableInformation("m"),
-                                                 VariableInformation("ff1")}
-    assert test_output.used_variables[VariableInformation("n")] == {CodeLocation(7, 10), CodeLocation(8, 8)}
-    assert test_output.used_variables[VariableInformation("m")] == {CodeLocation(10, 10)}
-    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(13, 10)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("n"),
-                                                     VariableInformation("m"),
-                                                     VariableInformation("k")}
-    assert test_output.assigned_variables[VariableInformation("n")] == {CodeLocation(4, 4)}
-    assert test_output.assigned_variables[VariableInformation("m")] == {CodeLocation(8, 4)}
-    assert test_output.assigned_variables[VariableInformation("k")] == {CodeLocation(11, 4)}
-    assert test_output.referenced_functions.keys() == {VariableInformation("my_gen"),
-                                                       VariableInformation("print")}
-    assert test_output.referenced_functions[VariableInformation("my_gen")] == {CodeLocation(15, 12)}
-    assert test_output.referenced_functions[VariableInformation("print")] == {CodeLocation(5, 4), CodeLocation(9, 4),
-                                                                              CodeLocation(12, 4)}
-    assert test_output.defined_functions.keys() == {VariableInformation("my_gen")}
-    assert test_output.defined_functions[VariableInformation("my_gen")] == {CodeLocation(3, 4)}
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    flag_feeders = {}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
 def test_comprehension_2_CodeLocation():
