@@ -586,24 +586,17 @@ return ff1"""
     assert test_output.warnings == {}
 
 
-def test_simple_function_dont_use_CodeLocation():
+def test_mypy_simple_function_dont_use():
     logic = """
 def my_function():
     k = 4
     return 1
-return ff1"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1")}
-    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(5, 7)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("k")}
-    assert test_output.assigned_variables[VariableInformation("k")] == {CodeLocation(3, 4)}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == {VariableInformation("my_function")}
-    assert test_output.defined_functions[VariableInformation("my_function")] == {CodeLocation(2, 4)}
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+return ff1 > 0"""
+    flag_feeders = {"ff1": int}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
 def test_simple_function_dont_use_complex_CodeLocation():
