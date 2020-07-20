@@ -637,35 +637,20 @@ return ff1 > 0"""
     assert test_output.warnings == {}
 
 
-# syntax error
-def test_complex_assign():
-    logic = """
-x.y.z = 5"""
-    test_output = determine_variables(logic)
-    assert test_output.assigned_variables.keys() == {VariableInformation.create_var(["x", "y", "z"])}
-
 
 # syntax error
-def test_simple_function_dont_use_complex_2_CodeLocation():
+def test_mypy_simple_function_dont_use_complex_2():
     logic = """
 def my_function():
     a.b.k()
     return 1
-return ff1"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1"),
-                                                 VariableInformation.create_var(["a", "b"])}
-    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(5, 7)}
-    assert test_output.used_variables[VariableInformation.create_var(["a", "b"])] == {CodeLocation(3, 4)}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["a", "b", "k"])}
-    assert test_output.referenced_functions[VariableInformation.create_var(["a", "b", "k"])] == {CodeLocation(3, 4)}
-    assert test_output.defined_functions.keys() == {VariableInformation("my_function")}
-    assert test_output.defined_functions[VariableInformation("my_function")] == {CodeLocation(2, 4)}
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+return ff1 > 1"""
+    flag_feeders = {"ff1": int}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {"syntax": {CodeLocation(0,0)}}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
+
 
 
 def test_unused_var_CodeLocation():
