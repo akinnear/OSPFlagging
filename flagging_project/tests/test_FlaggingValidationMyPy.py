@@ -622,27 +622,19 @@ x.y.z > 10"""
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
-def test_complex_in_function_CodeLocation():
+
+def test_mypy_complex_in_function():
     logic = """
 def my_function():
     x = 2
     a.b.k = 4
     return 1
-return ff1"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1")}
-    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(6, 7)}
-    assert test_output.assigned_variables.keys() == {VariableInformation.create_var(["a", "b", "k"]),
-                                                     VariableInformation("x")}
-    assert test_output.assigned_variables[VariableInformation.create_var(["a", "b", "k"])] == {CodeLocation(4, 4)}
-    assert test_output.assigned_variables[VariableInformation("x")] == {CodeLocation(3, 4)}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == {VariableInformation("my_function")}
-    assert test_output.defined_functions[VariableInformation("my_function")] == {CodeLocation(2, 4)}
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+return ff1 > 0"""
+    flag_feeders = {"ff1": int}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
 # syntax error
