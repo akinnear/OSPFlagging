@@ -548,26 +548,15 @@ return 1 in my_gen()"""
     assert test_output.warnings == {}
 
 
-def test_comprehension_2_CodeLocation():
+def test_mypy_comprehension_2():
     logic = """
 eggs = [x*2 for x in [1, 2, 3, 4, 5]]
 return 10 in eggs"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("x"),
-                                                 VariableInformation("eggs")}
-    assert test_output.used_variables[VariableInformation("x")] == {CodeLocation(2, 8)}
-    assert test_output.used_variables[VariableInformation("eggs")] == {CodeLocation(3, 13)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("x"),
-                                                     VariableInformation("eggs")}
-    assert test_output.assigned_variables[VariableInformation("x")] == {CodeLocation(2, 16)}
-    assert test_output.assigned_variables[VariableInformation("eggs")] == {CodeLocation(2, 0)}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
+    flag_feeders = {}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 def test_fizzbuzz_comprehension_CodeLocation():
     logic = """
