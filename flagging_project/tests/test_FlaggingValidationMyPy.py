@@ -396,27 +396,15 @@ def test_mypy_feeder_function_function():
     assert test_output.warnings == {}
 
 
-def test_determine_flag_feeders_CodeLocation():
+def test_mypy_determine_flag_feeders():
     logic = """
 unused1, unused2 = fish, bird
 return cat < 10 and fish > 100"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("cat", None),
-                                                 VariableInformation("fish", None),
-                                                 VariableInformation("bird", None)}
-    assert test_output.used_variables[VariableInformation("cat", None)] == {CodeLocation(3, 7)}
-    assert test_output.used_variables[VariableInformation("fish", None)] == {CodeLocation(2, 19), CodeLocation(3, 20)}
-    assert test_output.used_variables[VariableInformation("bird", None)] == {CodeLocation(2, 25)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("unused1", None),
-                                                     VariableInformation("unused2", None)}
-    assert test_output.assigned_variables[VariableInformation("unused1", None)] == {CodeLocation(2, 0)}
-    assert test_output.assigned_variables[VariableInformation("unused2", None)] == {CodeLocation(2, 9)}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    flag_feeders = {"cat": int, "fish": int}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
 # TODO
