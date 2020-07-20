@@ -219,35 +219,20 @@ else:
 
 
 
-def test_comprehension_CodeLocation():
+def test_mypy_list_comprehension_var_not_defined():
     logic = """
+from functools import reduce
 sum = reduce(lambda x, y: x + y, [cat ** cat for cat in range(4)])
 return sum > 10"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("sum", None),
-                                                 VariableInformation("x", None),
-                                                 VariableInformation("y", None),
-                                                 VariableInformation("cat", None)}
-    assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(2, 26)}
-    assert test_output.used_variables[VariableInformation("y", None)] == {CodeLocation(2, 30)}
-    assert test_output.used_variables[VariableInformation("cat", None)] == {CodeLocation(2, 34), CodeLocation(2, 41)}
-    assert test_output.used_variables[VariableInformation("sum", None)] == {CodeLocation(3, 7)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("sum", None),
-                                                     VariableInformation("cat", None)}
-    assert test_output.assigned_variables[VariableInformation("sum", None)] == {CodeLocation(2, 0)}
-    assert test_output.assigned_variables[VariableInformation("cat", None)] == {CodeLocation(2, 49)}
-    assert test_output.referenced_functions.keys() == {VariableInformation("reduce", None),
-                                                       VariableInformation("range", None)}
-    assert test_output.referenced_functions[VariableInformation("reduce", None)] == {CodeLocation(2, 6)}
-    assert test_output.referenced_functions[VariableInformation("range", None)] == {CodeLocation(2, 56)}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    flag_feeders = {}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {"no-any-return": {CodeLocation(4,0)}}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
-def test_map_expression_CodeLocation():
+
+def test_mypy_map_expression():
     logic = """
 numbers = (1, 2, 3, 4)
 result = map(lambda x: x + x, numbers)
@@ -255,39 +240,11 @@ if ff1 in list(result):
     return ff2 > max(list(result))
 else:
     return ff3 < min(list(result))"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("numbers", None),
-                                                 VariableInformation("result", None),
-                                                 VariableInformation("x", None),
-                                                 VariableInformation("ff1", None),
-                                                 VariableInformation("ff2", None),
-                                                 VariableInformation("ff3", None)}
-    assert test_output.used_variables[VariableInformation("numbers", None)] == {CodeLocation(3, 30)}
-    assert test_output.used_variables[VariableInformation("result", None)] == {CodeLocation(4, 15), CodeLocation(5, 26),
-                                                                               CodeLocation(7, 26)}
-    assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(3, 23), CodeLocation(3, 27)}
-    assert test_output.used_variables[VariableInformation("ff1", None)] == {CodeLocation(4, 3)}
-    assert test_output.used_variables[VariableInformation("ff2", None)] == {CodeLocation(5, 11)}
-    assert test_output.used_variables[VariableInformation("ff3", None)] == {CodeLocation(7, 11)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("numbers", None),
-                                                     VariableInformation("result", None)}
-    assert test_output.assigned_variables[VariableInformation("numbers", None)] == {CodeLocation(2, 0)}
-    assert test_output.assigned_variables[VariableInformation("result", None)] == {CodeLocation(3, 0)}
-    assert test_output.referenced_functions.keys() == {VariableInformation("map", None),
-                                                       VariableInformation("list", None),
-                                                       VariableInformation("max", None),
-                                                       VariableInformation("min", None)}
-    assert test_output.referenced_functions[VariableInformation("map", None)] == {CodeLocation(3, 9)}
-    assert test_output.referenced_functions[VariableInformation("list", None)] == {CodeLocation(4, 10),
-                                                                                   CodeLocation(5, 21),
-                                                                                   CodeLocation(7, 21)}
-    assert test_output.referenced_functions[VariableInformation("max", None)] == {CodeLocation(5, 17)}
-    assert test_output.referenced_functions[VariableInformation("min", None)] == {CodeLocation(7, 17)}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    flag_feeders = {"ff2": float, "ff3": int}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
 def test_map_lambda_CodeLocation():
