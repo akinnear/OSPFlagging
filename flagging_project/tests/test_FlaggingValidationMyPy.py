@@ -149,7 +149,7 @@ return ff3 < test_1"""
 
 
 
-def test_determine_flag_feeder_for_loop_CodeLocation():
+def test_mypy_embedded_if_statment():
     logic = """                                            
 if ff4 >= 50:                                              
     if ff1 > 10:                                           
@@ -157,7 +157,37 @@ if ff4 >= 50:
     elif ff2:                                              
         return ff1 < 10                                    
     elif ff3 > ff1:                                        
-        return ff4 < 50                                    
+        return ff4 < 50      
+    else:
+        return ff2
+elif ff1 < 10:                                             
+    return ff5 == 'CAT'                                    
+else:                                                      
+    a = 10                                                 
+    b = True                                               
+    c = "CAR"                                              
+    if ff5 == "DOG":                                       
+        a = a + 10                                         
+        return ff1 < a
+    else:
+        return ff2"""
+    flag_feeders = {"ff1": int, "ff2": bool, "ff3": int, "ff4": int, "ff5":str}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
+
+def test_mypy_embedded_if_missing_return():
+    logic = """
+if ff4 >= 50:                                              
+    if ff1 > 10:                                           
+        return ff2 == True                                 
+    elif ff2:                                              
+        return ff1 < 10                                    
+    elif ff3 > ff1:                                        
+        return ff4 < 50      
+    else:
+        return ff2
 elif ff1 < 10:                                             
     return ff5 == 'CAT'                                    
 else:                                                      
@@ -167,34 +197,11 @@ else:
     if ff5 == "DOG":                                       
         a = a + 10                                         
         return ff1 < a"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1", None),
-                                                 VariableInformation("ff2", None),
-                                                 VariableInformation("ff3", None),
-                                                 VariableInformation("ff4", None),
-                                                 VariableInformation("ff5", None),
-                                                 VariableInformation("a", None)}
-    assert test_output.used_variables[VariableInformation("ff1", None)] == {CodeLocation(3, 7), CodeLocation(6, 15),
-                                                                            CodeLocation(7, 15), CodeLocation(9, 5),
-                                                                            CodeLocation(17, 15)}
-    assert test_output.used_variables[VariableInformation("ff2", None)] == {CodeLocation(4, 15), CodeLocation(5, 9)}
-    assert test_output.used_variables[VariableInformation("ff3", None)] == {CodeLocation(7, 9)}
-    assert test_output.used_variables[VariableInformation("ff4", None)] == {CodeLocation(2, 3), CodeLocation(8, 15)}
-    assert test_output.used_variables[VariableInformation("ff5", None)] == {CodeLocation(10, 11), CodeLocation(15, 7)}
-    assert test_output.used_variables[VariableInformation("a", None)] == {CodeLocation(16, 12), CodeLocation(17, 21)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("a", None),
-                                                     VariableInformation("b", None),
-                                                     VariableInformation("c", None)}
-    assert test_output.assigned_variables[VariableInformation("a", None)] == {CodeLocation(12, 4), CodeLocation(16, 8)}
-    assert test_output.assigned_variables[VariableInformation("b", None)] == {CodeLocation(13, 4)}
-    assert test_output.assigned_variables[VariableInformation("c", None)] == {CodeLocation(14, 4)}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
+    flag_feeders = {"ff1": int, "ff2": bool, "ff3": int, "ff4": int, "ff5": str}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {"return": {CodeLocation(0,0)}}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 def test_reduce_lambda_CodeLocation():
     logic = """                                  
