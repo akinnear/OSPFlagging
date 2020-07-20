@@ -711,29 +711,19 @@ return ff1"""
     assert test_output.warnings == {}
 
 
-# syntax error
-def test_used_class_CodeLocation():
+
+def test_mypy_used_class():
     logic = """
 class MyClass():
     def __init__(self, val=None):
         self.val = val
 my_val = MyClass(ff1)
 return my_val.val"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1"),
-                                                 VariableInformation.create_var(["my_val", "val"])}
-    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(5, 17)}
-    assert test_output.used_variables[VariableInformation.create_var(["my_val", "val"])] == {CodeLocation(6, 7)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("my_val")}
-    assert test_output.assigned_variables[VariableInformation("my_val")] == {CodeLocation(5, 0)}
-    assert test_output.referenced_functions.keys() == {VariableInformation("MyClass")}
-    assert test_output.referenced_functions[VariableInformation("MyClass")] == {CodeLocation(5, 9)}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == {"MyClass"}
-    assert test_output.defined_classes["MyClass"] == {CodeLocation(2, 6)}
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    flag_feeders = {}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {"syntax": {CodeLocation(0,0)}}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
 # TODO
