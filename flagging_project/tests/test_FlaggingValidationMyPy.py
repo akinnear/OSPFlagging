@@ -514,128 +514,16 @@ return ff1 in names"""
     assert test_output.warnings == {}
 
 
-def test_class_reference_CodeLocation():
-    logic = """
-isinstance(ff1, int)"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1"),
-                                                 VariableInformation("int")}
-    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(2, 11)}
-    assert test_output.used_variables[VariableInformation("int")] == {CodeLocation(2, 16)}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == {VariableInformation("isinstance")}
-    assert test_output.referenced_functions[VariableInformation("isinstance")] == {CodeLocation(2, 0)}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
 
-
-# syntax error
-def test_complex_class_reference_CodeLocation():
-    logic = """
-isinstance(a.b.Class, ff1)"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1"),
-                                                 VariableInformation.create_var(["a", "b", "Class"])}
-    assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(2, 22)}
-    assert test_output.used_variables[VariableInformation.create_var(["a", "b", "Class"])] == {CodeLocation(2, 11)}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == {VariableInformation("isinstance")}
-    assert test_output.referenced_functions[VariableInformation("isinstance")] == {CodeLocation(2, 0)}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
-
-# syntax error
-def test_complex_object_reference_CodeLocation():
-    logic = """
-my_function(a.b.c, c.d.e)"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation.create_var(["a", "b", "c"]),
-                                                 VariableInformation.create_var(["c", "d", "e"])}
-    assert test_output.used_variables[VariableInformation.create_var(["a", "b", "c"])] == {CodeLocation(2, 12)}
-    assert test_output.used_variables[VariableInformation.create_var(["c", "d", "e"])] == {CodeLocation(2, 19)}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["my_function"])}
-    assert test_output.referenced_functions[VariableInformation.create_var(["my_function"])] == {CodeLocation(2, 0)}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
-
-# syntax error
-def test_complex_object_reference_complex_function_CodeLocation():
-    logic = """
-a.b.c.my_function(a.b.c, c.d.e)"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation.create_var(["a", "b", "c"]),
-                                                 VariableInformation.create_var(["c", "d", "e"])}
-    assert test_output.used_variables[VariableInformation.create_var(["a", "b", "c"])] == {CodeLocation(2, 18),
-                                                                                           CodeLocation(2, 0)}
-    assert test_output.used_variables[VariableInformation.create_var(["c", "d", "e"])] == {CodeLocation(2, 25)}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["a", "b", "c", "my_function"])}
-    assert test_output.referenced_functions[VariableInformation.create_var(["a", "b", "c", "my_function"])] == {
-        CodeLocation(2, 0)}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
-
-# syntax error
-def test_complex_object_function_reference_complex_function_CodeLocation():
-    logic = """
-a.b.c.my_function(a.b.c(), c.d.e())"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation.create_var(["a", "b"]),
-                                                 VariableInformation.create_var(["c", "d"]),
-                                                 VariableInformation.create_var(["a", "b", "c"])}
-    assert test_output.used_variables[VariableInformation.create_var(["a", "b"])] == {CodeLocation(2, 18)}
-    assert test_output.used_variables[VariableInformation.create_var(["c", "d"])] == {CodeLocation(2, 27)}
-    assert test_output.used_variables[VariableInformation.create_var(["a", "b", "c"])] == {CodeLocation(2, 0)}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["a", "b", "c"]),
-                                                       VariableInformation.create_var(["c", "d", "e"]),
-                                                       VariableInformation.create_var(["a", "b", "c", "my_function"])}
-    assert test_output.referenced_functions[VariableInformation.create_var(["a", "b", "c"])] == {CodeLocation(2, 18)}
-    assert test_output.referenced_functions[VariableInformation.create_var(["c", "d", "e"])] == {CodeLocation(2, 27)}
-    assert test_output.referenced_functions[VariableInformation.create_var(["a", "b", "c", "my_function"])] == {
-        CodeLocation(2, 0)}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
-
-def test_generator_CodeLocation():
+def test_generator_mypy():
     logic = """
 eggs = (x*2 for x in [1, 2, 3, 4, 5])
 return 10 in eggs"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("x"),
-                                                 VariableInformation("eggs")}
-    assert test_output.used_variables[VariableInformation("x")] == {CodeLocation(2, 8)}
-    assert test_output.used_variables[VariableInformation("eggs")] == {CodeLocation(3, 13)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("x"),
-                                                     VariableInformation("eggs")}
-    assert test_output.assigned_variables[VariableInformation("x")] == {CodeLocation(2, 16)}
-    assert test_output.assigned_variables[VariableInformation("eggs")] == {CodeLocation(2, 0)}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    flag_feeders = {}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
 def test_generator_with_yield_CodeLocation():
