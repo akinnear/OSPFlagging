@@ -23,6 +23,7 @@ def test_flag_feeder_availble(func):
     assert len(result.errors) == 0
     assert len(result.warnings) == 0
 
+
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 def test_flag_feeder_not_available(mock_determine_variables, mock_validate_returns_boolean):
@@ -46,7 +47,6 @@ def test_variable_defined_and_used_2(mock_determine_variables, mock_validate_ret
     result = validate_flag_logic_information(flag_feeders, flag_info)
     assert len(result.errors) == 0
     assert len(result.warnings) == 0
-
 
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
