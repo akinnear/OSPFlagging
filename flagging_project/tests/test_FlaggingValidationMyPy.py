@@ -729,21 +729,14 @@ return my_val.val"""
 # TODO
 # update test
 # no any return error
-def test_dictionary_CodeLocation():
+def test_mypy_dictionary():
     logic = """
 dict[ff] > 10"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("dict"),
-                                                 VariableInformation("ff")}
-    assert test_output.used_variables == {VariableInformation("dict"): {CodeLocation(2, 0)},
-                                          VariableInformation("ff"): {CodeLocation(2, 5)}}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    flag_feeders = {}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {"no-any-return": {CodeLocation(2,0)}}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
 def test_list_slice_CodeLocation():
