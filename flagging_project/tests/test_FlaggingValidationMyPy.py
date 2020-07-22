@@ -37,7 +37,7 @@ def test_mypy_non_explicit_int():
     logic = """
 cat = 100
 return cat < 10"""
-    flag_feeders = {}
+    flag_feeders = {"cat": bool}
     test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
     assert test_output.other_errors == {}
     assert test_output.validation_errors == {}
@@ -88,8 +88,8 @@ def test_mypy_normal_expression_explicit():
     logic = """
 def my_add(x, y): return x + y
 z = my_add(2, 3)
-return ff1 > z"""
-    flag_feeders = {"ff1": float, "z": int}
+return ff1 + z"""
+    flag_feeders = {"ff1": float}
     test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
     assert test_output.other_errors == {}
     assert test_output.validation_errors == {}
