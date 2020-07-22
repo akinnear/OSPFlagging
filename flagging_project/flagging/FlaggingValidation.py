@@ -5,16 +5,11 @@ from flagging.FlagLogicInformation import FlagLogicInformation
 
 
 def validate_flag_logic(flag_feeders, flag_logic):
-    #TODO
-    # need to mock determine_variables in
-    # mocker.patch('application.is_windows', return_value=True)
 
     return validate_flag_logic_information(flag_feeders=flag_feeders, flag_logic_info=determine_variables(flag_logic))
 
 def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInformation):
     results = FlaggingValidationResults()
-    #TODO
-    # need to mock validate_return_boolean
     my_py_output = validate_returns_boolean(flag_logic_info, flag_feeders if flag_feeders else {})
 
     used_variables = dict(flag_logic_info.used_variables)
@@ -32,6 +27,11 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
     if used_variables:
         for unused in used_variables:
             results.add_error(unused)
+
+    # do not allow user defined functions
+    for func in dict(flag_logic_info.defined_functions):
+        results.add_error(func)
+
 
     if my_py_output:
         #TODO
