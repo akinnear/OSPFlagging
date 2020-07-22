@@ -1,19 +1,21 @@
-from flagging.FlagFeederApp import determine_variables
+from flagging.FlaggingNodeVisitor import determine_variables
+from flagging.FlaggingValidationMyPy import validate_returns_boolean
+
+from flagging.FlagLogicInformation import FlagLogicInformation
 
 
-
-def validate_flag_logic(flag_logic):
-    return validate_flag_logic_information(determine_variables(flag_logic))
-
-
-def validate_flag_logic_information(flag_feeders, flag_logic_info):
-
-    results = FlaggingValidationResults()
-
+def validate_flag_logic(flag_feeders, flag_logic):
     #TODO
-    # include mypy output flagging validation
-    my_py_output = flag_logic_info.validation_results
-    #
+    # need to mock determine_variables in
+    # mocker.patch('application.is_windows', return_value=True)
+
+    return validate_flag_logic_information(flag_feeders=flag_feeders, flag_logic_info=determine_variables(flag_logic))
+
+def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInformation):
+    results = FlaggingValidationResults()
+    #TODO
+    # need to mock validate_return_boolean
+    my_py_output = validate_returns_boolean(flag_logic_info, flag_feeders if flag_feeders else {})
 
     used_variables = dict(flag_logic_info.used_variables)
     for used_var in flag_logic_info.used_variables:
@@ -34,6 +36,7 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info):
     if my_py_output:
         #TODO
         # errors are a mix of VariableInformation objects and mypy dictionary output
+        # check with Adam if that needs to change
         if my_py_output.validation_errors:
             for validation_error in my_py_output.validation_errors:
                 results.add_error(validation_error)
@@ -59,3 +62,4 @@ class FlaggingValidationResults:
 
     def add_warning(self, warning):
         self.warnings.append(warning)
+
