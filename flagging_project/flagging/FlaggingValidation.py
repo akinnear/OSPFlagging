@@ -13,8 +13,11 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
     results = FlaggingValidationResults()
     my_py_output = validate_returns_boolean(flag_logic_info, flag_feeders if flag_feeders else {})
 
-    
 
+    logic_lines = flag_logic_info.flag_logic.split("/n")
+    for i in range(len(logic_lines)):
+        if "lambda" in logic_lines[i].lower():
+            results.add_error("lambda_usage", CodeLocation(i+1, 0))
 
     used_variables = dict(flag_logic_info.used_variables)
     for used_var, cl in flag_logic_info.used_variables.items():
