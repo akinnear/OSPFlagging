@@ -73,10 +73,60 @@ def test_variable_valid_return(mock_determine_variables, mock_validate_returns_b
     assert len(result.warnings) == 1
 
 
-def test_variable_numerical_compare():
-    logic = """return FF1 > 10 """
-    test_output = determine_variables(logic)
-    assert len(test_output.validation_results.validation_errors) == 0
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+def test_user_defined_func_error(mock_determine_variables, mock_validate_returns_boolean):
+    flag_feeders = {"ff1"}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation("x"): {CodeLocation(2, 25)},
+                        VariableInformation("y"): {CodeLocation(2, 29)},
+                        VariableInformation("ff1"): {CodeLocation(4, 7)},
+                        VariableInformation("z"): {CodeLocation(4, 13)}},
+        assigned_variables={VariableInformation("x"): {CodeLocation(2, 11)},
+                            VariableInformation("y"): {CodeLocation(2, 14)},
+                            VariableInformation("z"): {CodeLocation(3, 0)}},
+        referenced_functions={VariableInformation("my_add"): {CodeLocation(3, 4)}},
+        defined_functions={VariableInformation("my_add"): {CodeLocation(2, 2)}},
+        defined_classes=dict(),
+        referenced_modules=dict(),
+        referenced_flags=dict(),
+        return_points={CodeLocation(4, 0), CodeLocation(2, 18)},
+        errors=[],
+        flag_logic="""
+        def my_add(x, y): return x + y
+        z = my_add(2, 3)   
+        return ff1 > z""",
+        validation_results=TypeValidationResults())
+    result = validate_flag_logic_information(flag_feeders, flag_info)
+    assert len(result.errors) != 0
+    assert len(result.warnings) == 0
+
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+def test_lambda_use_error(mock_determine_variables, mock_validate_returns_boolean):
+    flag_feeders = {}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation("x"): {CodeLocation(2, 26)},
+                        VariableInformation("y"): {CodeLocation(2, 30)},
+                        VariableInformation("cat"): {CodeLocation(2, 41), CodeLocation(2, 34)},
+                        VariableInformation("sum"): {CodeLocation(3, 7)}},
+        assigned_variables={VariableInformation("sum"): {CodeLocation(2, 0)},
+                            VariableInformation("cat"): {CodeLocation(2, 49)}},
+        referenced_functions={VariableInformation("reduce"): {CodeLocation(2, 6)},
+                              VariableInformation("range"): {CodeLocation(2, 56)}},
+        defined_functions=dict(),
+        defined_classes=dict(),
+        referenced_modules=dict(),
+        referenced_flags=dict(),
+        return_points={CodeLocation(3, 0)},
+        errors=[],
+        flag_logic="""
+sum = reduce(lambda x, y: x + y, [cat ** cat for cat in range(4)])
+return sum > 10""",
+        validation_results=TypeValidationResults())
+    result = validate_flag_logic_information(flag_feeders, flag_info)
+    assert len(result.errors) != 0
+    assert len(result.warnings) == 0
 
 
 #TODO
