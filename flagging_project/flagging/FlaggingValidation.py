@@ -2,6 +2,7 @@ from flagging.FlaggingNodeVisitor import determine_variables
 from flagging.FlaggingValidationMyPy import validate_returns_boolean
 
 from flagging.FlagLogicInformation import FlagLogicInformation
+from flagging.FlaggingNodeVisitor import CodeLocation
 
 
 def validate_flag_logic(flag_feeders, flag_logic):
@@ -31,6 +32,10 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
     # do not allow user defined functions
     for func, cl in dict(flag_logic_info.defined_functions).items():
         results.add_error(func, cl)
+
+    # #do not allow lambda functions
+    if "lambda" in flag_logic_info.flag_logic.lower():
+        results.add_error("lambda", CodeLocation(0, 0))
 
 
     if my_py_output:
