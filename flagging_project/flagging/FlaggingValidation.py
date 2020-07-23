@@ -13,12 +13,7 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
     results = FlaggingValidationResults()
     my_py_output = validate_returns_boolean(flag_logic_info, flag_feeders if flag_feeders else {})
 
-    logic_lines = flag_logic_info.flag_logic.split("\n")
-
-    # #do not allow lambda functions
-    for i in range(len(logic_lines)):
-        if "lambda" in logic_lines[i].lower():
-            results.add_error("lambda", CodeLocation(i+1, 0))
+    
 
 
     used_variables = dict(flag_logic_info.used_variables)
@@ -40,7 +35,7 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
     # sum = reduce(lambda x, y: x + y, [cat ** cat for cat in range(4)])
     # x and y are used variables not in passed flag feeders
     # currently included in error set
-    
+
     if used_variables:
         for unused, cl in used_variables.items():
             results.add_error(unused, cl)
