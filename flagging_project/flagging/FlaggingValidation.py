@@ -13,7 +13,8 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
     results = FlaggingValidationResults()
     my_py_output = validate_returns_boolean(flag_logic_info, flag_feeders if flag_feeders else {})
 
-
+    #TODO
+    # use node visitor to identify lambda usage
     logic_lines = flag_logic_info.flag_logic.split("\n")
     for idx, line in enumerate(logic_lines):
         if "lambda" in line.lower():
