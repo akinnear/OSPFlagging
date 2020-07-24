@@ -68,6 +68,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
         self.defined_classes = dict()
         self.referenced_flags = dict()
         self.return_points = set()
+        self.used_lambdas = set()
         self.errors = []
         self._stack = []
         self._attribute_stack = []
@@ -262,6 +263,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
                 code_location_helper(self.used_variables, VariableInformation(name),
                                                              CodeLocation(line_number=node.lineno,
                                                                           column_offset=node.col_offset))
+
             else:
                 code_location_helper(self.used_variables, VariableInformation(name),
                                                            CodeLocation(line_number=node.lineno,
@@ -287,6 +289,14 @@ class FlagFeederNodeVisitor(NodeVisitor):
                                  CodeLocation(line_number=node.lineno,
                                               column_offset=node.col_offset))
             ast.NodeVisitor.generic_visit(self, node)
+
+    def visit_Lambda(self, node):
+        with self.handle_node_stack(node):
+            code_location_helper(self.used_lambdas, "LAMBDA",
+                                 CodeLocation(line_number=node.lineno,
+                                              column_offset=node.col_offset))
+            print("hello")
+            print("need to add to self.used_lambdas")
 
     def generic_visit(self, node):
         with self.handle_node_stack(node):
@@ -316,5 +326,6 @@ def determine_variables(logic):
                                 referenced_modules=nv.referenced_modules,
                                 referenced_flags=nv.referenced_flags,
                                 return_points=nv.return_points,
+                                used_lambdas=nv.used_lambdas,
                                 errors=nv.errors,
                                 flag_logic=logic_copy)
