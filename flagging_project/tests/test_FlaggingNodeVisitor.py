@@ -536,11 +536,17 @@ my_map_list = list(map(lambda x,y,z:x+y-z, a,b,c))"""
     assert test_output.assigned_variables.keys() == {VariableInformation("a", None),
                                                      VariableInformation("b", None),
                                                      VariableInformation("c", None),
-                                                     VariableInformation("my_map_list", None)}
+                                                     VariableInformation("my_map_list", None),
+                                                     VariableInformation("x"),
+                                                     VariableInformation("y"),
+                                                     VariableInformation("z")}
     assert test_output.assigned_variables[VariableInformation("a", None)] == {CodeLocation(2, 0)}
     assert test_output.assigned_variables[VariableInformation("b", None)] == {CodeLocation(3, 0)}
     assert test_output.assigned_variables[VariableInformation("c", None)] == {CodeLocation(4, 0)}
     assert test_output.assigned_variables[VariableInformation("my_map_list", None)] == {CodeLocation(5, 0)}
+    assert test_output.assigned_variables[VariableInformation("x")] == {CodeLocation(5, 30)}
+    assert test_output.assigned_variables[VariableInformation("y")] == {CodeLocation(5, 32)}
+    assert test_output.assigned_variables[VariableInformation("z")] == {CodeLocation(5, 34)}
     assert test_output.referenced_functions.keys() == {VariableInformation("list", None),
                                                        VariableInformation("map", None)}
     assert test_output.referenced_functions[VariableInformation("list", None)] == {CodeLocation(5, 14)}
