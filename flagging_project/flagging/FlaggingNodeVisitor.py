@@ -174,6 +174,8 @@ class FlagFeederNodeVisitor(NodeVisitor):
 
                     variable_names = [attribute.attr for attribute in attributes]
                     variable_names.insert(0, name)
+                    if variable_name == "a":
+                        print("defined a here")
                     variable_information = VariableInformation.create_var(variable_names)
 
                     pre_variable_name = ".".join(variable_names[:-1])
@@ -207,6 +209,8 @@ class FlagFeederNodeVisitor(NodeVisitor):
                 else:
                     variable_names = [attribute.attr for attribute in attributes]
                     variable_names.insert(0, name)
+                    if name == "a":
+                        print("a used here")
                     variable_information = VariableInformation.create_var(variable_names)
                     if isinstance(before_attributes, ast.Assign):
                         code_location_helper(self.assigned_variables, variable_information,
@@ -219,6 +223,8 @@ class FlagFeederNodeVisitor(NodeVisitor):
             elif isinstance(parent, ast.Call):
                 args = map(lambda x: x.id, filter(lambda y: isinstance(y, ast.Name), parent.args))
                 if name in args:
+                    if name == "a":
+                        print("a used here")
                     code_location_helper(self.used_variables, VariableInformation(name),
                                                                    CodeLocation(line_number=node.lineno,
                                                                                 column_offset=node.col_offset))
@@ -237,6 +243,8 @@ class FlagFeederNodeVisitor(NodeVisitor):
                                                                          CodeLocation(line_number=node.lineno,
                                                                                       column_offset=node.col_offset))
                     else:
+                        if name == "a":
+                            print("a used here")
                         code_location_helper(self.used_variables, VariableInformation(name),
                                                                        CodeLocation(line_number=node.lineno,
                                                                                     column_offset=node.col_offset))
@@ -265,6 +273,8 @@ class FlagFeederNodeVisitor(NodeVisitor):
                                                                           column_offset=node.col_offset))
 
             else:
+                if name == "a":
+                    print("a used here")
                 code_location_helper(self.used_variables, VariableInformation(name),
                                                            CodeLocation(line_number=node.lineno,
                                                                         column_offset=node.col_offset))
@@ -290,17 +300,47 @@ class FlagFeederNodeVisitor(NodeVisitor):
                                               column_offset=node.col_offset))
             ast.NodeVisitor.generic_visit(self, node)
 
+
+
+    def generic_visit(self, node):
+        with self.handle_node_stack(node):
+            ast.NodeVisitor.generic_visit(self, node)
+
     def visit_Lambda(self, node):
         with self.handle_node_stack(node):
             code_location_helper(self.used_lambdas, "LAMBDA",
                                  CodeLocation(line_number=node.lineno,
                                               column_offset=node.col_offset))
-            print("hello")
-            print("need to add to self.used_lambdas")
+            #assigned variables
+            for arg in node.args.args:
+                code_location_helper(self.assigned_variables, arg.arg,
+                                     CodeLocation(line_number=arg.lineno,
+                                                  column_offset=arg.col_offset))
+                print("hello")
 
-    def generic_visit(self, node):
-        with self.handle_node_stack(node):
-            ast.NodeVisitor.generic_visit(self, node)
+            #used variables
+            for fieldname, value in ast.iter_fields(node.body):
+                print('hello')
+                if isinstance(value, ast.Compare):
+                    code_location_helper(self.used_variables, value.left.id,
+                                         CodeLocation(line_number=value.lineno,
+                                                      column_offset=value.col_offset))
+                    for entry in value.comparators:
+                        if isinstance(entry, ast.Name):
+                            code_location_helper(self.used_variables, entry.id,
+                                                 CodeLocation(line_number=entry.lineno,
+                                                              column_offset=entry.col_offset))
+
+                if isinstance(value, ast.Name):
+                    code_location_helper(self.used_variables, value.id,
+                                         CodeLocation(line_number=value.lineno,
+                                                      column_offset=value.col_offset))
+
+
+
+
+
+
 
 
 def determine_variables(logic):
