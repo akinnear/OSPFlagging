@@ -313,7 +313,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
                                               column_offset=node.col_offset))
             #assigned variables
             for arg in node.args.args:
-                code_location_helper(self.assigned_variables, arg.arg,
+                code_location_helper(self.assigned_variables, VariableInformation(arg.arg),
                                      CodeLocation(line_number=arg.lineno,
                                                   column_offset=arg.col_offset))
                 print("hello")
@@ -322,17 +322,25 @@ class FlagFeederNodeVisitor(NodeVisitor):
             for fieldname, value in ast.iter_fields(node.body):
                 print('hello')
                 if isinstance(value, ast.Compare):
-                    code_location_helper(self.used_variables, value.left.id,
+                    code_location_helper(self.used_variables, VariableInformation(value.left.id),
                                          CodeLocation(line_number=value.lineno,
                                                       column_offset=value.col_offset))
                     for entry in value.comparators:
                         if isinstance(entry, ast.Name):
-                            code_location_helper(self.used_variables, entry.id,
+                            code_location_helper(self.used_variables, VariableInformation(entry.id),
                                                  CodeLocation(line_number=entry.lineno,
                                                               column_offset=entry.col_offset))
 
+                if isinstance(value, ast.BinOp):
+                    code_location_helper(self.used_variables, VariableInformation(value.left.id),
+                                         CodeLocation(line_number=value.left.lineno,
+                                                      column_offset=value.left.col_offset))
+                    code_location_helper(self.used_variables, VariableInformation(value.right.id),
+                                         CodeLocation(line_number=value.right.lineno,
+                                                      column_offset=value.right.col_offset))
+
                 if isinstance(value, ast.Name):
-                    code_location_helper(self.used_variables, value.id,
+                    code_location_helper(self.used_variables, VariableInformation(value.id),
                                          CodeLocation(line_number=value.lineno,
                                                       column_offset=value.col_offset))
 
