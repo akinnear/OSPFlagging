@@ -413,8 +413,12 @@ else:
     assert test_output.used_variables[VariableInformation("b", None)] == {CodeLocation(2, 26), CodeLocation(2, 34)}
     assert test_output.used_variables[VariableInformation("ff1", None)] == {CodeLocation(4, 11)}
     assert test_output.used_variables[VariableInformation("ff2", None)] == {CodeLocation(6, 11)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("f", None)}
-    assert test_output.assigned_variables == {VariableInformation("f", None): {CodeLocation(2, 0)}}
+    assert test_output.assigned_variables.keys() == {VariableInformation("f", None),
+                                                     VariableInformation("a"),
+                                                     VariableInformation("b")}
+    assert test_output.assigned_variables == {VariableInformation("f", None): {CodeLocation(2, 0)},
+                                              VariableInformation("a"): {CodeLocation(2, 11)},
+                                              VariableInformation('b'): {CodeLocation(2, 13)}}
     assert test_output.referenced_functions.keys() == {VariableInformation("reduce", None)}
     assert test_output.referenced_functions[VariableInformation("reduce", None)] == {CodeLocation(3, 3),
                                                                                      CodeLocation(4, 17),
@@ -443,9 +447,13 @@ return sum > 10"""
     assert test_output.used_variables[VariableInformation("cat", None)] == {CodeLocation(2, 34), CodeLocation(2, 41)}
     assert test_output.used_variables[VariableInformation("sum", None)] == {CodeLocation(3, 7)}
     assert test_output.assigned_variables.keys() == {VariableInformation("sum", None),
-                                                     VariableInformation("cat", None)}
+                                                     VariableInformation("cat", None),
+                                                     VariableInformation('x'),
+                                                     VariableInformation("y")}
     assert test_output.assigned_variables[VariableInformation("sum", None)] == {CodeLocation(2, 0)}
     assert test_output.assigned_variables[VariableInformation("cat", None)] == {CodeLocation(2, 49)}
+    assert test_output.assigned_variables[VariableInformation("x")] == {CodeLocation(2, 20)}
+    assert test_output.assigned_variables[VariableInformation("y")] == {CodeLocation(2, 23)}
     assert test_output.referenced_functions.keys() == {VariableInformation("reduce", None),
                                                        VariableInformation("range", None)}
     assert test_output.referenced_functions[VariableInformation("reduce", None)] == {CodeLocation(2, 6)}
@@ -482,9 +490,11 @@ else:
     assert test_output.used_variables[VariableInformation("ff2", None)] == {CodeLocation(5, 11)}
     assert test_output.used_variables[VariableInformation("ff3", None)] == {CodeLocation(7, 11)}
     assert test_output.assigned_variables.keys() == {VariableInformation("numbers", None),
-                                                     VariableInformation("result", None)}
+                                                     VariableInformation("result", None),
+                                                     VariableInformation('x')}
     assert test_output.assigned_variables[VariableInformation("numbers", None)] == {CodeLocation(2, 0)}
     assert test_output.assigned_variables[VariableInformation("result", None)] == {CodeLocation(3, 0)}
+    assert test_output.assigned_variables[VariableInformation("x")] == {CodeLocation(3, 20)}
     assert test_output.referenced_functions.keys() == {VariableInformation("map", None),
                                                        VariableInformation("list", None),
                                                        VariableInformation("max", None),
