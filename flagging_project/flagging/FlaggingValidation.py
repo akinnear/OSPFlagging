@@ -15,10 +15,8 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
 
     #TODO
     # use node visitor to identify lambda usage
-    logic_lines = flag_logic_info.flag_logic.split("\n")
-    for idx, line in enumerate(logic_lines):
-        if "lambda" in line.lower():
-            results.add_error("lambda_usage", CodeLocation(idx+1, 0))
+    for used_lambda, cl in flag_logic_info.used_lambdas.items():
+        results.add_error(used_lambda, cl)
 
     used_variables = dict(flag_logic_info.used_variables)
     for used_var, cl in flag_logic_info.used_variables.items():
