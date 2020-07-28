@@ -15,7 +15,7 @@ class FlagLogicInformation:
         self.referenced_modules = referenced_modules if referenced_modules else {}
         self.referenced_flags = referenced_flags if referenced_flags else {}
         self.return_points = return_points if return_points else set()
-        self.used_lambdas = used_variables if used_lambdas else {}
+        self.used_lambdas = used_lambdas if used_lambdas else {}
         self.errors = errors if errors else []
         self.flag_logic = flag_logic if flag_logic else ""
         self.validation_results = validation_results if validation_results else TypeValidationResults()
