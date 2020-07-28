@@ -427,6 +427,7 @@ else:
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
+    assert test_output.used_lambdas == {"LAMBDA": {CodeLocation(2, 4)}}
     assert test_output.errors == []
     
     
@@ -462,6 +463,7 @@ return sum > 10"""
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
+    assert test_output.used_lambdas == {"LAMBDA": {CodeLocation(2, 13)}}
     assert test_output.errors == []
     
     
@@ -509,6 +511,7 @@ else:
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
+    assert test_output.used_lambdas == {"LAMBDA": {CodeLocation(3, 13)}}
     assert test_output.errors == []
     
     
@@ -555,6 +558,7 @@ my_map_list = list(map(lambda x,y,z:x+y-z, a,b,c))"""
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
+    assert test_output.used_lambdas == {"LAMBDA": {CodeLocation(5, 23)}}
     assert test_output.errors == []
     
     
@@ -573,13 +577,18 @@ return ff1 == add"""
     assert test_output.used_variables[VariableInformation("ff1", None)] == {CodeLocation(3, 7)}
     assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(2, 20)}
     assert test_output.used_variables[VariableInformation("y", None)] == {CodeLocation(2, 24)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("add", None)}
+    assert test_output.assigned_variables.keys() == {VariableInformation("add", None),
+                                                     VariableInformation("x"),
+                                                     VariableInformation("y")}
     assert test_output.assigned_variables[VariableInformation("add", None)] == {CodeLocation(2, 0)}
+    assert test_output.assigned_variables[VariableInformation("x")] == {CodeLocation(2, 14)}
+    assert test_output.assigned_variables[VariableInformation("y")] == {CodeLocation(2, 17)}
     assert test_output.referenced_functions.keys() == set()
     assert test_output.defined_functions.keys() == set()
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
+    assert test_output.used_lambdas == {"LAMBDA": {CodeLocation(2, 7)}}
     assert test_output.errors == []
     
     
@@ -612,9 +621,11 @@ else:
     assert test_output.used_variables[VariableInformation("ff2", None)] == {CodeLocation(11, 11)}
     assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(11, 40)}
     assert test_output.assigned_variables.keys() == {VariableInformation("a_list", None),
-                                                     VariableInformation("y_list", None)}
+                                                     VariableInformation("y_list", None),
+                                                     VariableInformation("x")}
     assert test_output.assigned_variables == {VariableInformation("a_list", None): {CodeLocation(3, 0)},
-                                              VariableInformation("y_list", None): {CodeLocation(4, 0)}}
+                                              VariableInformation("y_list", None): {CodeLocation(4, 0)},
+                                              VariableInformation("x"): {CodeLocation(11, 37)}}
     assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["math", "sqrt"]),
                                                        VariableInformation("abs", None),
                                                        VariableInformation("max", None),
@@ -637,6 +648,7 @@ else:
     assert test_output.referenced_modules.keys() == {ModuleInformation("math")}
     assert test_output.referenced_modules == {ModuleInformation("math"): {CodeLocation(2, 7)}}
     assert test_output.referenced_flags.keys() == set()
+    assert test_output.used_lambdas == {"LAMBDA": {CodeLocation(11, 30)}}
     assert test_output.errors == []
     
     
@@ -723,9 +735,11 @@ else:
     assert test_output.used_variables[VariableInformation("ff2", None)] == {CodeLocation(11, 11)}
     assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(11, 40)}
     assert test_output.assigned_variables.keys() == {VariableInformation("a_list", None),
-                                                     VariableInformation("y_list", None)}
+                                                     VariableInformation("y_list", None),
+                                                     VariableInformation("x")}
     assert test_output.assigned_variables[VariableInformation("a_list", None)] == {CodeLocation(3, 0)}
     assert test_output.assigned_variables[VariableInformation("y_list", None)] == {CodeLocation(4, 0)}
+    assert test_output.assigned_variables[VariableInformation("x")] == {CodeLocation(11, 37)}
     assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["math", "sqrt"]),
                                                        VariableInformation("abs", None),
                                                        VariableInformation("max", None),
@@ -747,6 +761,7 @@ else:
     assert test_output.referenced_modules.keys() == {ModuleInformation("math")}
     assert test_output.referenced_modules[ModuleInformation("math")] == {CodeLocation(2, 7)}
     assert test_output.referenced_flags.keys() == set()
+    assert test_output.used_lambdas == {"LAMBDA": {CodeLocation(11, 30)}}
     assert test_output.errors == []
     
     
@@ -812,12 +827,13 @@ else:
     assert test_output.used_variables[VariableInformation("ff2", None)] == {CodeLocation(12, 11)}
     assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(12, 40)}
     assert test_output.used_variables[VariableInformation("z", None)] == {CodeLocation(7, 34)}
-    assert test_output.assigned_variables.keys() == {"a_list", "y_list", "ff1", "ff2", "z"}
+    assert test_output.assigned_variables.keys() == {"a_list", "y_list", "ff1", "ff2", "z", "x"}
     assert test_output.assigned_variables["a_list"] == {CodeLocation(3, 0)}
     assert test_output.assigned_variables["y_list"] == {CodeLocation(4, 0)}
     assert test_output.assigned_variables["ff1"] == {CodeLocation(5, 1)}
     assert test_output.assigned_variables["ff2"] == {CodeLocation(5, 6)}
     assert test_output.assigned_variables["z"] == {CodeLocation(5, 11)}
+    assert test_output.assigned_variables["x"] == {CodeLocation(12, 37)}
     assert test_output.referenced_functions.keys() == {VariableInformation.create_var(["math", "sqrt"]),
                                                        VariableInformation.create_var(["ff1", "isin"]),
                                                        VariableInformation("abs", None),
@@ -840,6 +856,7 @@ else:
     assert test_output.referenced_modules.keys() == {ModuleInformation("math")}
     assert test_output.referenced_modules == {ModuleInformation("math"): {CodeLocation(2, 7)}}
     assert test_output.referenced_flags.keys() == set()
+    assert test_output.used_lambdas == {"LAMBDA": {CodeLocation(12, 30)}}
     assert test_output.errors == []
     
     
@@ -1008,10 +1025,16 @@ else:
                                                      VariableInformation("c", None),
                                                      VariableInformation("map_step", None),
                                                      VariableInformation("filter_step", None),
-                                                     VariableInformation("reduce_step", None)}
+                                                     VariableInformation("reduce_step", None),
+                                                     VariableInformation("x"),
+                                                     VariableInformation("y"),
+                                                     VariableInformation('z')}
     assert test_output.assigned_variables[VariableInformation("a", None)] == {CodeLocation(2, 0)}
     assert test_output.assigned_variables[VariableInformation("b", None)] == {CodeLocation(3, 0)}
     assert test_output.assigned_variables[VariableInformation("c", None)] == {CodeLocation(4, 0)}
+    assert test_output.assigned_variables[VariableInformation("x")] == {CodeLocation(5, 27), CodeLocation(6, 33), CodeLocation(7, 33)}
+    assert test_output.assigned_variables[VariableInformation("y")] == {CodeLocation(5, 29), CodeLocation(7, 36)}
+    assert test_output.assigned_variables[VariableInformation("z")] == {CodeLocation(5, 31)}
     assert test_output.referenced_functions.keys() == {VariableInformation("list", None),
                                                        VariableInformation("map", None),
                                                        VariableInformation("filter", None),
@@ -1029,9 +1052,12 @@ else:
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
+    assert test_output.used_lambdas == {"LAMBDA": {CodeLocation(5, 20), CodeLocation(6, 26), CodeLocation(7, 26)}}
     assert test_output.errors == []
     
     
+
+
 
 
 def test_map_filter_lambda_CodeLocation():
@@ -1079,11 +1105,17 @@ else:
     assert test_output.assigned_variables.keys() == {VariableInformation("a", None),
                                                      VariableInformation("b", None),
                                                      VariableInformation("c", None),
-                                                     VariableInformation("d", None)}
+                                                     VariableInformation("d", None),
+                                                     VariableInformation('x'),
+                                                     VariableInformation("y"),
+                                                     VariableInformation("z")}
     assert test_output.assigned_variables[VariableInformation("a", None)] == {CodeLocation(4, 0)}
     assert test_output.assigned_variables[VariableInformation("b", None)] == {CodeLocation(5, 0)}
     assert test_output.assigned_variables[VariableInformation("c", None)] == {CodeLocation(6, 0)}
     assert test_output.assigned_variables[VariableInformation("d", None)] == {CodeLocation(7, 0)}
+    assert test_output.assigned_variables[VariableInformation("x")] == {CodeLocation(7, 18), CodeLocation(7, 61), CodeLocation(7, 99)}
+    assert test_output.assigned_variables[VariableInformation("y")] == {CodeLocation(7, 21), CodeLocation(7, 101)}
+    assert test_output.assigned_variables[VariableInformation("z")] == {CodeLocation(7, 103)}
     assert test_output.referenced_functions.keys() == {VariableInformation("reduce", None),
                                                        VariableInformation("list", None),
                                                        VariableInformation("filter", None),
@@ -1110,6 +1142,7 @@ else:
     assert test_output.referenced_modules[ModuleInformation("math")] == {CodeLocation(2, 7)}
     assert test_output.referenced_modules[ModuleInformation("functools")] == {CodeLocation(3, 5)}
     assert test_output.referenced_flags.keys() == set()
+    assert test_output.used_lambdas == {"LAMBDA": {CodeLocation(7, 11), CodeLocation(7, 54), CodeLocation(7, 92)}}
     assert test_output.errors == []
     
     
@@ -2254,8 +2287,12 @@ return high_ord_func(ff1, lambda x: x * x) > ff2"""
                                                                     CodeLocation(3, 40)}
     assert test_output.used_variables[VariableInformation("ff1")] == {CodeLocation(3, 21)}
     assert test_output.used_variables[VariableInformation("ff2")] == {CodeLocation(3, 45)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("high_ord_func")}
+    assert test_output.assigned_variables.keys() == {VariableInformation("high_ord_func"),
+                                                     VariableInformation("x"),
+                                                     VariableInformation("func")}
     assert test_output.assigned_variables[VariableInformation("high_ord_func")] == {CodeLocation(2, 0)}
+    assert test_output.assigned_variables[VariableInformation("func")] == {CodeLocation(2, 26)}
+    assert test_output.assigned_variables[VariableInformation("x")] == {CodeLocation(2, 23), CodeLocation(3, 33)}
     assert test_output.referenced_functions.keys() == {VariableInformation("func"),
                                                        VariableInformation("high_ord_func")}
     assert test_output.referenced_functions[VariableInformation("func")] == {CodeLocation(2, 36)}
@@ -2264,6 +2301,7 @@ return high_ord_func(ff1, lambda x: x * x) > ff2"""
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
+    assert test_output.used_lambdas == {"LAMBDA": {CodeLocation(2, 16), CodeLocation(3, 26)}}
     assert test_output.errors == []
     
     
