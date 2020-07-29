@@ -131,6 +131,43 @@ return sum > 10""",
 
 
 
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+def test_lambda_use_error_2(mock_determine_variables, mock_validate_returns_boolean):
+    flag_feeders = {}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation("x"): {CodeLocation(2, 26),
+                                                   CodeLocation(3, 26)},
+                        VariableInformation("y"): {CodeLocation(2, 30),
+                                                   CodeLocation(3, 30)},
+                        VariableInformation("cat"): {CodeLocation(2, 41), CodeLocation(2, 34),
+                                                     CodeLocation(3, 41), CodeLocation(3, 34)},
+                        VariableInformation("sum"): {CodeLocation(4, 7)},
+                        VariableInformation("mki"): {CodeLocation(4, 13)}},
+        assigned_variables={VariableInformation("sum"): {CodeLocation(2, 0)},
+                            VariableInformation("mki"): {CodeLocation(3, 0)},
+                            VariableInformation("cat"): {CodeLocation(2, 49), CodeLocation(3, 49)},
+                            VariableInformation("x"): {CodeLocation(2, 20), CodeLocation(3, 20)},
+                            VariableInformation("y"): {CodeLocation(2, 23), CodeLocation(3, 23)}},
+        referenced_functions={VariableInformation("reduce"): {CodeLocation(2, 6), CodeLocation(3, 6)},
+                              VariableInformation("range"): {CodeLocation(2, 56), CodeLocation(3, 56)}},
+        defined_functions=dict(),
+        defined_classes=dict(),
+        referenced_modules=dict(),
+        referenced_flags=dict(),
+        return_points={CodeLocation(4, 0)},
+        used_lambdas={"LAMBDA": {CodeLocation(2, 13), CodeLocation(3, 13)}},
+        errors=[],
+        flag_logic="""
+sum = reduce(lambda x, y: x + y, [cat ** cat for cat in range(4)])
+mki = reduce(lambda x, y: x + y, [cat ** cat for cat in range(4)])
+return sum + mki > 10""",
+        validation_results=TypeValidationResults())
+    result = validate_flag_logic_information(flag_feeders, flag_info)
+    assert len(result.errors) != 0
+    assert len(result.warnings) == 0
+
+
 
 
 
