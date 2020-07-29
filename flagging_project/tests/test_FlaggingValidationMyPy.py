@@ -307,9 +307,6 @@ return sum > 10"""
 
 
 
-
-
-
 def test_mypy_map_expression():
     logic = """
 numbers = (1, 2, 3, 4)
@@ -380,9 +377,8 @@ math = math.sqrt(10)
 return ff1 > math"""
     flag_feeders = {"ff1": int}
     test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
-    # assert test_output.other_errors == {'assignment': {CodeLocation(3, 0)}, 'operator': {CodeLocation(4, 0)}}
-    # top will pass, below will fail
-    assert test_output == {}
+    assert test_output.other_errors == {'assignment': {CodeLocation(3, 0)}, 'operator': {CodeLocation(4, 0)}}
+    #top will pass, below will fail
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
