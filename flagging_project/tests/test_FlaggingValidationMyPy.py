@@ -80,7 +80,7 @@ z = my_add(2, 3)
 return ff1 > z"""
     flag_feeders = {}
     test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
-    assert test_output.other_errors == {"non-any-return": {CodeLocation(4, 0)}}
+    assert test_output.other_errors == {"no-any-return": {CodeLocation(4, 0)}}
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
@@ -92,7 +92,7 @@ z = my_add(2, 3)
 return ff1 + z"""
     flag_feeders = {"ff1": float}
     test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
-    assert test_output.other_errors == {}
+    assert test_output.other_errors == {'no-any-return': {CodeLocation(4, 0)}}
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
