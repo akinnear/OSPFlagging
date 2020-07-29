@@ -111,7 +111,9 @@ def test_lambda_use_error(mock_determine_variables, mock_validate_returns_boolea
                         VariableInformation("cat"): {CodeLocation(2, 41), CodeLocation(2, 34)},
                         VariableInformation("sum"): {CodeLocation(3, 7)}},
         assigned_variables={VariableInformation("sum"): {CodeLocation(2, 0)},
-                            VariableInformation("cat"): {CodeLocation(2, 49)}},
+                            VariableInformation("cat"): {CodeLocation(2, 49)},
+                            VariableInformation("x"): {CodeLocation(2, 20)},
+                            VariableInformation("y"): {CodeLocation(2, 23)}},
         referenced_functions={VariableInformation("reduce"): {CodeLocation(2, 6)},
                               VariableInformation("range"): {CodeLocation(2, 56)}},
         defined_functions=dict(),
@@ -119,6 +121,7 @@ def test_lambda_use_error(mock_determine_variables, mock_validate_returns_boolea
         referenced_modules=dict(),
         referenced_flags=dict(),
         return_points={CodeLocation(3, 0)},
+        used_lambdas={"LAMBDA": {CodeLocation(2, 13)}},
         errors=[],
         flag_logic="""
 sum = reduce(lambda x, y: x + y, [cat ** cat for cat in range(4)])
