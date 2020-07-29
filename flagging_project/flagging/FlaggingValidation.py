@@ -13,8 +13,7 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
     results = FlaggingValidationResults()
     my_py_output = validate_returns_boolean(flag_logic_info, flag_feeders if flag_feeders else {})
 
-    #TODO
-    # use node visitor to identify lambda usage
+
     for used_lambda, cl in flag_logic_info.used_lambdas.items():
         results.add_error(used_lambda, cl)
 
