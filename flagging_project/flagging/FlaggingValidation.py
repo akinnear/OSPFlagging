@@ -29,13 +29,6 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
             # Assigned variable but has not been used
             results.add_warning(used_var, cl)
 
-    #TODO
-    # ask Adam if used_variables from lambda functions
-    # outside of defined flag feeders can be excluded from error set
-    # e.g test_lambda_use_error
-    # sum = reduce(lambda x, y: x + y, [cat ** cat for cat in range(4)])
-    # x and y are used variables not in passed flag feeders
-    # currently included in error set
 
     if used_variables:
         for unused, cl in used_variables.items():
@@ -74,17 +67,28 @@ class FlaggingValidationResults:
         self.warnings = warnings if warnings else dict()
         self.mypy_warnings = mypy_warnings if mypy_warnings else dict()
 
+
     def add_error(self, error, cl):
-        self.errors[error] = cl
+        if error not in self.errors.keys():
+            self.errors.setdefault(error, set())
+        self.errors[error].update(cl)
 
     def add_mypy_error(self, error, cl):
-        self.mypy_errors[error].add(cl)
+        if error not in self.mypy_errors.keys():
+            self.mypy_errors.setdefault(error, set())
+        self.mypy_errors[error].update(cl)
 
     def add_warning(self, warning, cl):
-        self.warnings[warning] = cl
+        if warning not in self.warnings.keys():
+            self.warnings.setdefault(warning, set())
+        self.warnings[warning].update(cl)
 
     def add_mypy_warning(self, warning, cl):
-        self.mypy_warnings[warning].add(cl)
+        if warning not in self.mypy_warnings.keys():
+            self.mypy_warnings.setdefault(warning, set())
+        self.mypy_warnings[warning].update(cl)
+
+
 
 
 
