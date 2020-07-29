@@ -1,6 +1,7 @@
 from flagging.FlaggingNodeVisitor import determine_variables, CodeLocation
 from flagging.VariableInformation import VariableInformation
 from flagging.FlaggingValidation import validate_returns_boolean
+from flagging.ModuleInformation import ModuleInformation
 
 
 def test_mypy_explicit_fail():
