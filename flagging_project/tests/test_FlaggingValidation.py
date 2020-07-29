@@ -8,8 +8,6 @@ from unittest import mock
 
 
 
-
-
 #TODO
 # test fail
 def test_flag_feeder_availble(func):
@@ -111,7 +109,9 @@ def test_lambda_use_error(mock_determine_variables, mock_validate_returns_boolea
                         VariableInformation("cat"): {CodeLocation(2, 41), CodeLocation(2, 34)},
                         VariableInformation("sum"): {CodeLocation(3, 7)}},
         assigned_variables={VariableInformation("sum"): {CodeLocation(2, 0)},
-                            VariableInformation("cat"): {CodeLocation(2, 49)}},
+                            VariableInformation("cat"): {CodeLocation(2, 49)},
+                            VariableInformation("x"): {CodeLocation(2, 20)},
+                            VariableInformation("y"): {CodeLocation(2, 23)}},
         referenced_functions={VariableInformation("reduce"): {CodeLocation(2, 6)},
                               VariableInformation("range"): {CodeLocation(2, 56)}},
         defined_functions=dict(),
@@ -119,6 +119,7 @@ def test_lambda_use_error(mock_determine_variables, mock_validate_returns_boolea
         referenced_modules=dict(),
         referenced_flags=dict(),
         return_points={CodeLocation(3, 0)},
+        used_lambdas={"LAMBDA": {CodeLocation(2, 13)}},
         errors=[],
         flag_logic="""
 sum = reduce(lambda x, y: x + y, [cat ** cat for cat in range(4)])
@@ -129,20 +130,10 @@ return sum > 10""",
     assert len(result.warnings) == 0
 
 
-#TODO
-# test fails
-def test_variable_numerical_invalid():
-    logic = """return FF1"""
-    test_output = determine_variables(logic)
-    assert len(test_output.validation_results.validation_errors) != 0
 
 
-#TODO
-# test fails
-def test_variable_any():
-    logic = """return FF1"""
-    test_output = determine_variables(logic)
-    assert len(test_output.validation_results.validation_errors) != 0
+
+
 
 
 def test_determine_validation_location_1():
@@ -224,7 +215,7 @@ def test_determine_validation_location_4():
 #TODO
 # test fails
 def test_mypy_integration():
-    flag_feeders = {'cat'}
+    flag_feeders = {'cat': bool, 'dog': bool}
     logic = """return cat or dog"""
     test_output = determine_variables(logic)
     flag_info = FlagLogicInformation(

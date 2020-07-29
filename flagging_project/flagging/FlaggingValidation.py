@@ -13,8 +13,9 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
     results = FlaggingValidationResults()
     my_py_output = validate_returns_boolean(flag_logic_info, flag_feeders if flag_feeders else {})
 
-    
 
+    for used_lambda, cl in flag_logic_info.used_lambdas.items():
+        results.add_error(used_lambda, cl)
 
     used_variables = dict(flag_logic_info.used_variables)
     for used_var, cl in flag_logic_info.used_variables.items():

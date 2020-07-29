@@ -68,6 +68,7 @@ class FlagFeederNodeVisitor(NodeVisitor):
         self.defined_classes = dict()
         self.referenced_flags = dict()
         self.return_points = set()
+        self.used_lambdas = dict()
         self.errors = []
         self._stack = []
         self._attribute_stack = []
@@ -78,11 +79,9 @@ class FlagFeederNodeVisitor(NodeVisitor):
         print("NODE:"+f"{_print_helper(node)} Stack[{', '.join(map(lambda x: _print_helper(x), self._stack))}]")
 
         self._stack.append(node)
-        # print("-PUSH->")
         try:
             yield node
             self._stack.pop()
-            # print("**POP**")
         except:
             raise
 
@@ -266,7 +265,6 @@ class FlagFeederNodeVisitor(NodeVisitor):
                 code_location_helper(self.used_variables, VariableInformation(name),
                                                            CodeLocation(line_number=node.lineno,
                                                                         column_offset=node.col_offset))
-
             ast.NodeVisitor.generic_visit(self, node)
 
     def visit_Attribute(self, node):
@@ -290,6 +288,19 @@ class FlagFeederNodeVisitor(NodeVisitor):
 
     def generic_visit(self, node):
         with self.handle_node_stack(node):
+            ast.NodeVisitor.generic_visit(self, node)
+
+    def visit_Lambda(self, node):
+        with self.handle_node_stack(node):
+            code_location_helper(self.used_lambdas, "LAMBDA",
+                                 CodeLocation(line_number=node.lineno,
+                                              column_offset=node.col_offset))
+            #assigned variables
+            for arg in node.args.args:
+                code_location_helper(self.assigned_variables, VariableInformation(arg.arg),
+                                     CodeLocation(line_number=arg.lineno,
+                                                  column_offset=arg.col_offset))
+
             ast.NodeVisitor.generic_visit(self, node)
 
 
@@ -316,5 +327,6 @@ def determine_variables(logic):
                                 referenced_modules=nv.referenced_modules,
                                 referenced_flags=nv.referenced_flags,
                                 return_points=nv.return_points,
+                                used_lambdas=nv.used_lambdas,
                                 errors=nv.errors,
                                 flag_logic=logic_copy)
