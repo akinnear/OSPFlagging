@@ -166,6 +166,17 @@ return ff3 < test_1"""
     assert test_output.warnings == {}
 
 
+def test_mypy_add_operation_3():
+    logic = """
+test_1 = ff1 + ff2
+return ff3 < test_1"""
+    flag_feeders = {"ff1": int, "ff2": int, "ff3": int}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
+
+
 
 def test_mypy_embedded_if_statment():
     logic = """                                            
@@ -221,6 +232,35 @@ else:
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
+
+def test_mypy_embedded_if_2():
+    logic = """
+if ff4 >= 50:                                              
+    if ff1 > 10:                                           
+        return ff2 == True                                 
+    elif ff2:                                              
+        return ff1 < 10                                    
+    elif ff3 > ff1:                                        
+        return ff4 < 50      
+    else:
+        return ff2
+elif ff1 < 10:                                             
+    return ff5 == 'CAT'                                    
+else:                                                      
+    a = 10                                                 
+    b = True                                               
+    c = "CAR"                                              
+    if ff5 == "DOG":                                       
+        a = a + 10                                         
+        return ff1 < a
+    else:
+        return ff2"""
+    flag_feeders = {"ff1": int, "ff2": bool, "ff3": int, "ff4": int, "ff5": str}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
+
 def test_mypy_reduce_lambda():
     logic = """
 from functools import reduce                                  
@@ -236,7 +276,24 @@ else:
     assert test_output.warnings == {}
 
 
+def test_mypy_reduce_lambda_fail():
+    logic = """
+from functools import reduce                                  
+f = lambda a,b: a if (a > b) else b              
+if reduce(f, [47,11,42,102,13]) > 100:           
+    return ff1 > reduce(f, [47,11,42,102,13])    
+else:                                            
+    return ff2 < reduce(f, [47,11,42,102,13])"""
+    flag_feeders = {"ff1": bool, "ff2": str}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {"no-any-return": {CodeLocation(7, 0)},
+                                        "operator": {CodeLocation(7, 0)}}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
+
+#TODO
+# why no-any-return??
 def test_mypy_list_comprehension_var_not_defined():
     logic = """
 from functools import reduce
@@ -247,6 +304,9 @@ return sum > 10"""
     assert test_output.other_errors == {"no-any-return": {CodeLocation(4,0)}}
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
+
+
+
 
 
 
