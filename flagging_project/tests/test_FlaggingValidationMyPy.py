@@ -58,6 +58,21 @@ else:
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
+
+def test_mypy_if_statement_explicit():
+    logic = """
+x = (ff1 or ff2)
+y = (ff3 + ff4)
+if y > 100:
+    return ff5 != x
+else:
+    return ff5 == x"""
+    flag_feeders = {"ff1": bool, "ff2": bool, "ff3": float, "ff4": int, "ff5": bool}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
+
 def test_mypy_if_statement_nonexplicit():
     logic = """
 x = (ff1 or ff2)
@@ -84,12 +99,13 @@ return ff1 > z"""
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
-
+#TODO
+# why no-any-return??
 def test_mypy_normal_expression_explicit():
     logic = """
 def my_add(x, y): return x + y
 z = my_add(2, 3)
-return ff1 + z"""
+return ff1 > z"""
     flag_feeders = {"ff1": float}
     test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
     assert test_output.other_errors == {'no-any-return': {CodeLocation(4, 0)}}
@@ -126,11 +142,12 @@ def test_mypy_greater_than_operation():
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
-
+#TODO
+# why no-any-return??
 def test_mypy_add_operation():
     logic = """
 test_1 = ff1 + ff2
-return ff3 < test_1"""
+return ff3 == test_1"""
     flag_feeders = {"ff1": bool, "ff3": bool}
     test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
     assert test_output.other_errors == {"no-any-return": {CodeLocation(3, 0)}}
