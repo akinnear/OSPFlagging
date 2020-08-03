@@ -44,6 +44,7 @@ return cat < 10"""
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
+
 def test_mypy_if_statement_explicit():
     logic = """
 x = (ff1 or ff2)
@@ -73,6 +74,7 @@ else:
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
+
 def test_mypy_if_statement_nonexplicit():
     logic = """
 x = (ff1 or ff2)
@@ -99,6 +101,7 @@ return ff1 > z"""
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
+
 #TODO
 # why no-any-return??
 def test_mypy_normal_expression_explicit():
@@ -113,7 +116,6 @@ return ff1 > z"""
     assert test_output.warnings == {}
 
 
-
 def test_mypy_equals_operation():
     logic = """return ff1 == ff2"""
     flag_feeders = {"ff1": str, "ff2": str}
@@ -121,7 +123,6 @@ def test_mypy_equals_operation():
     assert test_output.other_errors == {}
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
-
 
 
 def test_mypy_less_than_operation():
@@ -133,7 +134,6 @@ def test_mypy_less_than_operation():
     assert test_output.warnings == {}
 
 
-
 def test_mypy_greater_than_operation():
     logic = """return ff1 <= ff2"""
     flag_feeders = {"ff1": bool, "ff2": int}
@@ -141,6 +141,7 @@ def test_mypy_greater_than_operation():
     assert test_output.other_errors == {}
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
+
 
 #TODO
 # why no-any-return??
@@ -177,7 +178,6 @@ return ff3 < test_1"""
     assert test_output.warnings == {}
 
 
-
 def test_mypy_embedded_if_statment():
     logic = """                                            
 if ff4 >= 50:                                              
@@ -205,6 +205,7 @@ else:
     assert test_output.other_errors == {}
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
+
 
 def test_mypy_embedded_if_missing_return():
     logic = """
@@ -261,6 +262,7 @@ else:
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
+
 def test_mypy_reduce_lambda():
     logic = """
 from functools import reduce                                  
@@ -304,7 +306,6 @@ return sum > 10"""
     assert test_output.other_errors == {"no-any-return": {CodeLocation(4,0)}}
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
-
 
 
 def test_mypy_map_expression():
@@ -396,9 +397,6 @@ return ff1 > x"""
     assert test_output.warnings == {}
 
 
-
-
-
 # TODO
 # update test
 # name defined error, var.var
@@ -439,7 +437,7 @@ else:
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
-# syntax error
+
 def test_mypy_object():
     logic = """
 a.b.c.d.e > 10"""
@@ -450,7 +448,6 @@ a.b.c.d.e > 10"""
     assert test_output.warnings == {}
 
 
-# syntax error
 def test_mypy_object_function():
     logic = """
 a.b.c() > 10"""
@@ -479,7 +476,6 @@ return cat < 10 and fish > 100"""
     assert test_output.other_errors == {}
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
-
 
 
 def test_mypy_map_filter_lambda_2():
@@ -538,7 +534,6 @@ return cat in animals"""
     assert test_output.warnings == {}
 
 
-
 def test_mypy_with_no_as():
     logic = """
 with method(item):
@@ -556,10 +551,10 @@ with method(ff1, ff2) as my_with:
     return my_with > 100"""
     flag_feeders = {"my_with": int}
     test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
-    assert test_output.other_errors == {"name-defined": {CodeLocation(2, 0)}}
+    assert test_output.other_errors == {"name-defined": {CodeLocation(2, 0)},
+                                        "no-any-return": {CodeLocation(3, 0)}}
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
-
 
 
 def test_mypy_func():
@@ -573,8 +568,7 @@ return myfunc(ff1) > 10"""
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
-#TODO
-# syntax error
+
 def test_list_comprehension_CodeLocation():
     logic = """
 names = set([name.id 
@@ -632,6 +626,7 @@ return 10 in eggs"""
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
+
 def test_mypy_fizzbuzz_comprehension():
     logic = """
 fizzbuzz = [
@@ -686,7 +681,6 @@ return ff1 > 0"""
     assert test_output.warnings == {}
 
 
-# syntax error
 def test_mypy_complex_use():
     logic = """
 x.y.z > 10"""
@@ -711,8 +705,6 @@ return ff1 > 0"""
     assert test_output.warnings == {}
 
 
-
-# syntax error
 def test_mypy_simple_function_dont_use_complex_2():
     logic = """
 def my_function():
@@ -726,7 +718,6 @@ return ff1 > 1"""
     assert test_output.warnings == {}
 
 
-# syntax error
 def test_try_except_finally_CodeLocation():
     logic = """
 try:
@@ -748,7 +739,6 @@ finally:
     assert test_output.warnings == {}
 
 
-# syntax error
 def test_mypy_try_except_finally_in_defined_function():
     logic = """
 def my_func():
@@ -783,7 +773,6 @@ return ff1"""
     assert test_output.other_errors == {}
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
-
 
 
 def test_mypy_used_class():
@@ -849,7 +838,6 @@ f.get("MY_FLAG")"""
     assert test_output.warnings == {}
 
 
-# syntax error
 def test_mypy_function_with_vars_CodeLocation():
     logic = """my_func(a.b.c, x.y.z)"""
     flag_feeders = {}
@@ -859,7 +847,6 @@ def test_mypy_function_with_vars_CodeLocation():
     assert test_output.warnings == {}
 
 
-# syntax error
 def test_mypy_function_with_vars_using_import_function_CodeLocation():
     logic = """
 import math
@@ -870,7 +857,7 @@ my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
-# syntax error
+
 def test_mypy_function_with_vars_using_import_function_2_CodeLocation():
     logic = """
 import pandas as pd, math
@@ -883,7 +870,7 @@ my_func(math.sqrt(a.b.c), math.sqrt(x.y.z))"""
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
-# syntax error
+
 def test_mypy_function_with_vars_using_import_value_CodeLocation():
     logic = """
 import math
@@ -905,6 +892,7 @@ engine = create_engine('oracle+cx_oracle://' + username + ':' + password + '@' +
     assert test_output.other_errors == {"return": {CodeLocation(0, 0)}}
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
+
 
 def test_mypy_import_with_as_CodeLocation():
     logic = """
@@ -985,9 +973,7 @@ return y > 10"""
     assert test_output.errors == []
 
 
-# TODO
-# update test
-# non any return error
+
 def test_mypy_special_lambda_CodeLocation():
     logic = """
 high_ord_func = lambda x, func: x + func(x)
@@ -997,6 +983,7 @@ return high_ord_func(ff1, lambda x: x * x) > ff2"""
     assert test_output.other_errors == {'no-any-return': {CodeLocation(3, 0)}}
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
+
 
 def test_mypy_invalid():
     logic = """
@@ -1019,6 +1006,7 @@ def test_odd_text():
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
+
 def test_mypy_empty_space_clean_up():
     logic = """    
 
@@ -1032,6 +1020,7 @@ return ff1 > x"""
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
 
+
 def test_mypy_empty_space_clean_up_single_line():
     logic = """    
 
@@ -1044,6 +1033,7 @@ ff1 > 10
     assert test_output.other_errors == {}
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
+
 
 def test_mypy_empty_space_clean_up_single_multi_line_return():
     logic = """    
@@ -1069,6 +1059,7 @@ def test_mypy_non_boolean_flag_feeder_only():
     assert test_output.validation_errors == {"return-value": {CodeLocation(1, 0)}}
     assert test_output.warnings == {}
 
+
 def test_mypy_boolean_flag_feeder_only():
     logic = "ff1"
     flag_feeders = {"ff1": bool}
@@ -1089,7 +1080,6 @@ ff1
     assert test_output.other_errors == {}
     assert test_output.validation_errors == {}
     assert test_output.warnings == {}
-
 
 
 def test_mypy_determine_invalid_return():
@@ -1119,186 +1109,56 @@ def test_mypy_determine_invalid_return_2():
     assert test_output.warnings == {}
 
 
-def test_determine_dynamic_flag_feeders():
+def test_mypy_determine_dynamic_flag_feeders():
     logic = """return cat or dog"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables == {
-        VariableInformation("cat"): {CodeLocation(1, 7)},
-        VariableInformation("dog"): {CodeLocation(1, 14)},
-    }
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    flag_feeders = {}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {"no-any-return": {CodeLocation(1, 0)}}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
-def test_determine_one_dynamic_flag_feeders():
+def test_mypy_determine_one_dynamic_flag_feeders():
     logic = """return cat < 10 or dog"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables == {
-        VariableInformation("cat"): {CodeLocation(1, 7)},
-        VariableInformation("dog"): {CodeLocation(1, 19)},
-    }
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    flag_feeders = {"cat": int}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
-def test_determine_known_flag_feeders():
+def test_mypy_determine_known_flag_feeders_wrong_type():
     logic = """return cat or dog"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables == {
-        VariableInformation("cat"): {CodeLocation(1, 7)},
-        VariableInformation("dog"): {CodeLocation(1, 14)},
-    }
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    flag_feeders = {"cat": str, "dog": int}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {"str, int": {CodeLocation(1, 0)}}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
-def test_determine_known_flag_feeders_wrong_type():
-    logic = """return cat or dog"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables == {
-        VariableInformation("cat"): {CodeLocation(1, 7)},
-        VariableInformation("dog"): {CodeLocation(1, 14)},
-    }
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
-
-def test_determine_known_flag_feeders_wrong_type_2():
-    logic = """cat or dog"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables == {
-        VariableInformation("cat"): {CodeLocation(1, 0)},
-        VariableInformation("dog"): {CodeLocation(1, 7)},
-    }
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
-
-def test_determine_known_flag_feeders_wrong_type_3():
-    logic = """cat or dog"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables == {
-        VariableInformation("cat"): {CodeLocation(1, 0)},
-        VariableInformation("dog"): {CodeLocation(1, 7)},
-    }
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
-
-def test_determine_known_flag_feeders_wrong_type_4():
-    logic = """return cat or dog"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables == {
-        VariableInformation("cat"): {CodeLocation(1, 7)},
-        VariableInformation("dog"): {CodeLocation(1, 14)},
-    }
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
-
-def test_determine_known_flag_feeders_invalid_type_for_math():
-    logic = """return cat + dog"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables == {
-        VariableInformation("cat"): {CodeLocation(1, 7)},
-        VariableInformation("dog"): {CodeLocation(1, 13)},
-    }
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
-
-# TODO
-# update test
-# unreachable error
-def test_unreachable():
+def test_mypy_unreachable():
     logic = """\
 if True or cat:
     return True
 
 return dog"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables == {
-        VariableInformation("cat"): {CodeLocation(1, 11)},
-        VariableInformation("dog"): {CodeLocation(4, 7)},
-    }
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    flag_feeders = {"cat": bool, "dog": bool}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {"unreachable": {CodeLocation(1, 0), CodeLocation(4, 0)}}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
-def test_equality():
+def test_mypy_equality():
     logic = """return dog == 'dog'"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables == {
-        VariableInformation("dog"): {CodeLocation(1, 7)},
-    }
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+    flag_feeders = {"dog": str}
+    test_output = validate_returns_boolean(determine_variables(logic), flag_feeders)
+    assert test_output.other_errors == {}
+    assert test_output.validation_errors == {}
+    assert test_output.warnings == {}
 
 
-def test_equality_any_var():
-    logic = """return dog == x"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables == {
-        VariableInformation("dog"): {CodeLocation(1, 7)},
-        VariableInformation("x"): {CodeLocation(1, 14)},
-    }
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+
 
 
 
