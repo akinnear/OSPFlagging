@@ -25,7 +25,7 @@ def test_flag_feeder_availble(func):
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_flag_feeder_not_available(mock_determine_variables, mock_validate_returns_boolean):
+def test_validation_flag_feeder_not_available(mock_determine_variables, mock_validate_returns_boolean):
     flag_feeders = {"FF1"}
     flag_info = FlagLogicInformation(
         used_variables={VariableInformation('FF1'): {CodeLocation()}}
@@ -37,7 +37,7 @@ def test_flag_feeder_not_available(mock_determine_variables, mock_validate_retur
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_variable_defined_and_used_2(mock_determine_variables, mock_validate_returns_boolean):
+def test_validation_variable_defined_and_used_2(mock_determine_variables, mock_validate_returns_boolean):
     flag_feeders = {}
     flag_info = FlagLogicInformation(
         used_variables={VariableInformation('x'): {CodeLocation()}},
@@ -50,7 +50,7 @@ def test_variable_defined_and_used_2(mock_determine_variables, mock_validate_ret
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_variable_defined_and_not_used(mock_determine_variables, mock_validate_returns_boolean):
+def test_validation_variable_defined_and_not_used(mock_determine_variables, mock_validate_returns_boolean):
     flag_feeders = {}
     flag_info = FlagLogicInformation(
         assigned_variables={VariableInformation('x'): {CodeLocation()}}
@@ -62,7 +62,7 @@ def test_variable_defined_and_not_used(mock_determine_variables, mock_validate_r
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_variable_valid_return(mock_determine_variables, mock_validate_returns_boolean):
+def test_validation_variable_valid_return(mock_determine_variables, mock_validate_returns_boolean):
     flag_feeders = {}
     flag_info = FlagLogicInformation(
         assigned_variables={VariableInformation('x'): {CodeLocation()}}
@@ -74,7 +74,7 @@ def test_variable_valid_return(mock_determine_variables, mock_validate_returns_b
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_user_defined_func_error(mock_determine_variables, mock_validate_returns_boolean):
+def test_validation_user_defined_func_error(mock_determine_variables, mock_validate_returns_boolean):
     flag_feeders = {"ff1"}
     flag_info = FlagLogicInformation(
         used_variables={VariableInformation("x"): {CodeLocation(2, 25)},
@@ -102,7 +102,7 @@ def test_user_defined_func_error(mock_determine_variables, mock_validate_returns
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_lambda_use_error(mock_determine_variables, mock_validate_returns_boolean):
+def test_validation_lambda_use_error(mock_determine_variables, mock_validate_returns_boolean):
     flag_feeders = {}
     flag_info = FlagLogicInformation(
         used_variables={VariableInformation("x"): {CodeLocation(2, 26)},
@@ -134,7 +134,7 @@ return sum > 10""",
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_lambda_use_error_2(mock_determine_variables, mock_validate_returns_boolean):
+def test_validation_lambda_use_error_2(mock_determine_variables, mock_validate_returns_boolean):
     flag_feeders = {}
     flag_info = FlagLogicInformation(
         used_variables={VariableInformation("x"): {CodeLocation(2, 26),
@@ -172,22 +172,27 @@ return sum + mki > 10""",
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_determine_flag_feeders_logic_and_CodeLocation():
-    logic = """cat and dog"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("cat", None),
-                                                 VariableInformation("dog", None)}
-    assert test_output.used_variables[VariableInformation("cat", None)] == {
-        CodeLocation(line_number=1, column_offset=0)}
-    assert test_output.used_variables[VariableInformation("dog", None)] == {
-        CodeLocation(line_number=1, column_offset=8)}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+def test_validation_determine_flag_feeders_logic_and_CodeLocation(mock_determine_variables, mock_validate_returns_bool):
+    flag_feeders = {"cat": bool, "dog": bool}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation("cat"): {CodeLocation(line_number=1, column_offset=0)},
+                        VariableInformation("dog"): {CodeLocation(line_number=1, column_offset=8)}},
+        assigned_variables=dict(),
+        referenced_functions=dict(),
+        defined_functions=dict(),
+        defined_classes=dict(),
+        referenced_modules=dict(),
+        referenced_flags=dict(),
+        return_points={CodeLocation(1, 0)},
+        used_lambdas=dict(),
+        errors=[],
+        flag_logic="""cat and dog""",
+        validation_results=TypeValidationResults())
+    result = validate_flag_logic_information(flag_feeders, flag_info)
+    assert len(result.errors) == 0
+    assert len(result.warnings) == 0
+
+
 
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
