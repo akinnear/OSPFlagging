@@ -172,7 +172,7 @@ return sum + mki > 10""",
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_validation_determine_flag_feeders_logic_and_CodeLocation(mock_determine_variables, mock_validate_returns_bool):
+def test_validation_determine_flag_feeders_logic_and(mock_determine_variables, mock_validate_returns_bool):
     flag_feeders = {"cat": bool, "dog": bool}
     flag_info = FlagLogicInformation(
         used_variables={VariableInformation("cat"): {CodeLocation(line_number=1, column_offset=0)},
@@ -197,398 +197,257 @@ def test_validation_determine_flag_feeders_logic_and_CodeLocation(mock_determine
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_determine_flag_feeders_logic_or_CodeLocation():
-    logic = """
-man or woman"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("man", None),
-                                                 VariableInformation("woman", None)}
-    assert test_output.used_variables[VariableInformation("man", None)] == {
-        CodeLocation(line_number=2, column_offset=0)}
-    assert test_output.used_variables[VariableInformation("woman", None)] == {
-        CodeLocation(line_number=2, column_offset=7)}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+def test_validation_determine_flag_feeders_logic_or(mock_determine_variables, mock_validate_returns_bool):
+    flag_feeders = {"man": bool, "woman": bool}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation("man"): {CodeLocation(2, 0)},
+                        VariableInformation("woman"): {CodeLocation(2, 7)}},
+        assigned_variables=dict(),
+        referenced_functions=dict(),
+        defined_functions=dict(),
+        defined_classes=dict(),
+        referenced_modules=dict(),
+        referenced_flags=dict(),
+        return_points={},
+        used_lambdas=dict(),
+        errors=[],
+        flag_logic="""man or woman""",
+        validation_results=TypeValidationResults())
+    result = validate_flag_logic_information(flag_feeders, flag_info)
+    assert len(result.errors) == 0
+    assert len(result.warnings) == 0
+
+
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_determine_flag_feeder_conditional_CodeLocation():
-    logic = """
-cat = 100
-return cat < 10"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("cat", None)}
-    assert test_output.used_variables[VariableInformation("cat", None)] == {
-        CodeLocation(line_number=3, column_offset=7)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("cat", None)}
-    assert test_output.assigned_variables[VariableInformation("cat", None)] == {
-        CodeLocation(line_number=2, column_offset=0)}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+def test_validation_determine_flag_feeder_conditional(mock_determine_variables, mock_validate_returns_bool):
+    flag_feeders = {}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation("cat"): {CodeLocation(3, 7)}},
+        assigned_variables={VariableInformation("cat"): {CodeLocation(2, 0)}},
+        referenced_functions=dict(),
+        defined_functions=dict(),
+        defined_classes=dict(),
+        referenced_modules=dict(),
+        referenced_flags=dict(),
+        return_points={},
+        used_lambdas=dict(),
+        errors=[],
+        flag_logic="""
+        cat = 100
+        return cat < 10""",
+        validation_results=TypeValidationResults())
+    result = validate_flag_logic_information(flag_feeders, flag_info)
+    assert len(result.errors) == 0
+    assert len(result.warnings) == 0
+
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_determine_flag_feeder_if_statement_CodeLocation():
-    logic = """
-x = (ff1 or ff2)
-y = (ff3 + ff4)
-if y > 100:
-    return ff5 != x
-else:
-    return ff5 == x"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("y", None), VariableInformation("x", None),
-                                                 VariableInformation("ff1", None), VariableInformation('ff2', None),
-                                                 VariableInformation("ff3", None), VariableInformation("ff4", None),
-                                                 VariableInformation("ff5", None)}
-    assert test_output.used_variables[VariableInformation("y", None)] == {CodeLocation(line_number=4, column_offset=3)}
-    assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(line_number=5, column_offset=18),
-                                                                          CodeLocation(line_number=7, column_offset=18)}
-    assert test_output.used_variables[VariableInformation("ff1", None)] == {CodeLocation(2, 5)}
-    assert test_output.used_variables[VariableInformation("ff2", None)] == {CodeLocation(2, 12)}
-    assert test_output.used_variables[VariableInformation("ff3", None)] == {CodeLocation(3, 5)}
-    assert test_output.used_variables[VariableInformation("ff4", None)] == {CodeLocation(3, 11)}
-    assert test_output.used_variables[VariableInformation("ff5", None)] == {
-        CodeLocation(line_number=5, column_offset=11),
-        CodeLocation(line_number=7, column_offset=11)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("y", None), VariableInformation("x", None)}
-    assert test_output.assigned_variables["y"] == {CodeLocation(line_number=3, column_offset=0)}
-    assert test_output.assigned_variables["x"] == {CodeLocation(line_number=2, column_offset=0)}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.return_points == {CodeLocation(5, 4), CodeLocation(7, 4)}
-    assert test_output.errors == []
+def test_validation_determine_flag_feeder_if_statement(mock_determine_variables, mock_validate_returns_bool):
+    flag_feeders = {"ff1": bool, "ff2": bool, "ff3": int, "ff4": int, "ff5": bool}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation("y"): {CodeLocation(4, 3)},
+                        VariableInformation("x"): {CodeLocation(5, 18), CodeLocation(7, 18)},
+                        VariableInformation("ff1"): {CodeLocation(2, 5)},
+                        VariableInformation("ff2"): {CodeLocation(2, 12)},
+                        VariableInformation("ff3"): {CodeLocation(3, 5)},
+                        VariableInformation("ff4"): {CodeLocation(3, 11)},
+                        VariableInformation("ff5"): {CodeLocation(5, 11),
+                                                     CodeLocation(7, 11)}},
+        assigned_variables={VariableInformation("x"): {CodeLocation(2, 0)},
+                            VariableInformation("y"): {CodeLocation(3, 0)}},
+        referenced_functions=dict(),
+        defined_functions=dict(),
+        defined_classes=dict(),
+        referenced_modules=dict(),
+        referenced_flags=dict(),
+        return_points={CodeLocation(5, 4), CodeLocation(7, 4)},
+        used_lambdas=dict(),
+        errors=[],
+        flag_logic="""
+        x = (ff1 or ff2)
+        y = (ff3 + ff4)
+            if y > 100:
+                return ff5 != x
+            else:
+                return ff5 == x""",
+        validation_results=TypeValidationResults())
+    result = validate_flag_logic_information(flag_feeders, flag_info)
+    assert len(result.errors) == 0
+    assert len(result.warnings) == 0
+
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_normal_expression_keys():
-    logic = """
-def my_add(x, y): return x + y
-z = my_add(2, 3)
-return ff1 > z"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"x", "y", "ff1", "z"}
-    assert test_output.assigned_variables.keys() == {"x", "y", "z"}
-    assert test_output.referenced_functions.keys() == {"my_add"}
-    assert test_output.defined_functions.keys() == {"my_add"}
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+def test_validation_normal_expression_error_defined_function(mock_determine_variables, mock_validate_returns_bool):
+    flag_feeders = {"ff1": int}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation("y"): {CodeLocation(2, 29)},
+                        VariableInformation("x"): {CodeLocation(2, 25)},
+                        VariableInformation("ff1"): {CodeLocation(4, 7)},
+                        VariableInformation("z"): {CodeLocation(4, 13)}},
+        assigned_variables={VariableInformation("x"): {CodeLocation(2, 11)},
+                            VariableInformation("y"): {CodeLocation(2, 14)},
+                            VariableInformation("z"): {CodeLocation(3, 0)}},
+        referenced_functions={VariableInformation("my_add"): {CodeLocation(3, 4)}},
+        defined_functions={VariableInformation("my_add"): {CodeLocation(2, 4)}},
+        defined_classes=dict(),
+        referenced_modules=dict(),
+        referenced_flags=dict(),
+        return_points={CodeLocation(4, 0)},
+        used_lambdas=dict(),
+        errors=[],
+        flag_logic="""
+        def my_add(x, y): return x + y
+        z = my_add(2, 3)
+        return ff1 > z""",
+        validation_results=TypeValidationResults())
+    result = validate_flag_logic_information(flag_feeders, flag_info)
+    assert result.errors == {VariableInformation("my_add"): {CodeLocation(2, 4)}}
+    assert len(result.warnings) == 0
+
+
+
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_normal_expression_CodeLocation():
-    logic = """
-def my_add(x, y): return x + y
-z = my_add(2, 3)
-return ff1 > z"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1", None), VariableInformation("z", None),
-                                                 VariableInformation("x", None), VariableInformation("y", None)}
-    assert test_output.used_variables[VariableInformation('ff1', None)] == {CodeLocation(4, 7)}
-    assert test_output.used_variables[VariableInformation("z", None)] == {CodeLocation(4, 13)}
-    assert test_output.used_variables[VariableInformation("x", None)] == {CodeLocation(2, 25)}
-    assert test_output.used_variables[VariableInformation("y", None)] == {CodeLocation(2, 29)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("x", None), VariableInformation("y", None),
-                                                     VariableInformation("z", None)}
-    assert test_output.assigned_variables[VariableInformation("x", None)] == {CodeLocation(2, 11)}
-    assert test_output.assigned_variables[VariableInformation("y")] == {CodeLocation(2, 14)}
-    assert test_output.referenced_functions.keys() == {"my_add"}
-    assert test_output.defined_functions.keys() == {"my_add"}
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+def test_validation_equals_operation(mock_determine_variables, mock_validate_returns_bool):
+    flag_feeders = {"ff1": int, "ff2": int}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation("ff1"): {CodeLocation(1, 7)},
+                        VariableInformation("ff2"): {CodeLocation(1, 14)}},
+        assigned_variables=dict(),
+        referenced_functions=dict(),
+        defined_functions=dict(),
+        defined_classes=dict(),
+        referenced_modules=dict(),
+        referenced_flags=dict(),
+        return_points={CodeLocation(1, 0)},
+        used_lambdas=dict(),
+        errors=[],
+        flag_logic="""return ff1 == ff2""",
+        validation_results=TypeValidationResults())
+    result = validate_flag_logic_information(flag_feeders, flag_info)
+    assert result.errors == dict()
+    assert result.warnings == dict()
+
+
+
+
+
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_equals_operation_CodeLocation():
-    logic = """return ff1 == ff2"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1", None), VariableInformation("ff2", None)}
-    assert test_output.used_variables == {
-        VariableInformation("ff1", None): {CodeLocation(line_number=1, column_offset=7)},
-        VariableInformation("ff2", None): {CodeLocation(line_number=1, column_offset=14)}}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+def test_validation_add_operation(mock_determine_variables, mock_validate_returns_bool):
+    flag_feeders = {"ff1": int, "ff2": int, "ff3": int}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation("test_1"): {CodeLocation(3, 13)},
+                        VariableInformation("ff1"): {CodeLocation(2, 9)},
+                        VariableInformation("ff2"): {CodeLocation(2, 15)},
+                        VariableInformation("ff3"): {CodeLocation(3, 7)}},
+        assigned_variables={VariableInformation("test_1"): {CodeLocation(2, 0)}},
+        referenced_functions=dict(),
+        defined_functions=dict(),
+        defined_classes=dict(),
+        referenced_modules=dict(),
+        referenced_flags=dict(),
+        return_points={CodeLocation(3, 0)},
+        used_lambdas=dict(),
+        errors=[],
+        flag_logic="""
+        test_1 = ff1 + ff2
+        return ff3 < test_1""",
+        validation_results=TypeValidationResults())
+    result = validate_flag_logic_information(flag_feeders, flag_info)
+    assert result.errors == dict()
+    assert result.warnings == dict()
+
+
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_less_than_operation_CodeLocation():
-    logic = """return ff1 >= ff2"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1", None), VariableInformation("ff2", None)}
-    assert test_output.used_variables == {
-        VariableInformation("ff1", None): {CodeLocation(line_number=1, column_offset=7)},
-        VariableInformation("ff2", None): {CodeLocation(line_number=1, column_offset=14)}}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+def test_determine_flag_feeder_for_loop_CodeLocation(mock_determine_variables, mock_validate_returns_bool):
+    flag_feeders = {"ff1": int, "ff2": bool, "ff3": int, "ff4": int, "ff5": str}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation("ff1"): {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15),
+                                                     CodeLocation(9, 5), CodeLocation(17, 15)},
+                        VariableInformation("ff2"): {CodeLocation(4, 15), CodeLocation(5, 9)},
+                        VariableInformation("ff3"): {CodeLocation(7, 9)},
+                        VariableInformation("ff4"): {CodeLocation(2, 3), CodeLocation(8, 15)},
+                        VariableInformation("ff5"): {CodeLocation(10, 11), CodeLocation(15, 7)},
+                        VariableInformation("a"): {CodeLocation(16, 12), CodeLocation(17, 21)}},
+        assigned_variables={VariableInformation("a"): {CodeLocation(12, 4), CodeLocation(16, 8)},
+                            VariableInformation("b"): {CodeLocation(13, 4)},
+                            VariableInformation("c"): {CodeLocation(14, 4)}},
+        referenced_functions=dict(),
+        defined_functions=dict(),
+        defined_classes=dict(),
+        referenced_modules=dict(),
+        referenced_flags=dict(),
+        return_points={CodeLocation(4, 8), CodeLocation(6, 8), CodeLocation(8, 8),
+                       CodeLocation(10, 4), CodeLocation(17, 8)},
+        used_lambdas=dict(),
+        errors=[],
+        flag_logic="""
+        if ff4 >= 50:                                              
+            if ff1 > 10:                                           
+                return ff2 == True                                 
+            elif ff2:                                              
+                return ff1 < 10                                    
+            elif ff3 > ff1:                                        
+                return ff4 < 50                                    
+        elif ff1 < 10:                                             
+            return ff5 == 'CAT'                                    
+        else:                                                      
+            a = 10                                                 
+            b = True                                               
+            c = "CAR"                                              
+            if ff5 == "DOG":                                       
+                a = a + 10                                         
+                return ff1 < a""",
+        validation_results=TypeValidationResults())
+    result = validate_flag_logic_information(flag_feeders, flag_info)
+    assert result.errors == dict()
+    assert result.warnings == {VariableInformation("b"): {CodeLocation(13, 4)},
+                               VariableInformation("c"): {CodeLocation(14, 4)}}
+
+
+
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_greater_than_operation_CodeLocation():
-    logic = """return ff1 <= ff2"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1", None), VariableInformation("ff2", None)}
-    assert test_output.used_variables == {
-        VariableInformation("ff1", None): {CodeLocation(line_number=1, column_offset=7)},
-        VariableInformation("ff2", None): {CodeLocation(line_number=1, column_offset=14)}}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
+def test_reduce_lambda_CodeLocation(mock_determine_variables, mock_validate_returns_bool):
+    flag_feeders = {"ff1": int, "ff2": int}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation("ff1"): {CodeLocation(4, 11)},
+                        VariableInformation("ff2"): {CodeLocation(6, 11)},
+                        VariableInformation("a"): {CodeLocation(2, 16), CodeLocation(2, 22)},
+                        VariableInformation("b"): {CodeLocation(2, 26), CodeLocation(2, 34)},
+                        VariableInformation("f"): {CodeLocation(3, 10), CodeLocation(4, 24), CodeLocation(6, 24)}},
+        assigned_variables={VariableInformation("f"): {CodeLocation(2, 0)},
+                            VariableInformation("a"): {CodeLocation(2, 11)},
+                            VariableInformation('b'): {CodeLocation(2, 13)}},
+        referenced_functions={VariableInformation("reduce"): {CodeLocation(3, 3), CodeLocation(4, 17), CodeLocation(6, 17)}},
+        defined_functions=dict(),
+        defined_classes=dict(),
+        referenced_modules=dict(),
+        referenced_flags=dict(),
+        return_points={CodeLocation(4, 4), CodeLocation(6, 4)},
+        used_lambdas={"LAMBDA": {CodeLocation(2, 4)}},
+        errors=[],
+        flag_logic="""
+        f = lambda a,b: a if (a > b) else b
+        if reduce(f, [47,11,42,102,13]) > 100:
+            return ff1 > reduce(f, [47,11,42,102,13])
+        else:
+            return ff2 < reduce(f, [47,11,42,102,13])""",
+        validation_results=TypeValidationResults())
+    result = validate_flag_logic_information(flag_feeders, flag_info)
+    assert result.errors == {"LAMBDA": {CodeLocation(2, 4)}}
+    assert result.warnings == dict()
 
-@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_add_operation_CodeLocation():
-    logic = """
-test_1 = ff1 + ff2
-return ff3 < test_1"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1", None), VariableInformation("ff2", None),
-                                                 VariableInformation("ff3", None), VariableInformation("test_1", None)}
-    assert test_output.used_variables == {
-        VariableInformation("test_1", None): {CodeLocation(line_number=3, column_offset=13)},
-        VariableInformation("ff1", None): {CodeLocation(line_number=2, column_offset=9)},
-        VariableInformation("ff2", None): {CodeLocation(line_number=2, column_offset=15)},
-        VariableInformation("ff3", None): {CodeLocation(line_number=3, column_offset=7)}}
-    assert test_output.assigned_variables.keys() == {VariableInformation("test_1", None)}
-    assert test_output.assigned_variables == {
-        VariableInformation("test_1", None): {CodeLocation(line_number=2, column_offset=0)}}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
-@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_subtraction_operation_CodeLocation():
-    logic = """
-test_1 = ff1 - ff2
-return ff3 < test_1"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1", None),
-                                                 VariableInformation("ff2", None),
-                                                 VariableInformation("ff3", None),
-                                                 VariableInformation("test_1", None)}
-    assert test_output.used_variables[VariableInformation("ff1", None)] == {
-        CodeLocation(line_number=2, column_offset=9)}
-    assert test_output.used_variables[VariableInformation("ff2", None)] == {
-        CodeLocation(line_number=2, column_offset=15)}
-    assert test_output.used_variables[VariableInformation("ff3", None)] == {
-        CodeLocation(line_number=3, column_offset=7)}
-    assert test_output.used_variables[VariableInformation("test_1", None)] == {
-        CodeLocation(line_number=3, column_offset=13)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("test_1", None)}
-    assert test_output.assigned_variables == {
-        VariableInformation('test_1', None): {CodeLocation(line_number=2, column_offset=0)}}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
-@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_multiplication_operation_CodeLocation():
-    logic = """
-test_1 = ff1 * ff2
-return ff3 < test_1"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1", None),
-                                                 VariableInformation("ff2", None),
-                                                 VariableInformation("ff3", None),
-                                                 VariableInformation("test_1", None)}
-    assert test_output.used_variables[VariableInformation("ff1", None)] == {
-        CodeLocation(line_number=2, column_offset=9)}
-    assert test_output.used_variables[VariableInformation("ff2", None)] == {
-        CodeLocation(line_number=2, column_offset=15)}
-    assert test_output.used_variables[VariableInformation("ff3", None)] == {
-        CodeLocation(line_number=3, column_offset=7)}
-    assert test_output.used_variables[VariableInformation("test_1", None)] == {
-        CodeLocation(line_number=3, column_offset=13)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("test_1", None)}
-    assert test_output.assigned_variables == {
-        VariableInformation('test_1', None): {CodeLocation(line_number=2, column_offset=0)}}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
-@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_division_operation_CodeLocation():
-    logic = """
-test_1 = ff1 / ff2
-return ff3 < test_1"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1", None),
-                                                 VariableInformation("ff2", None),
-                                                 VariableInformation("ff3", None),
-                                                 VariableInformation("test_1", None)}
-    assert test_output.used_variables[VariableInformation("ff1", None)] == {
-        CodeLocation(line_number=2, column_offset=9)}
-    assert test_output.used_variables[VariableInformation("ff2", None)] == {
-        CodeLocation(line_number=2, column_offset=15)}
-    assert test_output.used_variables[VariableInformation("ff3", None)] == {
-        CodeLocation(line_number=3, column_offset=7)}
-    assert test_output.used_variables[VariableInformation("test_1", None)] == {
-        CodeLocation(line_number=3, column_offset=13)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("test_1", None)}
-    assert test_output.assigned_variables == {
-        VariableInformation('test_1', None): {CodeLocation(line_number=2, column_offset=0)}}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
-@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_modulo_operation_CodeLocation():
-    logic = """
-test_1 = ff1 % ff2
-return ff3 < test_1"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1", None),
-                                                 VariableInformation("ff2", None),
-                                                 VariableInformation("ff3", None),
-                                                 VariableInformation("test_1", None)}
-    assert test_output.used_variables[VariableInformation("ff1", None)] == {
-        CodeLocation(line_number=2, column_offset=9)}
-    assert test_output.used_variables[VariableInformation("ff2", None)] == {
-        CodeLocation(line_number=2, column_offset=15)}
-    assert test_output.used_variables[VariableInformation("ff3", None)] == {
-        CodeLocation(line_number=3, column_offset=7)}
-    assert test_output.used_variables[VariableInformation("test_1", None)] == {
-        CodeLocation(line_number=3, column_offset=13)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("test_1", None)}
-    assert test_output.assigned_variables == {
-        VariableInformation('test_1', None): {CodeLocation(line_number=2, column_offset=0)}}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
-@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_determine_flag_feeder_for_loop_CodeLocation():
-    logic = """                                            
-if ff4 >= 50:                                              
-    if ff1 > 10:                                           
-        return ff2 == True                                 
-    elif ff2:                                              
-        return ff1 < 10                                    
-    elif ff3 > ff1:                                        
-        return ff4 < 50                                    
-elif ff1 < 10:                                             
-    return ff5 == 'CAT'                                    
-else:                                                      
-    a = 10                                                 
-    b = True                                               
-    c = "CAR"                                              
-    if ff5 == "DOG":                                       
-        a = a + 10                                         
-        return ff1 < a"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1", None),
-                                                 VariableInformation("ff2", None),
-                                                 VariableInformation("ff3", None),
-                                                 VariableInformation("ff4", None),
-                                                 VariableInformation("ff5", None),
-                                                 VariableInformation("a", None)}
-    assert test_output.used_variables[VariableInformation("ff1", None)] == {CodeLocation(3, 7), CodeLocation(6, 15),
-                                                                            CodeLocation(7, 15), CodeLocation(9, 5),
-                                                                            CodeLocation(17, 15)}
-    assert test_output.used_variables[VariableInformation("ff2", None)] == {CodeLocation(4, 15), CodeLocation(5, 9)}
-    assert test_output.used_variables[VariableInformation("ff3", None)] == {CodeLocation(7, 9)}
-    assert test_output.used_variables[VariableInformation("ff4", None)] == {CodeLocation(2, 3), CodeLocation(8, 15)}
-    assert test_output.used_variables[VariableInformation("ff5", None)] == {CodeLocation(10, 11), CodeLocation(15, 7)}
-    assert test_output.used_variables[VariableInformation("a", None)] == {CodeLocation(16, 12), CodeLocation(17, 21)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("a", None),
-                                                     VariableInformation("b", None),
-                                                     VariableInformation("c", None)}
-    assert test_output.assigned_variables[VariableInformation("a", None)] == {CodeLocation(12, 4), CodeLocation(16, 8)}
-    assert test_output.assigned_variables[VariableInformation("b", None)] == {CodeLocation(13, 4)}
-    assert test_output.assigned_variables[VariableInformation("c", None)] == {CodeLocation(14, 4)}
-    assert test_output.referenced_functions.keys() == set()
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.errors == []
-
-@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_reduce_lambda_CodeLocation():
-    logic = """                                  
-f = lambda a,b: a if (a > b) else b              
-if reduce(f, [47,11,42,102,13]) > 100:           
-    return ff1 > reduce(f, [47,11,42,102,13])    
-else:                                            
-    return ff2 < reduce(f, [47,11,42,102,13])"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {VariableInformation("ff1", None),
-                                                 VariableInformation("ff2", None),
-                                                 VariableInformation("a", None),
-                                                 VariableInformation("b", None),
-                                                 VariableInformation("f", None)}
-    assert test_output.used_variables[VariableInformation("f", None)] == {CodeLocation(3, 10), CodeLocation(4, 24),
-                                                                          CodeLocation(6, 24)}
-    assert test_output.used_variables[VariableInformation("a", None)] == {CodeLocation(2, 16), CodeLocation(2, 22)}
-    assert test_output.used_variables[VariableInformation("b", None)] == {CodeLocation(2, 26), CodeLocation(2, 34)}
-    assert test_output.used_variables[VariableInformation("ff1", None)] == {CodeLocation(4, 11)}
-    assert test_output.used_variables[VariableInformation("ff2", None)] == {CodeLocation(6, 11)}
-    assert test_output.assigned_variables.keys() == {VariableInformation("f", None),
-                                                     VariableInformation("a"),
-                                                     VariableInformation("b")}
-    assert test_output.assigned_variables == {VariableInformation("f", None): {CodeLocation(2, 0)},
-                                              VariableInformation("a"): {CodeLocation(2, 11)},
-                                              VariableInformation('b'): {CodeLocation(2, 13)}}
-    assert test_output.referenced_functions.keys() == {VariableInformation("reduce", None)}
-    assert test_output.referenced_functions[VariableInformation("reduce", None)] == {CodeLocation(3, 3),
-                                                                                     CodeLocation(4, 17),
-                                                                                     CodeLocation(6, 17)}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == set()
-    assert test_output.used_lambdas == {"LAMBDA": {CodeLocation(2, 4)}}
-    assert test_output.errors == []
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
