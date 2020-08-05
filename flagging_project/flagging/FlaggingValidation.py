@@ -45,7 +45,7 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
     #add errors from node visitor output, FlagLogicInformation.Errors
     for i in range(len(flag_logic_info.errors)):
         error_key = "Flag Logic Information Error " + str(i)
-        results.add_error(error_key, flag_logic_info.errors[i])
+        results.add_error(error_key, {flag_logic_info.errors[i]})
 
 
 
@@ -84,6 +84,7 @@ class FlaggingValidationResults:
         if error not in self.errors.keys():
             self.errors.setdefault(error, set())
         self.errors[error].update(cl)
+
 
     def add_mypy_error(self, error, cl):
         if error not in self.mypy_errors.keys():
