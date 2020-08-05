@@ -42,7 +42,9 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
     for def_class, cl in dict(flag_logic_info.defined_classes).items():
         results.add_error(def_class, cl)
 
-
+    #add errors from node visitor output, FlagLogicInformation.Errors
+    for fli_error in flag_logic_info.errors:
+        results.add_error("FlagLogicInformationError " + str(fli_error.msg), {fli_error})
 
 
 
