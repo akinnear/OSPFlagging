@@ -8,6 +8,34 @@ from flagging.ModuleInformation import ModuleInformation
 from unittest import mock
 
 
+#TODO
+# notes
+# pass errors as such
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean",
+            return_value=TypeValidationResults(other_errors={"mock_error": {CodeLocation(1,1)}}),
+            autospec=True)
+def test_validation_user_defined_func_error(mock_determine_variables, mock_validate_returns_boolean):
+    #blah
+    return None
+
+#TODO
+# notes
+# 1) defined classes need to create error
+# 2) This will require changing the interface to the validate_flag_logic_information function.
+# We will now have to pass in defined flags and their flagging dependencies.
+# For example FLAG 1 is f["FLAG A"] when validating FLAG 2 as f["FLAG 1"]
+# we need to know FLAG 1 has dependencies on FLAG A.
+# If validating FLAG 2 we will pass in a dict {"FLAG 1": {"FLAG A"}, "FLAG A": {}} is what is expected
+# 3) error cases: (errors) --> explicitly passed, used lambdas, defined functions, defined classes,
+# missing flagfeeders, error in node walker
+# 4) warning cases (warnings) --> explicitly passed, non used assigned variables
+# 5) mypy errors: (mypy_errors) --> explicitly passed, validation and other errors
+# 6) mypy warnings: (mypy_warnings) --> explicily passed, ??? what triggers a mypy warning ???
+
+#
+
+
 
 #TODO
 # test fail
@@ -73,7 +101,9 @@ def test_validation_variable_valid_return(mock_determine_variables, mock_validat
 
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean",
+            return_value=TypeValidationResults(other_errors={"mock_error": {CodeLocation(1,1)}}),
+            autospec=True)
 def test_validation_user_defined_func_error(mock_determine_variables, mock_validate_returns_boolean):
     flag_feeders = {"ff1"}
     flag_info = FlagLogicInformation(
