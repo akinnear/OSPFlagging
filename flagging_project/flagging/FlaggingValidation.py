@@ -38,6 +38,10 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
     for func, cl in dict(flag_logic_info.defined_functions).items():
         results.add_error(func, cl)
 
+    # do not allow classes
+    for def_class, cl in dict(flag_logic_info.defined_classes).items():
+        results.add_error(def_class, cl)
+
 
 
 
