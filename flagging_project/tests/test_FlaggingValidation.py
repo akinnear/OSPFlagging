@@ -22,17 +22,19 @@ def test_validation_user_defined_func_error(mock_determine_variables, mock_valid
 
 #TODO
 # notes
-# 1) defined classes need to create error
+# 1) defined classes need to create error, DONE
 # 2) This will require changing the interface to the validate_flag_logic_information function.
 # We will now have to pass in defined flags and their flagging dependencies.
 # For example FLAG 1 is f["FLAG A"] when validating FLAG 2 as f["FLAG 1"]
 # we need to know FLAG 1 has dependencies on FLAG A.
 # If validating FLAG 2 we will pass in a dict {"FLAG 1": {"FLAG A"}, "FLAG A": {}} is what is expected
-# 3) error cases: (errors) --> explicitly passed, used lambdas, defined functions, defined classes,
-# missing flagfeeders, incorrect varaiable sets, error in node walker
-# 4) warning cases (warnings) --> explicitly passed, non used assigned variables
-# 5) mypy errors: (mypy_errors) --> explicitly passed, validation and other errors
+# 3) error cases: (errors) --> explicitly passed DONE, used lambdas DONE,
+# defined functions DONE, defined classes DONE,
+# missing flagfeeders DONE, incorrect varaiable sets DONE, error in node walker DONE
+# 4) warning cases (warnings) --> explicitly passed , non used assigned variables DONE
+# 5) mypy errors: (mypy_errors) --> explicitly passed DONE, validation and other errors DONE
 # 6) mypy warnings: (mypy_warnings) --> explicily passed, ??? what triggers a mypy warning ???
+# 7) if referenced_functions not in defined_functions then referenced_function must be in referenced_modules, else error
 
 
 #explicity mypy other_error
@@ -247,6 +249,61 @@ def test_validation_node_visitor_error(mock_determine_variables, mock_validate_r
     assert result.mypy_errors == {}
     assert result.mypy_warnings == {}
 
+
+#referenced function not defined or imported
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
+def test_validation_non_imported_or_defined_function(mock_determine_variables, mock_validate_returns_boolean):
+    flag_feeders = {"FF1": int}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation("x"): {CodeLocation(2,2)},
+                        VariableInformation("FF1"): {CodeLocation(3, 3)}},
+        assigned_variables={VariableInformation("x"): {CodeLocation(1, 1)}},
+        referenced_functions={VariableInformation.create_var(["math", "sqrt"]): {CodeLocation(1, 5)}})
+    result = validate_flag_logic_information(flag_feeders, flag_info)
+    assert result.errors == {VariableInformation.create_var(["math", "sqrt"]): {CodeLocation(1, 5)}}
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
+
+
+#referenced function IS defined, 2 errors, one for defintion and one for use without import
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
+def test_validation_defined_function(mock_determine_variables, mock_validate_returns_boolean):
+    flag_feeders = {"FF1": int}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation("x"): {CodeLocation(2,2)},
+                        VariableInformation("FF1"): {CodeLocation(3, 3)}},
+        assigned_variables={VariableInformation("x"): {CodeLocation(1, 1)}},
+        referenced_functions={VariableInformation.create_var(["my", "func"]): {CodeLocation(2, 5)}},
+        defined_functions={VariableInformation.create_var(["my", "func"]): {CodeLocation(1, 5)}}
+    )
+    result = validate_flag_logic_information(flag_feeders, flag_info)
+    assert result.errors == {VariableInformation.create_var(["my", "func"]): {CodeLocation(1, 5),
+                                                                              CodeLocation(2, 5)}}
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
+
+
+#referenced function IS imported
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
+def test_validation_imported_function(mock_determine_variables, mock_validate_returns_boolean):
+    flag_feeders = {"FF1": int}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation("x"): {CodeLocation(3, 2)},
+                        VariableInformation("FF1"): {CodeLocation(4, 3)}},
+        assigned_variables={VariableInformation("x"): {CodeLocation(2, 1)}},
+        referenced_functions={VariableInformation.create_var(["math", "sqrt"]): {CodeLocation(3, 5)}},
+        referenced_modules={ModuleInformation("math"): {CodeLocation(1, 5)}}
+    )
+    result = validate_flag_logic_information(flag_feeders, flag_info)
+    assert result.errors == {}
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
 
 
 
