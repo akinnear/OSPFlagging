@@ -64,8 +64,34 @@ def validate_flag_logic_information(flag_feeders, flag_dependency, flag_logic_in
                 results.add_mypy_warning(warning, cl)
 
     #TODO
-    # parse flag_dependency and asssigned variables,
+    # parse flag_dependency and assigned variables,
     # check if assigned variable is flag feeder and has reference to flag_dependency
+
+    #TODO
+    # if referenced_function not in defined_function,
+    # then referenced_function must be in referenced_modules, else error
+    ref_functions = dict(flag_logic_info.referenced_functions)
+    def_functions = dict(flag_logic_info.defined_functions)
+    ref_modules = dict(flag_logic_info.referenced_modules)
+    for ref_func, cl in dict(flag_logic_info.referenced_functions):
+        if ref_func.name in def_functions:
+            del ref_functions[ref_func]
+        if ref_func.name in ref_modules:
+            del ref_functions[ref_func]
+
+    #add error
+    if ref_functions:
+        for unused, cl in ref_functions.items():
+            results.add_error(unused, cl)
+
+    #warning if defined function is not used as referenced fucntion
+    for def_func, cl in flag_logic_info.defined_functions.items():
+        try:
+            del ref_functions[def_func]
+        except KeyError:
+            # Assigned variable but has not been used
+            results.add_warning(def_func, cl)
+
 
 
 
