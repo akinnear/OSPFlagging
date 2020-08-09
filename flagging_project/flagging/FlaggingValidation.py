@@ -72,10 +72,14 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
     ref_functions = dict(flag_logic_info.referenced_functions)
     def_functions = dict(flag_logic_info.defined_functions)
     ref_modules = dict(flag_logic_info.referenced_modules)
-    for ref_func, cl in dict(flag_logic_info.referenced_functions):
+    for ref_func, cl in dict(flag_logic_info.referenced_functions).items():
         if ref_func.name in def_functions:
             del ref_functions[ref_func]
         if ref_func.name in ref_modules:
+            del ref_functions[ref_func]
+        if ref_func in def_functions:
+            del ref_functions[ref_func]
+        if ref_func in ref_modules:
             del ref_functions[ref_func]
 
     #add error
@@ -83,13 +87,14 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
         for unused, cl in ref_functions.items():
             results.add_error(unused, cl)
 
-    #warning if defined function is not used as referenced fucntion
-    for def_func, cl in flag_logic_info.defined_functions.items():
+    #warning if referenced_moduels is not used as referenced fucntion
+    ref_functions = dict(flag_logic_info.referenced_functions)
+    for ref_mod, cl in flag_logic_info.referenced_modules.items():
         try:
-            del ref_functions[def_func]
+            del ref_functions[ref_mod]
         except KeyError:
             # Assigned variable but has not been used
-            results.add_warning(def_func, cl)
+            results.add_warning(ref_mod, cl)
 
 
 
