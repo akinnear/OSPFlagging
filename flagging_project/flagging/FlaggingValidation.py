@@ -5,15 +5,14 @@ from flagging.FlagLogicInformation import FlagLogicInformation
 from flagging.FlaggingNodeVisitor import CodeLocation
 
 
-def validate_flag_logic(flag_feeders, flag_dependency, flag_logic):
+def validate_flag_logic(flag_feeders, flag_logic):
 
     return validate_flag_logic_information(flag_feeders=flag_feeders,
-                                           flag_dependency=flag_dependency,
                                            flag_logic_info=determine_variables(flag_logic))
 
-def validate_flag_logic_information(flag_feeders, flag_dependency, flag_logic_info: FlagLogicInformation):
+def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInformation):
     results = FlaggingValidationResults()
-    flag_dependency = flag_dependency if flag_dependency else {}
+    # flag_dependency = flag_dependency if flag_dependency else {}
     my_py_output = validate_returns_boolean(flag_logic_info, flag_feeders if flag_feeders else {})
 
 
