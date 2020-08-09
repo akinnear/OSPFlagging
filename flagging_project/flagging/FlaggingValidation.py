@@ -5,12 +5,15 @@ from flagging.FlagLogicInformation import FlagLogicInformation
 from flagging.FlaggingNodeVisitor import CodeLocation
 
 
-def validate_flag_logic(flag_feeders, flag_logic):
+def validate_flag_logic(flag_feeders, flag_dependency, flag_logic):
 
-    return validate_flag_logic_information(flag_feeders=flag_feeders, flag_logic_info=determine_variables(flag_logic))
+    return validate_flag_logic_information(flag_feeders=flag_feeders,
+                                           flag_dependency=flag_dependency,
+                                           flag_logic_info=determine_variables(flag_logic))
 
-def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInformation):
+def validate_flag_logic_information(flag_feeders, flag_dependency, flag_logic_info: FlagLogicInformation):
     results = FlaggingValidationResults()
+    flag_dependency = flag_dependency if flag_dependency else {}
     my_py_output = validate_returns_boolean(flag_logic_info, flag_feeders if flag_feeders else {})
 
 
@@ -46,13 +49,6 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
     for fli_error in flag_logic_info.errors:
         results.add_error("FlagLogicInformationError " + str(fli_error.msg), {fli_error})
 
-
-
-
-
-
-
-
     if my_py_output:
         #TODO
         # errors are a mix of VariableInformation objects and mypy dictionary output
@@ -66,6 +62,11 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
         if my_py_output.warnings:
             for warning, cl in my_py_output.warnings.items():
                 results.add_mypy_warning(warning, cl)
+
+    #TODO
+    # parse flag_dependency and asssigned variables,
+    # check if assigned variable is flag feeder and has reference to flag_dependency
+
 
 
     return results
