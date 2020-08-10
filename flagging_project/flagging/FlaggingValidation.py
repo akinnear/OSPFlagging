@@ -66,20 +66,18 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
     # parse flag_dependency and assigned variables,
     # check if assigned variable is flag feeder and has reference to flag_dependency
 
-    #TODO
-    # if referenced_function not in defined_function,
-    # then referenced_function must be in referenced_modules, else error
+
+    #if refereenced_funtion not in referenced_modules, error
     ref_functions = dict(flag_logic_info.referenced_functions)
-    def_functions = dict(flag_logic_info.defined_functions)
     ref_modules = dict(flag_logic_info.referenced_modules)
     for ref_func, cl in dict(flag_logic_info.referenced_functions).items():
-        if ref_func.name in def_functions:
-            del ref_functions[ref_func]
         if ref_func.name in ref_modules:
             del ref_functions[ref_func]
-        if ref_func in def_functions:
-            del ref_functions[ref_func]
         if ref_func in ref_modules:
+            del ref_functions[ref_func]
+        if ref_func.name in [ref_modules.name for ref_modules, cl in ref_modules.items()]:
+            del ref_functions[ref_func]
+        if ref_func.name in [ref_modules.asname for ref_modules, cl in ref_modules.items()]:
             del ref_functions[ref_func]
 
     #add error
@@ -88,13 +86,14 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
             results.add_error(unused, cl)
 
     #warning if referenced_moduels is not used as referenced fucntion
+    #TODO, will always create warning becasue comparing VariableInformation to ModuleInformation
+    # have to update
     ref_functions = dict(flag_logic_info.referenced_functions)
     for ref_mod, cl in flag_logic_info.referenced_modules.items():
-        try:
-            del ref_functions[ref_mod]
-        except KeyError:
-            # Assigned variable but has not been used
-            results.add_warning(ref_mod, cl)
+        for ref_func, cl in ref_functions.items():
+            if ref_mod.name != ref_func.name and ref_mod.asname != ref_func.name:
+                results.add_warning(ref_mod, cl)
+
 
 
 
