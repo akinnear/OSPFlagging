@@ -66,9 +66,13 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
     # parse flag_dependency and assigned variables,
     # check if assigned variable is flag feeder and has reference to flag_dependency
 
+    # remove ref_functions that are built-ins
+    ref_functions = dict(flag_logic_info.referenced_functions)
+    for ref_func, ref_cl in dict(flag_logic_info.referenced_functions).items():
+        if ref_func.name in __builtins__:
+            del ref_functions[ref_func]
 
     #if refereenced_funtion not in referenced_modules, error
-    ref_functions = dict(flag_logic_info.referenced_functions)
     ref_modules = dict(flag_logic_info.referenced_modules)
     for ref_func, cl in dict(flag_logic_info.referenced_functions).items():
         if ref_func.name in ref_modules:
@@ -85,10 +89,9 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
         for unused, cl in ref_functions.items():
             results.add_error(unused, cl)
 
-    #warning if referenced_moduels is not used as referenced fucntion
-    #TODO, will always create warning becasue comparing VariableInformation to ModuleInformation
-    # have to update
-    ref_functions = dict(flag_logic_info.referenced_functions)
+
+
+    #check remaining functions for imported modules
     for ref_mod, cl_mod in flag_logic_info.referenced_modules.items():
         if ref_functions:
             for ref_func, cl_func in ref_functions.items():

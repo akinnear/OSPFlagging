@@ -34,7 +34,14 @@ def test_validation_user_defined_func_error(mock_determine_variables, mock_valid
 # 4) warning cases (warnings) --> explicitly passed , non used assigned variables DONE
 # 5) mypy errors: (mypy_errors) --> explicitly passed DONE, validation and other errors DONE
 # 6) mypy warnings: (mypy_warnings) --> explicily passed, ??? what triggers a mypy warning ???
-# 7) if referenced_functions not in defined_functions then referenced_function must be in referenced_modules, else error
+# 7) if referenced_functions not in defined_functions then referenced_function must be in referenced_modules, else error DONE
+# 8) unused imported modules cause warning, similar to unused assigned variables DONE
+
+# TODO
+# 9) how to determine if a function is built in or needs to be imported, STILL TO DO
+# 10) if it is imported, how to do determine if import is valid, STILL TO DO
+# 11) error if referenced flags are not defined
+
 
 
 #explicity mypy other_error
@@ -250,7 +257,13 @@ def test_validation_node_visitor_error(mock_determine_variables, mock_validate_r
     assert result.mypy_warnings == {}
 
 
-#referenced function not defined or imported
+#TODO
+# have to determine built in vs functions that need to be imported
+# in order to determine error
+
+
+
+#referenced function not defined or imported,
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
 def test_validation_non_imported_or_defined_function(mock_determine_variables, mock_validate_returns_boolean):
@@ -267,6 +280,24 @@ def test_validation_non_imported_or_defined_function(mock_determine_variables, m
     assert result.mypy_warnings == {}
 
 
+#referenced function not defined or imported,
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
+def test_validation_non_imported_or_defined_function(mock_determine_variables, mock_validate_returns_boolean):
+    flag_feeders = {"FF1": int}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation("x"): {CodeLocation(2,2)},
+                        VariableInformation("FF1"): {CodeLocation(3, 3)}},
+        assigned_variables={VariableInformation("x"): {CodeLocation(1, 1)}},
+        referenced_functions={VariableInformation.create_var(["math", "sqrt"]): {CodeLocation(1, 5)},
+                              VariableInformation("min"): {CodeLocation(1, 10)}})
+    result = validate_flag_logic_information(flag_feeders, flag_info)
+    assert result.errors == {VariableInformation.create_var(["math", "sqrt"]): {CodeLocation(1, 5)}}
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
+
+
 #referenced function IS defined, 2 errors, one for defintion and one for use without import
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
@@ -276,7 +307,8 @@ def test_validation_defined_function(mock_determine_variables, mock_validate_ret
         used_variables={VariableInformation("x"): {CodeLocation(2,2)},
                         VariableInformation("FF1"): {CodeLocation(3, 3)}},
         assigned_variables={VariableInformation("x"): {CodeLocation(1, 1)}},
-        referenced_functions={VariableInformation.create_var(["my", "func"]): {CodeLocation(2, 5)}},
+        referenced_functions={VariableInformation.create_var(["my", "func"]): {CodeLocation(2, 5)},
+                              VariableInformation("max"): {CodeLocation(2, 10)}},
         defined_functions={VariableInformation.create_var(["my", "func"]): {CodeLocation(1, 5)}}
     )
     result = validate_flag_logic_information(flag_feeders, flag_info)
