@@ -325,7 +325,48 @@ def test_validation_imported_function_asname(mock_determine_variables, mock_vali
     assert result.mypy_warnings == {}
 
 
+#unused import module
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
+def test_validation_unused_import_module(mock_determine_variables, mock_validate_returns_boolean):
+    flag_feeders = {"FF1": int}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation("x"): {CodeLocation(3, 2)},
+                        VariableInformation("FF1"): {CodeLocation(4, 3)}},
+        assigned_variables={VariableInformation("x"): {CodeLocation(2, 1)}},
+        referenced_modules={ModuleInformation("math", "m"): {CodeLocation(1, 5)},
+                            ModuleInformation("pandas", "pd"): {CodeLocation(2, 10)},
+                            ModuleInformation("numpy"): {CodeLocation(3, 10)}}
+    )
+    result = validate_flag_logic_information(flag_feeders, flag_info)
+    assert result.errors == {}
+    assert result.warnings == {ModuleInformation("math", "m"): {CodeLocation(1, 5)},
+                               ModuleInformation("pandas", "pd"): {CodeLocation(2, 10)},
+                               ModuleInformation("numpy"): {CodeLocation(3, 10)}}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
 
+
+#unused import module, mixed
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
+def test_validation_unused_import_module_2(mock_determine_variables, mock_validate_returns_boolean):
+    flag_feeders = {"FF1": int}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation("x"): {CodeLocation(3, 2)},
+                        VariableInformation("FF1"): {CodeLocation(4, 3)}},
+        assigned_variables={VariableInformation("x"): {CodeLocation(2, 1)}},
+        referenced_functions={VariableInformation.create_var(["m", "sqrt"]): {CodeLocation(3, 5)}},
+        referenced_modules={ModuleInformation("math", "m"): {CodeLocation(1, 5)},
+                            ModuleInformation("pandas", "pd"): {CodeLocation(2, 10)},
+                            ModuleInformation("numpy"): {CodeLocation(3, 10)}}
+    )
+    result = validate_flag_logic_information(flag_feeders, flag_info)
+    assert result.errors == {}
+    assert result.warnings == {ModuleInformation("pandas", "pd"): {CodeLocation(2, 10)},
+                               ModuleInformation("numpy"): {CodeLocation(3, 10)}}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
 
 ########################################################
 #TODO
