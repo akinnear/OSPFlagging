@@ -89,10 +89,13 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
     #TODO, will always create warning becasue comparing VariableInformation to ModuleInformation
     # have to update
     ref_functions = dict(flag_logic_info.referenced_functions)
-    for ref_mod, cl in flag_logic_info.referenced_modules.items():
-        for ref_func, cl in ref_functions.items():
-            if ref_mod.name != ref_func.name and ref_mod.asname != ref_func.name:
-                results.add_warning(ref_mod, cl)
+    for ref_mod, cl_mod in flag_logic_info.referenced_modules.items():
+        if ref_functions:
+            for ref_func, cl_func in ref_functions.items():
+                if ref_mod.name != ref_func.name and ref_mod.asname != ref_func.name:
+                    results.add_warning(ref_mod, cl_mod)
+        else:
+            results.add_warning(ref_mod, cl_mod)
 
 
 
