@@ -414,6 +414,114 @@ def test_validation_unused_import_module_2(mock_determine_variables, mock_valida
     assert result.mypy_errors == {}
     assert result.mypy_warnings == {}
 
+## cyclical fail
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
+def test_validation_cyclical_fail(mock_determine_variables, mock_validate_returns_boolean):
+    flag_feeders = {}
+    flag_dependencies = {"Flag1": {"Flag9", "Flag3"},
+     "Flag2": {"Flag4", "Flag5", "Flag6"},
+     "Flag3": {"Flag7"},
+     "Flag4": {"Flag3"},
+     "Flag5": {"Flag8"},
+     "Flag6": set(),
+     "Flag7": {"Flag2"},
+     "Flag8": {"Flag3"}}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation('x'): {CodeLocation(1, 1)}},
+        assigned_variables={VariableInformation("x"): {CodeLocation(3, 3)}}
+    )
+    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    assert result.errors == {"Flag1_cyclic_flag": {CodeLocation(0,0)},
+                             "Flag2_cyclic_flag": {CodeLocation(0,0)},
+                             "Flag3_cyclic_flag": {CodeLocation(0,0)},
+                             "Flag4_cyclic_flag": {CodeLocation(0,0)},
+                             "Flag5_cyclic_flag": {CodeLocation(0,0)},
+                             "Flag6_cyclic_flag": {CodeLocation(0,0)},
+                             "Flag7_cyclic_flag": {CodeLocation(0,0)},
+                             "Flag8_cyclic_flag": {CodeLocation(0,0)},
+                             "Flag9_missing_flag": {CodeLocation(0,0)},}
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
+
+
+## cyclical fail catch
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
+def test_validation_cyclical_fail_catch(mock_determine_variables, mock_validate_returns_boolean):
+    flag_feeders = {}
+    flag_dependencies = {"Flag1": {"Flag2"},
+     "Flag2": {"Flag3"},
+     "Flag3": {"Flag4"},
+     "Flag4": {"Flag5"},
+     "Flag5": {"Flag6"},
+     "Flag6": {"Flag7"},
+     "Flag7": {"Flag8"},
+     "Flag8": {"Flag1"}}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation('x'): {CodeLocation(1, 1)}},
+        assigned_variables={VariableInformation("x"): {CodeLocation(3, 3)}}
+    )
+    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    assert result.errors == {"Flag1_cyclic_flag": {CodeLocation(0, 0)},
+                             "Flag2_cyclic_flag": {CodeLocation(0, 0)},
+                             "Flag3_cyclic_flag": {CodeLocation(0, 0)},
+                             "Flag4_cyclic_flag": {CodeLocation(0, 0)},
+                             "Flag5_cyclic_flag": {CodeLocation(0, 0)},
+                             "Flag6_cyclic_flag": {CodeLocation(0, 0)},
+                             "Flag7_cyclic_flag": {CodeLocation(0, 0)},
+                             "Flag8_cyclic_flag": {CodeLocation(0, 0)}}
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
+
+## zero cycical flags
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
+def test_validation_zero_cyclical(mock_determine_variables, mock_validate_returns_boolean):
+    flag_feeders = {}
+    flag_dependencies = {"Flag1": {"Flag2"},
+     "Flag2": {"Flag3"},
+     "Flag3": {"Flag4"},
+     "Flag4": {"Flag5"},
+     "Flag5": {"Flag6"},
+     "Flag6": {"Flag7"},
+     "Flag7": {"Flag8"},
+     "Flag8": set()}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation('x'): {CodeLocation(1, 1)}},
+        assigned_variables={VariableInformation("x"): {CodeLocation(3, 3)}}
+    )
+    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    assert result.errors == {}
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
+
+## missing flag reference in dependency
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
+def test_validation_missing_flag_dependency_key(mock_determine_variables, mock_validate_returns_boolean):
+    flag_feeders = {}
+    flag_dependencies = {"Flag1": {"Flag2"},
+     "Flag2": {"Flag3"},
+     "Flag3": {"Flag4"},
+     "Flag4": {"Flag5"},
+     "Flag5": {"Flag6"},
+     "Flag6": {"Flag7"},
+     "Flag7": {"Flag8"},
+     "Flag8": {"Flag9"}}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation('x'): {CodeLocation(1, 1)}},
+        assigned_variables={VariableInformation("x"): {CodeLocation(3, 3)}}
+    )
+    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    assert result.errors == {"Flag9_missing_flag": {CodeLocation(0, 0)}}
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
+
 ########################################################
 #TODO
 # test fail
