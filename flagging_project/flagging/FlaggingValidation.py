@@ -5,14 +5,15 @@ from flagging.FlagLogicInformation import FlagLogicInformation
 from flagging.FlaggingNodeVisitor import CodeLocation
 
 
-def validate_flag_logic(flag_feeders, flag_logic):
+def validate_flag_logic(flag_feeders, flag_dependencies, flag_logic):
 
     return validate_flag_logic_information(flag_feeders=flag_feeders,
+                                           flag_dependencies=flag_dependencies,
                                            flag_logic_info=determine_variables(flag_logic))
 
-def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInformation):
+def validate_flag_logic_information(flag_feeders, flag_dependencies, flag_logic_info: FlagLogicInformation):
     results = FlaggingValidationResults()
-    # flag_dependency = flag_dependency if flag_dependency else {}
+    flag_dependencies = flag_dependencies if flag_dependencies else {}
     my_py_output = validate_returns_boolean(flag_logic_info, flag_feeders if flag_feeders else {})
 
 
@@ -49,9 +50,6 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
         results.add_error("FlagLogicInformationError " + str(fli_error.msg), {fli_error})
 
     if my_py_output:
-        #TODO
-        # errors are a mix of VariableInformation objects and mypy dictionary output
-        # check with Adam if that needs to change
         if my_py_output.validation_errors:
             for validation_error, cl in my_py_output.validation_errors.items():
                 results.add_mypy_error(validation_error, cl)
@@ -63,8 +61,72 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
                 results.add_mypy_warning(warning, cl)
 
     #TODO
-    # parse flag_dependency and assigned variables,
-    # check if assigned variable is flag feeder and has reference to flag_dependency
+    # flag dependeny
+    # use recursion,
+    # flag depenencies are equivelent to referenced_flags.keys() for the logic
+    # therefore, flag dependencies will look like
+    # {"FLAG NAME": {referenced_flags.keys()}
+    # will need to parse the flag depencies for each flag in referenced_flags.keys()
+    # if FLAG Name is contained at any point in referenced_flags.keys() for all flags,
+    # then error
+    def check_flag_dependency(cyclic_flags, flag_dependencies, og_flag_dependencies,
+                              flag_history, flag_check):
+
+        #if no flag_depencies, move to next original flag
+        for original_flag, flag_deps in flag_dependencies.items():
+            if not flag_check[original_flag]:
+                if flag_deps:
+
+                    #has depencies, parse dpendicies
+                    if original_flag in flag_deps:
+
+                        #stop, cyclic error
+                        flag_check[original_flag] = True
+                        cyclic_flags.append(original_flag)
+
+                    new_flag_dependencies = []
+                    for flag in flag_deps:
+                        try:
+                            for new_flag in list(flag_dependencies[flag]):
+                                new_flag_dependencies.append(new_flag)
+                        except KeyError as ke:
+                            results.add_error(str(ke).replace("'", "") + "_missing_flag", {CodeLocation(0, 0)})
+
+
+                    flag_dependencies[original_flag] = set(new_flag_dependencies)
+                    flag_history[original_flag].append(set(new_flag_dependencies))
+
+                    # check if flag history contains any duplicate sets,
+                    # indicates cyclic logic outside of original flag
+                    for i in range(len(flag_history[original_flag])):
+                        if len(flag_history[original_flag]) - 1 != i:
+                            if flag_history[original_flag][len(flag_history[original_flag])-1] == flag_history[original_flag][i]:
+                                cyclic_flags.append(original_flag)
+                                flag_check[original_flag] = True
+
+                    check_flag_dependency(cyclic_flags, flag_dependencies, og_flag_dependencies,
+                                          flag_history, flag_check)
+                else:
+                    flag_check[original_flag] = True
+                    flag_dependencies[original_flag] = og_flag_dependencies[original_flag]
+
+
+    cyclic_flags = []
+    flag_check = {}
+    flag_history = {}
+    if flag_dependencies:
+        for flag in flag_dependencies.keys():
+            flag_check.update({flag: False})
+            flag_history.update({flag: list()})
+        og_flag_dependencies = flag_dependencies
+
+        check_flag_dependency(cyclic_flags, flag_dependencies, og_flag_dependencies,
+                              flag_history, flag_check)
+        for flag in set(cyclic_flags):
+            #TODO
+            # proper code location for cyclic flag
+            results.add_error(flag + "_cyclic_flag", {CodeLocation(0,0)})
+
 
     # remove ref_functions that are built-ins
     ref_functions = dict(flag_logic_info.referenced_functions)
@@ -72,26 +134,28 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
         if ref_func.name in __builtins__:
             del ref_functions[ref_func]
 
-    #if refereenced_funtion not in referenced_modules, error
+    #if non built in refereenced_funtion not in referenced_modules, error
     ref_modules = dict(flag_logic_info.referenced_modules)
     for ref_func, cl in dict(flag_logic_info.referenced_functions).items():
-        if ref_func.name in ref_modules:
+        # if ref_func.name in ref_modules:
+        #     del ref_functions[ref_func]
+        # if ref_func in ref_modules:
+        #     del ref_functions[ref_func]
+        if ref_func.name in [ref_modules.name for ref_modules, cl in ref_modules.items()] \
+                or ref_func.name in [ref_modules.asname for ref_modules, cl in ref_modules.items()]:
             del ref_functions[ref_func]
-        if ref_func in ref_modules:
-            del ref_functions[ref_func]
-        if ref_func.name in [ref_modules.name for ref_modules, cl in ref_modules.items()]:
-            del ref_functions[ref_func]
-        if ref_func.name in [ref_modules.asname for ref_modules, cl in ref_modules.items()]:
-            del ref_functions[ref_func]
+
 
     #add error
     if ref_functions:
         for unused, cl in ref_functions.items():
             results.add_error(unused, cl)
 
-
-
-    #check remaining functions for imported modules
+    #check if imported modules in non built in referenced fucntions
+    ref_functions = dict(flag_logic_info.referenced_functions)
+    for ref_func, ref_cl in dict(flag_logic_info.referenced_functions).items():
+        if ref_func.name in __builtins__:
+            del ref_functions[ref_func]
     for ref_mod, cl_mod in flag_logic_info.referenced_modules.items():
         if ref_functions:
             for ref_func, cl_func in ref_functions.items():
@@ -100,8 +164,8 @@ def validate_flag_logic_information(flag_feeders, flag_logic_info: FlagLogicInfo
         else:
             results.add_warning(ref_mod, cl_mod)
 
-
-
+    #TODO
+    # check if imported modules are installed
 
 
     return results
