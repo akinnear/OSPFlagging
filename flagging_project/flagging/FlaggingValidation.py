@@ -5,6 +5,7 @@ from flagging.FlagLogicInformation import FlagLogicInformation
 from flagging.FlaggingNodeVisitor import CodeLocation
 
 
+
 def validate_flag_logic(flag_feeders, flag_dependencies, flag_logic):
 
     return validate_flag_logic_information(flag_feeders=flag_feeders,
@@ -71,6 +72,15 @@ def validate_flag_logic_information(flag_feeders, flag_dependencies, flag_logic_
     # then error
     def check_flag_dependency(cyclic_flags, flag_dependencies, og_flag_dependencies,
                               flag_history, flag_check):
+        '''
+        :param cyclic_flags: flags marked as cyclical
+        :param flag_dependencies: full set of flag dependicies
+        :param og_flag_dependencies: copy of full set of flag dependies, to maintain original dependice
+        :param flag_history: set of lists containing iterations of flag dependecies based on each dependency
+        :param flag_check: check mark to determain if flag has been checked for dependnecy,
+        flags not contianed as referenced_flags in logic do not need to be checked for cyclical dependency
+        :return: None
+        '''
 
         #if no flag_depencies, move to next original flag
         for original_flag, flag_deps in flag_dependencies.items():
@@ -90,7 +100,7 @@ def validate_flag_logic_information(flag_feeders, flag_dependencies, flag_logic_
                             for new_flag in list(flag_dependencies[flag]):
                                 new_flag_dependencies.append(new_flag)
                         except KeyError as ke:
-                            results.add_error(str(ke).replace("'", "") + "_missing_flag", {CodeLocation(0, 0)})
+                            results.add_error(str(ke).replace("'", "") + "_missing_flag", {None})
 
 
                     flag_dependencies[original_flag] = set(new_flag_dependencies)
@@ -116,8 +126,10 @@ def validate_flag_logic_information(flag_feeders, flag_dependencies, flag_logic_
     flag_history = {}
     if flag_dependencies:
         for flag in flag_dependencies.keys():
-            flag_check.update({flag: False})
+            #only check referenced_flags for cyclic flag dependicies
+            (flag_check.update({flag: False}) if flag in flag_logic_info.referenced_flags.keys() else flag_check.update({flag: True}))
             flag_history.update({flag: list()})
+
         og_flag_dependencies = flag_dependencies
 
         check_flag_dependency(cyclic_flags, flag_dependencies, og_flag_dependencies,
@@ -125,7 +137,11 @@ def validate_flag_logic_information(flag_feeders, flag_dependencies, flag_logic_
         for flag in set(cyclic_flags):
             #TODO
             # proper code location for cyclic flag
-            results.add_error(flag + "_cyclic_flag", {CodeLocation(0,0)})
+            #get code location via referenced flag
+            try:
+                results.add_error(flag + "_cyclic_flag", flag_logic_info.referenced_flags[flag])
+            except KeyError as ke:
+                results.add_error(flag + "_cyclic_flag", {None})
 
 
     # remove ref_functions that are built-ins
