@@ -22,25 +22,18 @@ def test_validation_user_defined_func_error(mock_determine_variables, mock_valid
 
 #TODO
 # notes
-# 1) defined classes need to create error, DONE
 # 2) This will require changing the interface to the validate_flag_logic_information function.
 # We will now have to pass in defined flags and their flagging dependencies.
 # For example FLAG 1 is f["FLAG A"] when validating FLAG 2 as f["FLAG 1"]
 # we need to know FLAG 1 has dependencies on FLAG A.
 # If validating FLAG 2 we will pass in a dict {"FLAG 1": {"FLAG A"}, "FLAG A": {}} is what is expected
-# 3) error cases: (errors) --> explicitly passed DONE, used lambdas DONE,
-# defined functions DONE, defined classes DONE,
-# missing flagfeeders DONE, incorrect varaiable sets DONE, error in node walker DONE
-# 4) warning cases (warnings) --> explicitly passed , non used assigned variables DONE
-# 5) mypy errors: (mypy_errors) --> explicitly passed DONE, validation and other errors DONE
-# 6) mypy warnings: (mypy_warnings) --> explicily passed, ??? what triggers a mypy warning ???
-# 7) if referenced_functions not in defined_functions then referenced_function must be in referenced_modules, else error DONE
+# 7) if referenced_functions not in defined_functions then referenced_function must be in referenced_modules, else error ???
 # 8) unused imported modules cause warning, similar to unused assigned variables DONE
 
-# TODO
+#TODO
 # 9) how to determine if a function is built in or needs to be imported, DONE
 # 10) if it is imported, how to do determine if import is installed, STILL TO DO
-# 11) error if referenced flags are not defined
+# 11) error if referenced flags are not defined, ???
 
 
 
@@ -50,12 +43,13 @@ def test_validation_user_defined_func_error(mock_determine_variables, mock_valid
             return_value=TypeValidationResults(other_errors={"mock_other_error": {CodeLocation(1,1)}}),
             autospec=True)
 def test_validation_explicit_mypy_other_error(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"FF1"}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
         used_variables={VariableInformation('FF1'): {CodeLocation()}}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {}
     assert result.warnings == {}
     assert result.mypy_errors == {"mock_other_error": {CodeLocation(1, 1)}}
@@ -67,12 +61,13 @@ def test_validation_explicit_mypy_other_error(mock_determine_variables, mock_val
             return_value=TypeValidationResults(validation_errors={"mock_validation_error": {CodeLocation(1,1)}}),
             autospec=True)
 def test_validation_explicit_mypy_validation_error(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"FF1"}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
         used_variables={VariableInformation('FF1'): {CodeLocation()}}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {}
     assert result.warnings == {}
     assert result.mypy_errors == {"mock_validation_error": {CodeLocation(1, 1)}}
@@ -85,13 +80,14 @@ def test_validation_explicit_mypy_validation_error(mock_determine_variables, moc
             return_value=TypeValidationResults(validation_errors={"mock_return_value": {CodeLocation(3,1)}}),
             autospec=True)
 def test_validation_non_bool_return(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"FF1": str, "FF2": bool}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
         used_variables={VariableInformation("FF1"): {CodeLocation(1, 1)},
                         VariableInformation("FF2"): {CodeLocation(2, 1)}},
         flag_logic="""FF1 > FF2""")
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {}
     assert result.warnings == {}
     assert result.mypy_errors == {"mock_return_value": {CodeLocation(3, 1)}}
@@ -102,6 +98,7 @@ def test_validation_non_bool_return(mock_determine_variables, mock_validate_retu
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 def test_validation_user_defined_func_error(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"ff1"}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -124,7 +121,7 @@ def test_validation_user_defined_func_error(mock_determine_variables, mock_valid
         z = my_add(2, 3)   
         return ff1 > z""",
         validation_results=TypeValidationResults())
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {"my_add": {CodeLocation(2, 2)}}
     assert result.warnings == {}
     assert result.mypy_errors == {}
@@ -135,6 +132,7 @@ def test_validation_user_defined_func_error(mock_determine_variables, mock_valid
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 def test_validation_user_defined_class_error(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"ff1"}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -150,7 +148,7 @@ def test_validation_user_defined_class_error(mock_determine_variables, mock_vali
         flag_logic="""
             does not matter""",
         validation_results=TypeValidationResults())
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {"my_class": {CodeLocation(1, 1)}}
     assert result.warnings == {}
     assert result.mypy_errors == {}
@@ -161,6 +159,7 @@ def test_validation_user_defined_class_error(mock_determine_variables, mock_vali
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 def test_validation_lambda_use_error(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -185,7 +184,7 @@ def test_validation_lambda_use_error(mock_determine_variables, mock_validate_ret
 sum = reduce(lambda x, y: x + y, [cat ** cat for cat in range(4)])
 return sum > 10""",
         validation_results=TypeValidationResults())
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {"LAMBDA": {CodeLocation(2, 13)}}
     assert result.warnings == {}
     assert result.mypy_errors == {}
@@ -197,13 +196,14 @@ return sum > 10""",
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
 def test_validation_missing_flagfeeders(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"FF1"}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
         used_variables={VariableInformation('FF1'): {CodeLocation(1, 1)},
                         VariableInformation("FF2"): {CodeLocation(2, 2)}}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {VariableInformation("FF2"): {CodeLocation(2, 2)}}
     assert result.warnings == {}
     assert result.mypy_errors == {}
@@ -213,6 +213,7 @@ def test_validation_missing_flagfeeders(mock_determine_variables, mock_validate_
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
 def test_validation_missing_variable_assignment(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -220,7 +221,7 @@ def test_validation_missing_variable_assignment(mock_determine_variables, mock_v
                         VariableInformation("y"): {CodeLocation(2, 2)}},
         assigned_variables={VariableInformation("x"): {CodeLocation(3, 3)}}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {VariableInformation("y"): {CodeLocation(2, 2)}}
     assert result.warnings == {}
     assert result.mypy_errors == {}
@@ -233,6 +234,7 @@ def test_validation_missing_variable_assignment(mock_determine_variables, mock_v
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
 def test_validation_non_used_variable_assignment(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -240,7 +242,7 @@ def test_validation_non_used_variable_assignment(mock_determine_variables, mock_
         assigned_variables={VariableInformation("x"): {CodeLocation(3, 3)},
                             VariableInformation("y"): {CodeLocation(2, 2)}}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {}
     assert result.warnings == {VariableInformation("y"): {CodeLocation(2, 2)}}
     assert result.mypy_errors == {}
@@ -251,13 +253,14 @@ def test_validation_non_used_variable_assignment(mock_determine_variables, mock_
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
 def test_validation_node_visitor_error(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"FF1"}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
         used_variables={VariableInformation('FF1'): {CodeLocation(1, 1)}},
         errors=[ErrorInformation(cl=CodeLocation(3, 5), msg="invalid syntax", text="x = == = 5")]
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {"FlagLogicInformationError invalid syntax":
                                  {ErrorInformation(CodeLocation(3,5),
                                                    "invalid syntax",
@@ -274,6 +277,7 @@ def test_validation_node_visitor_error(mock_determine_variables, mock_validate_r
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
 def test_validation_non_imported_or_defined_function(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"FF1": int}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -281,7 +285,7 @@ def test_validation_non_imported_or_defined_function(mock_determine_variables, m
                         VariableInformation("FF1"): {CodeLocation(3, 3)}},
         assigned_variables={VariableInformation("x"): {CodeLocation(1, 1)}},
         referenced_functions={VariableInformation.create_var(["math", "sqrt"]): {CodeLocation(1, 5)}})
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {VariableInformation.create_var(["math", "sqrt"]): {CodeLocation(1, 5)}}
     assert result.warnings == {}
     assert result.mypy_errors == {}
@@ -292,6 +296,7 @@ def test_validation_non_imported_or_defined_function(mock_determine_variables, m
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
 def test_validation_non_imported_or_defined_function(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"FF1": int}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -300,7 +305,7 @@ def test_validation_non_imported_or_defined_function(mock_determine_variables, m
         assigned_variables={VariableInformation("x"): {CodeLocation(1, 1)}},
         referenced_functions={VariableInformation.create_var(["math", "sqrt"]): {CodeLocation(1, 5)},
                               VariableInformation("min"): {CodeLocation(1, 10)}})
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {VariableInformation.create_var(["math", "sqrt"]): {CodeLocation(1, 5)}}
     assert result.warnings == {}
     assert result.mypy_errors == {}
@@ -311,6 +316,7 @@ def test_validation_non_imported_or_defined_function(mock_determine_variables, m
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
 def test_validation_defined_function(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"FF1": int}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -321,7 +327,7 @@ def test_validation_defined_function(mock_determine_variables, mock_validate_ret
                               VariableInformation("max"): {CodeLocation(2, 10)}},
         defined_functions={VariableInformation.create_var(["my", "func"]): {CodeLocation(1, 5)}}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {VariableInformation.create_var(["my", "func"]): {CodeLocation(1, 5),
                                                                               CodeLocation(2, 5)}}
     assert result.warnings == {}
@@ -333,6 +339,7 @@ def test_validation_defined_function(mock_determine_variables, mock_validate_ret
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
 def test_validation_imported_function(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"FF1": int}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -342,7 +349,7 @@ def test_validation_imported_function(mock_determine_variables, mock_validate_re
         referenced_functions={VariableInformation.create_var(["math", "sqrt"]): {CodeLocation(3, 5)}},
         referenced_modules={ModuleInformation("math"): {CodeLocation(1, 5)}}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {}
     assert result.warnings == {}
     assert result.mypy_errors == {}
@@ -353,6 +360,7 @@ def test_validation_imported_function(mock_determine_variables, mock_validate_re
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
 def test_validation_imported_function_asname(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"FF1": int}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -362,7 +370,7 @@ def test_validation_imported_function_asname(mock_determine_variables, mock_vali
         referenced_functions={VariableInformation.create_var(["m", "sqrt"]): {CodeLocation(3, 5)}},
         referenced_modules={ModuleInformation("math", "m"): {CodeLocation(1, 5)}}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {}
     assert result.warnings == {}
     assert result.mypy_errors == {}
@@ -373,6 +381,7 @@ def test_validation_imported_function_asname(mock_determine_variables, mock_vali
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
 def test_validation_unused_import_module(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"FF1": int}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -383,7 +392,7 @@ def test_validation_unused_import_module(mock_determine_variables, mock_validate
                             ModuleInformation("pandas", "pd"): {CodeLocation(2, 10)},
                             ModuleInformation("numpy"): {CodeLocation(3, 10)}}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {}
     assert result.warnings == {ModuleInformation("math", "m"): {CodeLocation(1, 5)},
                                ModuleInformation("pandas", "pd"): {CodeLocation(2, 10)},
@@ -396,6 +405,7 @@ def test_validation_unused_import_module(mock_determine_variables, mock_validate
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
 def test_validation_unused_import_module_2(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"FF1": int}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -407,7 +417,7 @@ def test_validation_unused_import_module_2(mock_determine_variables, mock_valida
                             ModuleInformation("pandas", "pd"): {CodeLocation(2, 10)},
                             ModuleInformation("numpy"): {CodeLocation(3, 10)}}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {}
     assert result.warnings == {ModuleInformation("pandas", "pd"): {CodeLocation(2, 10)},
                                ModuleInformation("numpy"): {CodeLocation(3, 10)}}
@@ -419,6 +429,7 @@ def test_validation_unused_import_module_2(mock_determine_variables, mock_valida
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
 def test_validation_cyclical_no_ref_flags(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {}
     flag_dependencies = {"Flag1": {"Flag9", "Flag3"},
      "Flag2": {"Flag4", "Flag5", "Flag6"},
@@ -433,7 +444,7 @@ def test_validation_cyclical_no_ref_flags(mock_determine_variables, mock_validat
         assigned_variables={VariableInformation("x"): {CodeLocation(3, 3)}},
         referenced_flags={}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {}
     assert result.warnings == {}
     assert result.mypy_errors == {}
@@ -444,6 +455,7 @@ def test_validation_cyclical_no_ref_flags(mock_determine_variables, mock_validat
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
 def test_validation_cyclical_ref_flags(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {}
     flag_dependencies = {"Flag1": {"Flag9", "Flag3"},
      "Flag2": {"Flag4", "Flag5", "Flag6"},
@@ -458,7 +470,7 @@ def test_validation_cyclical_ref_flags(mock_determine_variables, mock_validate_r
         assigned_variables={VariableInformation("x"): {CodeLocation(3, 3)}},
         referenced_flags={"Flag2": {CodeLocation(2, 10)}}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {"Flag2_cyclic_flag": {CodeLocation(2, 10)}}
     assert result.warnings == {}
     assert result.mypy_errors == {}
@@ -469,6 +481,7 @@ def test_validation_cyclical_ref_flags(mock_determine_variables, mock_validate_r
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
 def test_validation_cyclical_ref_flags_2(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {}
     flag_dependencies = {"Flag1": {"Flag9", "Flag3"},
      "Flag2": {"Flag4", "Flag5", "Flag6"},
@@ -483,7 +496,7 @@ def test_validation_cyclical_ref_flags_2(mock_determine_variables, mock_validate
         assigned_variables={VariableInformation("x"): {CodeLocation(3, 3)}},
         referenced_flags={"Flag2": {CodeLocation(2, 10)}}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {"Flag2_cyclic_flag": {CodeLocation(2, 10)}}
     assert result.warnings == {}
     assert result.mypy_errors == {}
@@ -493,6 +506,7 @@ def test_validation_cyclical_ref_flags_2(mock_determine_variables, mock_validate
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
 def test_validation_cyclical_fail(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {}
     flag_dependencies = {"Flag1": {"Flag9", "Flag3"},
      "Flag2": {"Flag4", "Flag5", "Flag6"},
@@ -514,7 +528,7 @@ def test_validation_cyclical_fail(mock_determine_variables, mock_validate_return
                           "Flag7": {CodeLocation(7, 10)},
                           "Flag8": {CodeLocation(8, 10)}}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {"Flag1_cyclic_flag": {CodeLocation(1, 10)},
                              "Flag2_cyclic_flag": {CodeLocation(2, 10)},
                              "Flag3_cyclic_flag": {CodeLocation(3, 10)},
@@ -532,6 +546,7 @@ def test_validation_cyclical_fail(mock_determine_variables, mock_validate_return
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
 def test_validation_cyclical_fail_catch(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {}
     flag_dependencies = {"Flag1": {"Flag2"},
      "Flag2": {"Flag3"},
@@ -547,7 +562,7 @@ def test_validation_cyclical_fail_catch(mock_determine_variables, mock_validate_
         referenced_flags={"Flag1": {CodeLocation(1, 10)},
                           "Flag2": {CodeLocation(2, 10)},
                           "Flag6": {CodeLocation(6, 10)}})
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {"Flag1_cyclic_flag": {CodeLocation(1, 10)},
                              "Flag2_cyclic_flag": {CodeLocation(2, 10)},
                              "Flag6_cyclic_flag": {CodeLocation(6, 10)}}
@@ -559,6 +574,7 @@ def test_validation_cyclical_fail_catch(mock_determine_variables, mock_validate_
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
 def test_validation_zero_cyclical(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {}
     flag_dependencies = {"Flag1": {"Flag2"},
      "Flag2": {"Flag3"},
@@ -580,7 +596,7 @@ def test_validation_zero_cyclical(mock_determine_variables, mock_validate_return
                           "Flag7": {CodeLocation(7, 10)},
                           "Flag8": {CodeLocation(8, 10)}}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {}
     assert result.warnings == {}
     assert result.mypy_errors == {}
@@ -590,6 +606,7 @@ def test_validation_zero_cyclical(mock_determine_variables, mock_validate_return
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
 def test_validation_missing_flag_dependency_key(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {}
     flag_dependencies = {"Flag1": {"Flag2"},
      "Flag2": {"Flag3"},
@@ -611,23 +628,27 @@ def test_validation_missing_flag_dependency_key(mock_determine_variables, mock_v
                           "Flag7": {CodeLocation(7, 10)},
                           "Flag8": {CodeLocation(8, 10)}}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {"Flag9_missing_flag": {None}}
     assert result.warnings == {}
     assert result.mypy_errors == {}
     assert result.mypy_warnings == {}
+
+
+##clyclical dependency in created flags
 
 ########################################################
 #TODO
 # test fail
 def test_flag_feeder_availble(func):
     print(func)
+    flag_name = "FlagNameDefault"
     flag_dependencies = {}
     flag_feeders = {'FF1'}
     flag_info = FlagLogicInformation(
         used_variables={VariableInformation('FF1'): {CodeLocation()}}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
 
     assert len(result.errors) == 0
     assert len(result.warnings) == 0
@@ -636,12 +657,13 @@ def test_flag_feeder_availble(func):
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 def test_validation_flag_feeder_not_available(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"FF1"}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
         used_variables={VariableInformation('FF1'): {CodeLocation()}}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert len(result.errors) == 0
     assert len(result.warnings) == 0
 
@@ -649,13 +671,14 @@ def test_validation_flag_feeder_not_available(mock_determine_variables, mock_val
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 def test_validation_variable_defined_and_used_2(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
         used_variables={VariableInformation('x'): {CodeLocation()}},
         assigned_variables={VariableInformation('x'): {CodeLocation()}}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert len(result.errors) == 0
     assert len(result.warnings) == 0
 
@@ -663,12 +686,13 @@ def test_validation_variable_defined_and_used_2(mock_determine_variables, mock_v
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 def test_validation_variable_defined_and_not_used(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
         assigned_variables={VariableInformation('x'): {CodeLocation()}}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert len(result.errors) == 0
     assert len(result.warnings) == 1
 
@@ -676,12 +700,13 @@ def test_validation_variable_defined_and_not_used(mock_determine_variables, mock
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 def test_validation_variable_valid_return(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
         assigned_variables={VariableInformation('x'): {CodeLocation()}}
     )
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert len(result.errors) == 0
     assert len(result.warnings) == 1
 
@@ -691,6 +716,7 @@ def test_validation_variable_valid_return(mock_determine_variables, mock_validat
             return_value=TypeValidationResults(other_errors={"mock_error": {CodeLocation(1,1)}}),
             autospec=True)
 def test_validation_user_defined_func_error(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"ff1"}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -713,13 +739,14 @@ def test_validation_user_defined_func_error(mock_determine_variables, mock_valid
         z = my_add(2, 3)   
         return ff1 > z""",
         validation_results=TypeValidationResults())
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert len(result.errors) != 0
     assert len(result.warnings) == 0
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 def test_validation_lambda_use_error(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -744,7 +771,7 @@ def test_validation_lambda_use_error(mock_determine_variables, mock_validate_ret
 sum = reduce(lambda x, y: x + y, [cat ** cat for cat in range(4)])
 return sum > 10""",
         validation_results=TypeValidationResults())
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert len(result.errors) != 0
     assert len(result.warnings) == 0
 
@@ -753,6 +780,7 @@ return sum > 10""",
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 def test_validation_lambda_use_error_2(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
     flag_feeders = {}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -783,7 +811,7 @@ sum = reduce(lambda x, y: x + y, [cat ** cat for cat in range(4)])
 mki = reduce(lambda x, y: x + y, [cat ** cat for cat in range(4)])
 return sum + mki > 10""",
         validation_results=TypeValidationResults())
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert len(result.errors) != 0
     assert len(result.warnings) == 0
 
@@ -792,6 +820,7 @@ return sum + mki > 10""",
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 def test_validation_determine_flag_feeders_logic_and(mock_determine_variables, mock_validate_returns_bool):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"cat": bool, "dog": bool}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -808,7 +837,7 @@ def test_validation_determine_flag_feeders_logic_and(mock_determine_variables, m
         errors=[],
         flag_logic="""cat and dog""",
         validation_results=TypeValidationResults())
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert len(result.errors) == 0
     assert len(result.warnings) == 0
 
@@ -818,6 +847,7 @@ def test_validation_determine_flag_feeders_logic_and(mock_determine_variables, m
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 def test_validation_determine_flag_feeders_logic_or(mock_determine_variables, mock_validate_returns_bool):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"man": bool, "woman": bool}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -834,7 +864,7 @@ def test_validation_determine_flag_feeders_logic_or(mock_determine_variables, mo
         errors=[],
         flag_logic="""man or woman""",
         validation_results=TypeValidationResults())
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert len(result.errors) == 0
     assert len(result.warnings) == 0
 
@@ -843,6 +873,7 @@ def test_validation_determine_flag_feeders_logic_or(mock_determine_variables, mo
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 def test_validation_determine_flag_feeder_conditional(mock_determine_variables, mock_validate_returns_bool):
+    flag_name = "FlagNameDefault"
     flag_feeders = {}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -860,7 +891,7 @@ def test_validation_determine_flag_feeder_conditional(mock_determine_variables, 
         cat = 100
         return cat < 10""",
         validation_results=TypeValidationResults())
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert len(result.errors) == 0
     assert len(result.warnings) == 0
 
@@ -868,6 +899,7 @@ def test_validation_determine_flag_feeder_conditional(mock_determine_variables, 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 def test_validation_determine_flag_feeder_if_statement(mock_determine_variables, mock_validate_returns_bool):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"ff1": bool, "ff2": bool, "ff3": int, "ff4": int, "ff5": bool}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -897,7 +929,7 @@ def test_validation_determine_flag_feeder_if_statement(mock_determine_variables,
             else:
                 return ff5 == x""",
         validation_results=TypeValidationResults())
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert len(result.errors) == 0
     assert len(result.warnings) == 0
 
@@ -905,6 +937,7 @@ def test_validation_determine_flag_feeder_if_statement(mock_determine_variables,
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 def test_validation_normal_expression_error_defined_function(mock_determine_variables, mock_validate_returns_bool):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"ff1": int}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -928,7 +961,7 @@ def test_validation_normal_expression_error_defined_function(mock_determine_vari
         z = my_add(2, 3)
         return ff1 > z""",
         validation_results=TypeValidationResults())
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {VariableInformation("my_add"): {CodeLocation(2, 4),
                                                              CodeLocation(3, 4)}}
     assert result.warnings == {}
@@ -941,6 +974,7 @@ def test_validation_normal_expression_error_defined_function(mock_determine_vari
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 def test_validation_equals_operation(mock_determine_variables, mock_validate_returns_bool):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"ff1": int, "ff2": int}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -957,7 +991,7 @@ def test_validation_equals_operation(mock_determine_variables, mock_validate_ret
         errors=[],
         flag_logic="""return ff1 == ff2""",
         validation_results=TypeValidationResults())
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == dict()
     assert result.warnings == dict()
 
@@ -969,6 +1003,7 @@ def test_validation_equals_operation(mock_determine_variables, mock_validate_ret
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 def test_validation_add_operation(mock_determine_variables, mock_validate_returns_bool):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"ff1": int, "ff2": int, "ff3": int}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -989,7 +1024,7 @@ def test_validation_add_operation(mock_determine_variables, mock_validate_return
         test_1 = ff1 + ff2
         return ff3 < test_1""",
         validation_results=TypeValidationResults())
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == dict()
     assert result.warnings == dict()
 
@@ -998,6 +1033,7 @@ def test_validation_add_operation(mock_determine_variables, mock_validate_return
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 def test_determine_flag_feeder_for_loop_CodeLocation(mock_determine_variables, mock_validate_returns_bool):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"ff1": int, "ff2": bool, "ff3": int, "ff4": int, "ff5": str}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -1038,7 +1074,7 @@ def test_determine_flag_feeder_for_loop_CodeLocation(mock_determine_variables, m
                 a = a + 10                                         
                 return ff1 < a""",
         validation_results=TypeValidationResults())
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == dict()
     assert result.warnings == {VariableInformation("b"): {CodeLocation(13, 4)},
                                VariableInformation("c"): {CodeLocation(14, 4)}}
@@ -1049,6 +1085,7 @@ def test_determine_flag_feeder_for_loop_CodeLocation(mock_determine_variables, m
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 def test_reduce_lambda_CodeLocation(mock_determine_variables, mock_validate_returns_bool):
+    flag_name = "FlagNameDefault"
     flag_feeders = {"ff1": int, "ff2": int}
     flag_dependencies = {}
     flag_info = FlagLogicInformation(
@@ -1075,7 +1112,7 @@ def test_reduce_lambda_CodeLocation(mock_determine_variables, mock_validate_retu
         else:
             return ff2 < reduce(f, [47,11,42,102,13])""",
         validation_results=TypeValidationResults())
-    result = validate_flag_logic_information(flag_feeders, flag_dependencies, flag_info)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert result.errors == {"LAMBDA": {CodeLocation(2, 4)},
                              VariableInformation("reduce"): {CodeLocation(3, 3),
                                                              CodeLocation(4, 17),
