@@ -4,16 +4,22 @@ from flagging.FlaggingValidationMyPy import validate_returns_boolean
 from flagging.FlagLogicInformation import FlagLogicInformation
 from flagging.FlaggingNodeVisitor import CodeLocation
 
+import pkg_resources
 
 
-def validate_flag_logic(flag_feeders, flag_dependencies, flag_logic):
 
-    return validate_flag_logic_information(flag_feeders=flag_feeders,
+def validate_flag_logic(flag_name, flag_feeders, flag_dependencies, flag_logic):
+
+    return validate_flag_logic_information(flag_name=flag_name,
+                                           flag_feeders=flag_feeders,
                                            flag_dependencies=flag_dependencies,
                                            flag_logic_info=determine_variables(flag_logic))
 
-def validate_flag_logic_information(flag_feeders, flag_dependencies, flag_logic_info: FlagLogicInformation):
+def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_logic_info: FlagLogicInformation):
     results = FlaggingValidationResults()
+    #TODO
+    # if no flag name provided, use number of entries in flag dependency set via API
+    # and add one
     flag_dependencies = flag_dependencies if flag_dependencies else {}
     my_py_output = validate_returns_boolean(flag_logic_info, flag_feeders if flag_feeders else {})
 
@@ -61,15 +67,7 @@ def validate_flag_logic_information(flag_feeders, flag_dependencies, flag_logic_
             for warning, cl in my_py_output.warnings.items():
                 results.add_mypy_warning(warning, cl)
 
-    #TODO
-    # flag dependeny
-    # use recursion,
-    # flag depenencies are equivelent to referenced_flags.keys() for the logic
-    # therefore, flag dependencies will look like
-    # {"FLAG NAME": {referenced_flags.keys()}
-    # will need to parse the flag depencies for each flag in referenced_flags.keys()
-    # if FLAG Name is contained at any point in referenced_flags.keys() for all flags,
-    # then error
+
     def check_flag_dependency(cyclic_flags, flag_dependencies, og_flag_dependencies,
                               flag_history, flag_check):
         '''
@@ -124,6 +122,8 @@ def validate_flag_logic_information(flag_feeders, flag_dependencies, flag_logic_
     cyclic_flags = []
     flag_check = {}
     flag_history = {}
+    #add flag_name and passed referenced_flags to flag_dependcies
+    flag_dependencies[flag_name] = flag_logic_info.referenced_flags.keys()
     if flag_dependencies:
         for flag in flag_dependencies.keys():
             #only check referenced_flags for cyclic flag dependicies
@@ -135,9 +135,6 @@ def validate_flag_logic_information(flag_feeders, flag_dependencies, flag_logic_
         check_flag_dependency(cyclic_flags, flag_dependencies, og_flag_dependencies,
                               flag_history, flag_check)
         for flag in set(cyclic_flags):
-            #TODO
-            # proper code location for cyclic flag
-            #get code location via referenced flag
             try:
                 results.add_error(flag + "_cyclic_flag", flag_logic_info.referenced_flags[flag])
             except KeyError as ke:
@@ -174,15 +171,20 @@ def validate_flag_logic_information(flag_feeders, flag_dependencies, flag_logic_
             del ref_functions[ref_func]
     for ref_mod, cl_mod in flag_logic_info.referenced_modules.items():
         if ref_functions:
-            for ref_func, cl_func in ref_functions.items():
-                if ref_mod.name != ref_func.name and ref_mod.asname != ref_func.name:
-                    results.add_warning(ref_mod, cl_mod)
+            ref_functions_list = sorted(["%s" % (i.name) for i in ref_functions.keys()])
+            if ref_mod.name not in ref_functions_list and ref_mod.asname not in ref_functions_list:
+                results.add_warning(ref_mod, cl_mod)
         else:
             results.add_warning(ref_mod, cl_mod)
 
-    #TODO
-    # check if imported modules are installed
 
+    #check if imported modules are installed
+    installed_packages = pkg_resources.working_set
+    installed_packages_list = sorted(["%s" % (i.key)
+                                      for i in installed_packages])
+    for imported_module, cl in dict(flag_logic_info.referenced_modules).items():
+        if imported_module.name not in installed_packages_list:
+            results.add_error(imported_module, cl)
 
     return results
 

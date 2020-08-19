@@ -350,7 +350,7 @@ def test_validation_imported_function(mock_determine_variables, mock_validate_re
         referenced_modules={ModuleInformation("math"): {CodeLocation(1, 5)}}
     )
     result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
-    assert result.errors == {}
+    assert result.errors == {ModuleInformation("math"): {CodeLocation(1, 5)}}
     assert result.warnings == {}
     assert result.mypy_errors == {}
     assert result.mypy_warnings == {}
@@ -371,7 +371,7 @@ def test_validation_imported_function_asname(mock_determine_variables, mock_vali
         referenced_modules={ModuleInformation("math", "m"): {CodeLocation(1, 5)}}
     )
     result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
-    assert result.errors == {}
+    assert result.errors == {ModuleInformation("math", "m"): {CodeLocation(1, 5)}}
     assert result.warnings == {}
     assert result.mypy_errors == {}
     assert result.mypy_warnings == {}
@@ -393,7 +393,7 @@ def test_validation_unused_import_module(mock_determine_variables, mock_validate
                             ModuleInformation("numpy"): {CodeLocation(3, 10)}}
     )
     result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
-    assert result.errors == {}
+    assert result.errors == {ModuleInformation("math", "m"): {CodeLocation(1, 5)}}
     assert result.warnings == {ModuleInformation("math", "m"): {CodeLocation(1, 5)},
                                ModuleInformation("pandas", "pd"): {CodeLocation(2, 10)},
                                ModuleInformation("numpy"): {CodeLocation(3, 10)}}
@@ -418,7 +418,7 @@ def test_validation_unused_import_module_2(mock_determine_variables, mock_valida
                             ModuleInformation("numpy"): {CodeLocation(3, 10)}}
     )
     result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
-    assert result.errors == {}
+    assert result.errors == {ModuleInformation("math", "m"): {CodeLocation(1, 5)}}
     assert result.warnings == {ModuleInformation("pandas", "pd"): {CodeLocation(2, 10)},
                                ModuleInformation("numpy"): {CodeLocation(3, 10)}}
     assert result.mypy_errors == {}
@@ -635,7 +635,122 @@ def test_validation_missing_flag_dependency_key(mock_determine_variables, mock_v
     assert result.mypy_warnings == {}
 
 
-##clyclical dependency in created flags
+##clyclical dependency in created flag
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
+def test_validation_created_falg_cyclical_dependency(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
+    flag_feeders = {}
+    flag_dependencies = {"Flag1": {"FlagNameDefault"},
+     "Flag2": {"Flag3"},
+     "Flag3": {"Flag4"},
+     "Flag4": {"Flag5"},
+     "Flag5": {"Flag6"},
+     "Flag6": {"Flag7"},
+     "Flag7": {"Flag8"},
+     "Flag8": {}}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation('x'): {CodeLocation(1, 1)}},
+        assigned_variables={VariableInformation("x"): {CodeLocation(3, 3)}},
+        referenced_flags={"Flag1": {CodeLocation(1, 10)},
+                          "Flag2": {CodeLocation(2, 10)},
+                          "Flag3": {CodeLocation(3, 10)},
+                          "Flag4": {CodeLocation(4, 10)},
+                          "Flag5": {CodeLocation(5, 10)},
+                          "Flag6": {CodeLocation(6, 10)},
+                          "Flag7": {CodeLocation(7, 10)},
+                          "Flag8": {CodeLocation(8, 10)}},
+        referenced_modules={ModuleInformation("math"): {CodeLocation(1, 5)},
+                            ModuleInformation("functools"): {CodeLocation(1, 7)},
+                            ModuleInformation("badmodule2dfs"): {CodeLocation(1, 9)}})
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
+    assert result.errors == {"Flag1_cyclic_flag": {CodeLocation(1, 10)},
+                             ModuleInformation("math"): {CodeLocation(1, 5)},
+                             ModuleInformation("functools"): {CodeLocation(1, 7)},
+                             ModuleInformation("badmodule2dfs"): {CodeLocation(1, 9)}}
+    assert result.warnings == {ModuleInformation("math"): {CodeLocation(1, 5)},
+                               ModuleInformation("functools"): {CodeLocation(1, 7)},
+                               ModuleInformation("badmodule2dfs"): {CodeLocation(1, 9)}}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
+
+
+##not imported module
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
+def test_validation_missing_module_install(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
+    flag_feeders = {}
+    flag_dependencies = {"Flag1": {"Flag2"},
+     "Flag2": {"Flag3"},
+     "Flag3": {"Flag4"},
+     "Flag4": {"Flag5"},
+     "Flag5": {"Flag6"},
+     "Flag6": {"Flag7"},
+     "Flag7": {"Flag8"},
+     "Flag8": {}}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation('x'): {CodeLocation(1, 1)}},
+        assigned_variables={VariableInformation("x"): {CodeLocation(3, 3)}},
+        referenced_flags={"Flag1": {CodeLocation(1, 10)},
+                          "Flag2": {CodeLocation(2, 10)},
+                          "Flag3": {CodeLocation(3, 10)},
+                          "Flag4": {CodeLocation(4, 10)},
+                          "Flag5": {CodeLocation(5, 10)},
+                          "Flag6": {CodeLocation(6, 10)},
+                          "Flag7": {CodeLocation(7, 10)},
+                          "Flag8": {CodeLocation(8, 10)}},
+        referenced_modules={ModuleInformation("math"): {CodeLocation(1, 5)},
+                            ModuleInformation("functools", "my_funky_tools"): {CodeLocation(1, 7)},
+                            ModuleInformation("badmodule2dfs"): {CodeLocation(1, 9)}})
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
+    assert result.errors == {ModuleInformation("math"): {CodeLocation(1, 5)},
+                             ModuleInformation("functools", "my_funky_tools"): {CodeLocation(1, 7)},
+                             ModuleInformation("badmodule2dfs"): {CodeLocation(1, 9)}}
+    assert result.warnings == {ModuleInformation("math"): {CodeLocation(1, 5)},
+                              ModuleInformation("functools", "my_funky_tools"): {CodeLocation(1, 7)},
+                              ModuleInformation("badmodule2dfs"): {CodeLocation(1, 9)}}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
+
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean",return_value=TypeValidationResults(), autospec=True)
+def test_validation_missing_module_install_2(mock_determine_variables, mock_validate_returns_boolean):
+    flag_name = "FlagNameDefault"
+    flag_feeders = {}
+    flag_dependencies = {"Flag1": {"Flag2"},
+     "Flag2": {"Flag3"},
+     "Flag3": {"Flag4"},
+     "Flag4": {"Flag5"},
+     "Flag5": {"Flag6"},
+     "Flag6": {"Flag7"},
+     "Flag7": {"Flag8"},
+     "Flag8": {}}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation('x'): {CodeLocation(1, 1)}},
+        assigned_variables={VariableInformation("x"): {CodeLocation(3, 3)}},
+        referenced_flags={"Flag1": {CodeLocation(1, 10)},
+                          "Flag2": {CodeLocation(2, 10)},
+                          "Flag3": {CodeLocation(3, 10)},
+                          "Flag4": {CodeLocation(4, 10)},
+                          "Flag5": {CodeLocation(5, 10)},
+                          "Flag6": {CodeLocation(6, 10)},
+                          "Flag7": {CodeLocation(7, 10)},
+                          "Flag8": {CodeLocation(8, 10)}},
+        referenced_functions={VariableInformation.create_var(['functools', 'my_funky_tools']): {CodeLocation(2, 7)},
+                              VariableInformation("badmodule2dfs"): {CodeLocation(3, 7)}},
+        referenced_modules={ModuleInformation("math"): {CodeLocation(1, 5)},
+                            ModuleInformation("functools", "my_funky_tools"): {CodeLocation(1, 7)},
+                            ModuleInformation("badmodule2dfs"): {CodeLocation(1, 9)},
+                            ModuleInformation("flask"): {CodeLocation(2, 9)}})
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
+    assert result.errors == {ModuleInformation("math"): {CodeLocation(1, 5)},
+                             ModuleInformation("functools", "my_funky_tools"): {CodeLocation(1, 7)},
+                             ModuleInformation("badmodule2dfs"): {CodeLocation(1, 9)}}
+    assert result.warnings == {ModuleInformation("math"): {CodeLocation(1, 5)},
+                               ModuleInformation("flask"): {CodeLocation(2, 9)}}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
 
 ########################################################
 #TODO
@@ -650,8 +765,10 @@ def test_flag_feeder_availble(func):
     )
     result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
 
-    assert len(result.errors) == 0
-    assert len(result.warnings) == 0
+    assert result.errors == {}
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
 
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
@@ -664,8 +781,10 @@ def test_validation_flag_feeder_not_available(mock_determine_variables, mock_val
         used_variables={VariableInformation('FF1'): {CodeLocation()}}
     )
     result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
-    assert len(result.errors) == 0
-    assert len(result.warnings) == 0
+    assert result.errors == {}
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
 
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
@@ -681,20 +800,11 @@ def test_validation_variable_defined_and_used_2(mock_determine_variables, mock_v
     result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
     assert len(result.errors) == 0
     assert len(result.warnings) == 0
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
 
 
-@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_validation_variable_defined_and_not_used(mock_determine_variables, mock_validate_returns_boolean):
-    flag_name = "FlagNameDefault"
-    flag_feeders = {}
-    flag_dependencies = {}
-    flag_info = FlagLogicInformation(
-        assigned_variables={VariableInformation('x'): {CodeLocation()}}
-    )
-    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
-    assert len(result.errors) == 0
-    assert len(result.warnings) == 1
+
 
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
@@ -707,8 +817,10 @@ def test_validation_variable_valid_return(mock_determine_variables, mock_validat
         assigned_variables={VariableInformation('x'): {CodeLocation()}}
     )
     result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
-    assert len(result.errors) == 0
-    assert len(result.warnings) == 1
+    assert result.errors == {}
+    assert result.warnings == {VariableInformation("x"): {CodeLocation(None, None)}}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
 
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
@@ -740,8 +852,10 @@ def test_validation_user_defined_func_error(mock_determine_variables, mock_valid
         return ff1 > z""",
         validation_results=TypeValidationResults())
     result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
-    assert len(result.errors) != 0
-    assert len(result.warnings) == 0
+    assert result.errors == {VariableInformation("my_add"): {CodeLocation(3, 4), CodeLocation(2, 2)}}
+    assert result.warnings == {}
+    assert result.mypy_errors == {"mock_error": {CodeLocation(1, 1)}}
+    assert result.mypy_warnings == {}
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
@@ -772,8 +886,11 @@ sum = reduce(lambda x, y: x + y, [cat ** cat for cat in range(4)])
 return sum > 10""",
         validation_results=TypeValidationResults())
     result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
-    assert len(result.errors) != 0
-    assert len(result.warnings) == 0
+    assert result.errors == {"LAMBDA": {CodeLocation(2, 13)},
+                             VariableInformation("reduce"): {CodeLocation(2, 6)}}
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
 
 
 
@@ -812,8 +929,11 @@ mki = reduce(lambda x, y: x + y, [cat ** cat for cat in range(4)])
 return sum + mki > 10""",
         validation_results=TypeValidationResults())
     result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
-    assert len(result.errors) != 0
-    assert len(result.warnings) == 0
+    assert result.errors == {"LAMBDA": {CodeLocation(2, 13), CodeLocation(3, 13)},
+                             VariableInformation("reduce"): {CodeLocation(2, 6), CodeLocation(3, 6)}}
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
 
 
 
@@ -838,8 +958,10 @@ def test_validation_determine_flag_feeders_logic_and(mock_determine_variables, m
         flag_logic="""cat and dog""",
         validation_results=TypeValidationResults())
     result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
-    assert len(result.errors) == 0
-    assert len(result.warnings) == 0
+    assert result.errors == {}
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
 
 
 
@@ -865,8 +987,10 @@ def test_validation_determine_flag_feeders_logic_or(mock_determine_variables, mo
         flag_logic="""man or woman""",
         validation_results=TypeValidationResults())
     result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
-    assert len(result.errors) == 0
-    assert len(result.warnings) == 0
+    assert result.errors == {}
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
 
 
 
@@ -892,8 +1016,10 @@ def test_validation_determine_flag_feeder_conditional(mock_determine_variables, 
         return cat < 10""",
         validation_results=TypeValidationResults())
     result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
-    assert len(result.errors) == 0
-    assert len(result.warnings) == 0
+    assert result.errors == {}
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
 
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
@@ -930,8 +1056,10 @@ def test_validation_determine_flag_feeder_if_statement(mock_determine_variables,
                 return ff5 == x""",
         validation_results=TypeValidationResults())
     result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
-    assert len(result.errors) == 0
-    assert len(result.warnings) == 0
+    assert result.errors == {}
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
 
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
@@ -992,8 +1120,10 @@ def test_validation_equals_operation(mock_determine_variables, mock_validate_ret
         flag_logic="""return ff1 == ff2""",
         validation_results=TypeValidationResults())
     result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
-    assert result.errors == dict()
-    assert result.warnings == dict()
+    assert result.errors == {}
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
 
 
 
@@ -1025,8 +1155,10 @@ def test_validation_add_operation(mock_determine_variables, mock_validate_return
         return ff3 < test_1""",
         validation_results=TypeValidationResults())
     result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
-    assert result.errors == dict()
-    assert result.warnings == dict()
+    assert result.errors == {}
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
 
 
 
@@ -1075,9 +1207,11 @@ def test_determine_flag_feeder_for_loop_CodeLocation(mock_determine_variables, m
                 return ff1 < a""",
         validation_results=TypeValidationResults())
     result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
-    assert result.errors == dict()
+    assert result.errors == {}
     assert result.warnings == {VariableInformation("b"): {CodeLocation(13, 4)},
                                VariableInformation("c"): {CodeLocation(14, 4)}}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
 
 
 
@@ -1117,4 +1251,6 @@ def test_reduce_lambda_CodeLocation(mock_determine_variables, mock_validate_retu
                              VariableInformation("reduce"): {CodeLocation(3, 3),
                                                              CodeLocation(4, 17),
                                                              CodeLocation(6, 17)}}
-    assert result.warnings == dict()
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
