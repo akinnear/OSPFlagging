@@ -19,7 +19,7 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
     results = FlaggingValidationResults()
     #TODO
     # if no flag name provided, use number of entries in flag dependency set via API
-    # and add one
+    # and add one, FlagName<Max+1>
     flag_dependencies = flag_dependencies if flag_dependencies else {}
     my_py_output = validate_returns_boolean(flag_logic_info, flag_feeders if flag_feeders else {})
 
@@ -73,26 +73,28 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
         '''
         :param cyclic_flags: flags marked as cyclical
         :param flag_dependencies: full set of flag dependicies
-        :param og_flag_dependencies: copy of full set of flag dependies, to maintain original dependice
-        :param flag_history: set of lists containing iterations of flag dependecies based on each dependency
-        :param flag_check: check mark to determain if flag has been checked for dependnecy,
-        flags not contianed as referenced_flags in logic do not need to be checked for cyclical dependency
+        :param og_flag_dependencies: copy of full set of flag dependicies, to maintain original dependency
+        :param flag_history: set of lists containing iterations of flag dependicies based on each dependency
+        :param flag_check: check mark to determine if flag has been checked for dependency,
+        flags not contained as referenced_flags in logic do not need to be checked for cyclical dependency
         :return: None
         '''
 
         #if no flag_depencies, move to next original flag
         for original_flag, flag_deps in flag_dependencies.items():
             if not flag_check[original_flag]:
+                # has depencies, parse dpendicies
                 if flag_deps:
 
-                    #has depencies, parse dpendicies
+                    #check if flag is dependent on itself
                     if original_flag in flag_deps:
-
-                        #stop, cyclic error
+                        #found cyclical flag, mark flag as checkd and add to cyclic flag set
                         flag_check[original_flag] = True
                         cyclic_flags.append(original_flag)
 
                     new_flag_dependencies = []
+                    #make sure each depedendent flag exists in flag depdency set
+                    #otherwise we do not know if there is cyclical flag
                     for flag in flag_deps:
                         try:
                             for new_flag in list(flag_dependencies[flag]):
@@ -100,7 +102,7 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
                         except KeyError as ke:
                             results.add_error(str(ke).replace("'", "") + "_missing_flag", {CodeLocation(None, None)})
 
-
+                    #update with new iteration of flag depednecy
                     flag_dependencies[original_flag] = set(new_flag_dependencies)
                     flag_history[original_flag].append(set(new_flag_dependencies))
 
@@ -112,9 +114,11 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
                                 cyclic_flags.append(original_flag)
                                 flag_check[original_flag] = True
 
+                    #iterate with update flag_dependencies, flag_history, and flag_check
                     check_flag_dependency(cyclic_flags, flag_dependencies, og_flag_dependencies,
                                           flag_history, flag_check)
                 else:
+                    #flag check completed, move to next flag and restore orginal flag dependency for future validation
                     flag_check[original_flag] = True
                     flag_dependencies[original_flag] = og_flag_dependencies[original_flag]
 
@@ -130,9 +134,9 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
             (flag_check.update({flag: False}) if flag in flag_logic_info.referenced_flags.keys() else flag_check.update({flag: True}))
             flag_history.update({flag: list()})
 
-        og_flag_dependencies = flag_dependencies
+        #og_flag_dependencies = flag_dependencies
 
-        check_flag_dependency(cyclic_flags, flag_dependencies, og_flag_dependencies,
+        check_flag_dependency(cyclic_flags, flag_dependencies, flag_dependencies,
                               flag_history, flag_check)
         for flag in set(cyclic_flags):
             try:
