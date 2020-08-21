@@ -98,7 +98,7 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
                             for new_flag in list(flag_dependencies[flag]):
                                 new_flag_dependencies.append(new_flag)
                         except KeyError as ke:
-                            results.add_error(str(ke).replace("'", "") + "_missing_flag", {None})
+                            results.add_error(str(ke).replace("'", "") + "_missing_flag", {CodeLocation(None, None)})
 
 
                     flag_dependencies[original_flag] = set(new_flag_dependencies)
