@@ -21,19 +21,9 @@ def test_validation_user_defined_func_error(mock_determine_variables, mock_valid
     return None
 
 #TODO
-# notes
-# 2) This will require changing the interface to the validate_flag_logic_information function.
-# We will now have to pass in defined flags and their flagging dependencies.
-# For example FLAG 1 is f["FLAG A"] when validating FLAG 2 as f["FLAG 1"]
-# we need to know FLAG 1 has dependencies on FLAG A.
-# If validating FLAG 2 we will pass in a dict {"FLAG 1": {"FLAG A"}, "FLAG A": {}} is what is expected
-# 7) if referenced_functions not in defined_functions then referenced_function must be in referenced_modules, else error ???
-# 8) unused imported modules cause warning, similar to unused assigned variables DONE
-
-#TODO
-# 9) how to determine if a function is built in or needs to be imported, DONE
-# 10) if it is imported, how to do determine if import is installed, STILL TO DO
 # 11) error if referenced flags are not defined, ???
+
+
 
 
 
@@ -753,22 +743,7 @@ def test_validation_missing_module_install_2(mock_determine_variables, mock_vali
     assert result.mypy_warnings == {}
 
 ########################################################
-#TODO
-# test fail
-def test_flag_feeder_availble(func):
-    print(func)
-    flag_name = "FlagNameDefault"
-    flag_dependencies = {}
-    flag_feeders = {'FF1'}
-    flag_info = FlagLogicInformation(
-        used_variables={VariableInformation('FF1'): {CodeLocation()}}
-    )
-    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
 
-    assert result.errors == {}
-    assert result.warnings == {}
-    assert result.mypy_errors == {}
-    assert result.mypy_warnings == {}
 
 
 @mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
@@ -798,8 +773,8 @@ def test_validation_variable_defined_and_used_2(mock_determine_variables, mock_v
         assigned_variables={VariableInformation('x'): {CodeLocation()}}
     )
     result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
-    assert len(result.errors) == 0
-    assert len(result.warnings) == 0
+    assert result.errors == {}
+    assert result.warnings == {}
     assert result.mypy_errors == {}
     assert result.mypy_warnings == {}
 
