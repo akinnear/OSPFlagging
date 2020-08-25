@@ -5,6 +5,10 @@ from flagging.FlagLogicInformation import FlagLogicInformation
 from flagging.FlaggingNodeVisitor import CodeLocation
 
 import pkg_resources
+import distutils.sysconfig as sysconfig
+import os
+import platform
+from stdlib_list import stdlib_list
 
 
 
@@ -151,19 +155,15 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
         if ref_func.name in __builtins__:
             del ref_functions[ref_func]
 
-    #if non built in refereenced_funtion not in referenced_modules, error
+    #if non built in refereenced_funtion not in referenced_modules error
     ref_modules = dict(flag_logic_info.referenced_modules)
     for ref_func, cl in dict(flag_logic_info.referenced_functions).items():
-        # if ref_func.name in ref_modules:
-        #     del ref_functions[ref_func]
-        # if ref_func in ref_modules:
-        #     del ref_functions[ref_func]
+        # remove functions that are part of imported modules
         if ref_func.name in [ref_modules.name for ref_modules, cl in ref_modules.items()] \
                 or ref_func.name in [ref_modules.asname for ref_modules, cl in ref_modules.items()]:
             del ref_functions[ref_func]
 
-
-    #add error
+    #add error for remaining functions, these are not imported
     if ref_functions:
         for unused, cl in ref_functions.items():
             results.add_error(unused, cl)
@@ -183,11 +183,19 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
 
 
     #check if imported modules are installed
+    #TODO
+    # math should be a built in, check with OS
     installed_packages = pkg_resources.working_set
     installed_packages_list = sorted(["%s" % (i.key)
                                       for i in installed_packages])
+
+    # get list of standard built in modules, like math and os
+    standard_mods = stdlib_list(str(platform.python_version())[0:3])
+    standard_mods = sorted(standard_mods)
+
     for imported_module, cl in dict(flag_logic_info.referenced_modules).items():
-        if imported_module.name not in installed_packages_list:
+        #impote module is not installed nor is it part of standard library list
+        if imported_module.name not in installed_packages_list and imported_module.name not in standard_mods:
             results.add_error(imported_module, cl)
 
     return results
