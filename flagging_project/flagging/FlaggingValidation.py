@@ -1,12 +1,9 @@
 from flagging.FlaggingNodeVisitor import determine_variables
 from flagging.FlaggingValidationMyPy import validate_returns_boolean
-
 from flagging.FlagLogicInformation import FlagLogicInformation
 from flagging.FlaggingNodeVisitor import CodeLocation
-
+from flagging.FlagErrorInformation import FlagErrorInformation
 import pkg_resources
-import distutils.sysconfig as sysconfig
-import os
 import platform
 from stdlib_list import stdlib_list
 
@@ -72,10 +69,9 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
                 results.add_mypy_warning(warning, cl)
 
 
-    def check_flag_dependency(cyclic_flags, flag_dependencies, og_flag_dependencies,
-                              flag_history, flag_check):
+    def check_flag_dependency(cyclical_flags, flag_dependencies, flag_history, flag_check):
         '''
-        :param cyclic_flags: flags marked as cyclical
+        :param cyclical_flags: flags marked as cyclical
         :param flag_dependencies: full set of flag dependicies
         :param og_flag_dependencies: copy of full set of flag dependicies, to maintain original dependency
         :param flag_history: set of lists containing iterations of flag dependicies based on each dependency
@@ -83,7 +79,7 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
         flags not contained as referenced_flags in logic do not need to be checked for cyclical dependency
         :return: None
         '''
-
+        og_flag_dependencies = flag_dependencies
         #if no flag_depencies, move to next original flag
         for original_flag, flag_deps in flag_dependencies.items():
             if not flag_check[original_flag]:
@@ -92,9 +88,9 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
 
                     #check if flag is dependent on itself
                     if original_flag in flag_deps:
-                        #found cyclical flag, mark flag as checkd and add to cyclic flag set
+                        #found cyclical flag, mark flag as checkd and add to cyclical flag set
                         flag_check[original_flag] = True
-                        cyclic_flags.append(original_flag)
+                        cyclical_flags.append(original_flag)
 
                     new_flag_dependencies = []
                     #make sure each depedendent flag exists in flag depdency set
@@ -104,22 +100,28 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
                             for new_flag in list(flag_dependencies[flag]):
                                 new_flag_dependencies.append(new_flag)
                         except KeyError as ke:
-                            results.add_error(str(ke).replace("'", "") + "_missing_flag", {CodeLocation(None, None)})
+                            results.add_flag_error(flag, FlagErrorInformation(flag=flag,
+                                                                              err_info="missing_flag",
+                                                                              cl={CodeLocation(None, None)}))
+                            # results.add_flag_error(str(ke).replace("'", ""), FlagErrorInformation(flag=str(ke).replace("'", "")),
+                            #                                                                   err_info="missing_flag",
+                            #                                                                   cl=CodeLocation(None, None))
+                            # results.add_error(str(ke).replace("'", "") + "_missing_flag", {CodeLocation(None, None)})
 
                     #update with new iteration of flag depednecy
                     flag_dependencies[original_flag] = set(new_flag_dependencies)
                     flag_history[original_flag].append(set(new_flag_dependencies))
 
                     # check if flag history contains any duplicate sets,
-                    # indicates cyclic logic outside of original flag
+                    # indicates cyclical logic outside of original flag
                     for i in range(len(flag_history[original_flag])):
                         if len(flag_history[original_flag]) - 1 != i:
                             if flag_history[original_flag][len(flag_history[original_flag])-1] == flag_history[original_flag][i]:
-                                cyclic_flags.append(original_flag)
+                                cyclical_flags.append(original_flag)
                                 flag_check[original_flag] = True
 
                     #iterate with update flag_dependencies, flag_history, and flag_check
-                    check_flag_dependency(cyclic_flags, flag_dependencies, og_flag_dependencies,
+                    check_flag_dependency(cyclical_flags, flag_dependencies,
                                           flag_history, flag_check)
                 else:
                     #flag check completed, move to next flag and restore orginal flag dependency for future validation
@@ -127,26 +129,28 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
                     flag_dependencies[original_flag] = og_flag_dependencies[original_flag]
 
 
-    cyclic_flags = []
+    cyclical_flags = []
     flag_check = {}
     flag_history = {}
     #add flag_name and passed referenced_flags to flag_dependcies
     flag_dependencies[flag_name] = flag_logic_info.referenced_flags.keys()
     if flag_dependencies:
         for flag in flag_dependencies.keys():
-            #only check referenced_flags for cyclic flag dependicies
+            #only check referenced_flags for cyclical flag dependicies
             (flag_check.update({flag: False}) if flag in flag_logic_info.referenced_flags.keys() else flag_check.update({flag: True}))
             flag_history.update({flag: list()})
 
-        #og_flag_dependencies = flag_dependencies
-
-        check_flag_dependency(cyclic_flags, flag_dependencies, flag_dependencies,
-                              flag_history, flag_check)
-        for flag in set(cyclic_flags):
+        check_flag_dependency(cyclical_flags, flag_dependencies, flag_history, flag_check)
+        for flag in set(cyclical_flags):
             try:
-                results.add_error(flag + "_cyclic_flag", flag_logic_info.referenced_flags[flag])
+                results.add_flag_error(flag, FlagErrorInformation(flag=flag,
+                                                                  err_info="cyclical_flag",
+                                                                  cl=flag_logic_info.referenced_flags[flag]))
+                # results.add_error(flag + "_cyclical_flag", flag_logic_info.referenced_flags[flag])
             except KeyError as ke:
-                results.add_error(flag + "_cyclic_flag", {None})
+                results.add_flag_error(flag, FlagErrorInformation(flag=flag,
+                                                                  err_info="cyclical_flag",
+                                                                  cl={CodeLocation(None, None)}))
 
 
     # remove ref_functions that are built-ins
@@ -183,8 +187,6 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
 
 
     #check if imported modules are installed
-    #TODO
-    # math should be a built in, check with OS
     installed_packages = pkg_resources.working_set
     installed_packages_list = sorted(["%s" % (i.key)
                                       for i in installed_packages])
@@ -194,7 +196,7 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
     standard_mods = sorted(standard_mods)
 
     for imported_module, cl in dict(flag_logic_info.referenced_modules).items():
-        #impote module is not installed nor is it part of standard library list
+        #imported module is not installed nor is it part of standard library list
         if imported_module.name not in installed_packages_list and imported_module.name not in standard_mods:
             results.add_error(imported_module, cl)
 
@@ -214,6 +216,10 @@ class FlaggingValidationResults:
         if error not in self.errors.keys():
             self.errors.setdefault(error, set())
         self.errors[error].update(cl)
+
+    def add_flag_error(self, flag, feo):
+        self.errors[flag] = feo
+
 
 
     def add_mypy_error(self, error, cl):
