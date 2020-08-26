@@ -317,7 +317,7 @@ def determine_variables(logic):
             invalid_check = False
         except SyntaxError as se:
             se_cl = CodeLocation(se.lineno, se.offset)
-            nv.errors.append(ErrorInformation(se.msg, se.text, se_cl))
+            nv.errors.append(ErrorInformation(se_cl, se.msg, se.text))
             logic_copy = logic_copy.replace(se.text.strip(), "##ErRoR##")
 
     return FlagLogicInformation(used_variables=nv.used_variables,
