@@ -28,4 +28,3 @@ class FlagErrorInformation:
 
     def __hash__(self):
         return hash((self.flag, self.err_info, self.cl))
-        
