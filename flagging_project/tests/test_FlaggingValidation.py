@@ -552,9 +552,15 @@ def test_validation_cyclical_ref_flags_2(mock_determine_variables, mock_validate
                           "Flag2": {CodeLocation(2, 10)}}
     )
     result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
-    assert result.errors == {"Flag1_cyclical_flag": {CodeLocation(1, 10)},
-                             "Flag2_cyclical_flag": {CodeLocation(2, 10)},
-                             "Flag9_missing_flag": {CodeLocation(None, None)}}
+    assert result.errors == {"Flag1": FlagErrorInformation(flag="Flag1",
+                                                           err_info="cyclical_flag",
+                                                           cl={CodeLocation(1, 10)}),
+                             "Flag2": FlagErrorInformation(flag="Flag2",
+                                                           err_info="cyclical_flag",
+                                                           cl={CodeLocation(2, 10)}),
+                             "Flag9": FlagErrorInformation(flag="Flag9",
+                                                           err_info="missing_flag",
+                                                           cl={CodeLocation(None, None)})}
     assert result.warnings == {}
     assert result.mypy_errors == {}
     assert result.mypy_warnings == {}
