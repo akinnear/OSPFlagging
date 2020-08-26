@@ -9,7 +9,7 @@ class FlagErrorInformation:
 
     # object representation
     def __repr__(self):
-        return f"ErrorInformation({self.flag}, {self.err_info}, {self.cl})"
+        return f"FlagErrorInformation({self.flag}, {self.err_info}, {self.cl})"
 
 
     def __str__(self):
@@ -20,8 +20,6 @@ class FlagErrorInformation:
         return self.flag == other.flag \
                and self.err_info == other.err_info \
                and self.cl == other.cl
-
-
 
     def __ne__(self, other):
         return not self.__eq__(other)
