@@ -195,10 +195,24 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
     standard_mods = stdlib_list(str(platform.python_version())[0:3])
     standard_mods = sorted(standard_mods)
 
-    for imported_module, cl in dict(flag_logic_info.referenced_modules).items():
+
+
+    for imported_module, cl_mod in dict(flag_logic_info.referenced_modules).items():
         #imported module is not installed nor is it part of standard library list
         if imported_module.name not in installed_packages_list and imported_module.name not in standard_mods:
-            results.add_error(imported_module, cl)
+            results.add_error(imported_module, cl_mod)
+
+    # do not allow modules name and as name to appear in assigned variables
+    for assigned_var, cl_av in dict(flag_logic_info.assigned_variables).items():
+        if assigned_var.name in [key.name for key, cl in dict(flag_logic_info.referenced_modules).items()]\
+                or assigned_var.name in [key.asname for key, cl in dict(flag_logic_info.referenced_modules).items()]:
+            results.add_error(assigned_var, cl_av)
+
+
+
+
+
+
 
     return results
 
