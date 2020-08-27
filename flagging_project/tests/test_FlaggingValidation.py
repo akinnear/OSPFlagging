@@ -1348,3 +1348,40 @@ def test_reduce_lambda_CodeLocation(mock_determine_variables, mock_validate_retu
     assert result.warnings == {}
     assert result.mypy_errors == {}
     assert result.mypy_warnings == {}
+
+#do not allow module overwrite
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+def test_module_overwrite_error(mock_determine_variables, mock_validate_returns_bool):
+    flag_name = "FlagNameDefault"
+    flag_feeders = {"ff1": int, "ff2": int}
+    flag_dependencies = {}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation("math"): {CodeLocation(8, 10)}},
+        assigned_variables={VariableInformation("math"): {CodeLocation(7, 10)}},
+        referenced_functions={VariableInformation.create_var(["math", "sqrt"]): {CodeLocation(3, 3)}},
+        referenced_modules={ModuleInformation("math"): {CodeLocation(1, 1)}})
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
+    assert result.errors == {VariableInformation("math"): {CodeLocation(7, 10)}}
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
+
+
+#do not allow module overwrite, as name check
+@mock.patch("flagging.FlaggingValidation.determine_variables", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+def test_module_overwrite_error_asname(mock_determine_variables, mock_validate_returns_bool):
+    flag_name = "FlagNameDefault"
+    flag_feeders = {"ff1": int, "ff2": int}
+    flag_dependencies = {}
+    flag_info = FlagLogicInformation(
+        used_variables={VariableInformation("m"): {CodeLocation(8, 10)}},
+        assigned_variables={VariableInformation("m"): {CodeLocation(7, 10)}},
+        referenced_functions={VariableInformation.create_var(["m", "sqrt"]): {CodeLocation(3, 3)}},
+        referenced_modules={ModuleInformation("math", "m"): {CodeLocation(1, 1)}})
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_info)
+    assert result.errors == {VariableInformation("m"): {CodeLocation(7, 10)}}
+    assert result.warnings == {}
+    assert result.mypy_errors == {}
+    assert result.mypy_warnings == {}
