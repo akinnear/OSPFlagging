@@ -2,7 +2,7 @@ from flagging.FlaggingNodeVisitor import determine_variables
 from flagging.FlaggingNodeVisitor import CodeLocation
 from flagging.VariableInformation import VariableInformation
 from flagging.ModuleInformation import ModuleInformation
-
+from flagging.ErrorInformation import ErrorInformation
 
 def test_determine_flag_feeders_logic_and_CodeLocation():
     logic = """cat and dog"""
@@ -2323,7 +2323,12 @@ y = = =  q2@"""
     assert test_output.defined_classes.keys() == set()
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
-    assert len(test_output.errors) == 2
+    assert test_output.errors == [ErrorInformation(cl=CodeLocation(3, 5),
+                                                   msg="invalid syntax",
+                                                   text="x = =  f\n"),
+                                  ErrorInformation(cl=CodeLocation(5, 5),
+                                                   msg="invalid syntax",
+                                                   text="y = = =  q2@\n")]
     
     
 
