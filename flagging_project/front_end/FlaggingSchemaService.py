@@ -44,6 +44,16 @@ def create_flag(flag_name, flag_logic):
     # flag_name=flag_name,
     # flag_logic=flag_logic)
 
+    #cursor.execute("""SELECT PRIMARY_KEY_COL FROM TABLE
+    # WHERE FLAG_NAME_COL = :flag_name
+    # AND FLAG_LOGIC_COL = :flag_logic""",
+    #flag_name=flag_name,
+    #flag_logic=flag_logic)
+
+    #df_new_flag = df_from_cursor.cursor()
+    #return df_new_flag['PRIMARY_KEY_COL'].values[0]
+    
+
     return flag_name
 
 
@@ -59,20 +69,44 @@ def update_flag_name(original_flag_name, new_flag_name):
     #WHERE FLAG_NAME_COL = :original_flag_name""",
     #new_flag_name=new_flag_name,
     #orginal_flag_name=original_flag_name)
+
+    #cursor.execute("""SELECT PRIMARY_KEY_COL FROM TALBE WHERE FLAG_NAME_COL = :new_flag_name""",
+    #new_flag_name=new_flag_name)
+
+    #df_primary_key = df_from_cursor.cursor()
+
+    #return df_primary_key['PRIMARY_KEY_COL'].values[0]
+
     return None
 
 #Another call for flag logic
-def update_flag_logic(flag_name, new_flag_logic):
+def update_flag_logic(primary_key, new_flag_logic):
 
     #cursor.execute("""UPDATE TABLE SET FLAG_LOGIC_COL = :new_flag_logic
-    #WHERE FLAG_NAME_COL = :flag_name""",
-    #flag_name=flag_name,
+    #WHERE FLAG_PRIMARY_ID = :primary_key""",
+    #primary_key=primary_key,
     #new_flag_logic=new_flag_logic)
     return None
 
 
 
 #A call to delete a flag provided a UUID, return true/false
+def delete_flag(primary_key):
+    #check if primary_key exists in db
+    #cursor.execute("""SELECT COL_PRIMARY_KEY, COL_FLAG_NAME
+    #FROM TABLE WHERE COL_PRIMARY_KEY = :primary_key""",
+    #primary_key=primary_key)
+
+    #df_pimrary_key = df_from_cursor.cursor()
+
+    #if df_primary_key.empty:
+        #return False
+    #else
+        #cursor.execute("""DELETE * FROM TABLE WHERE COL_PRIMARY_KEY = :col_primary_key""",
+        #col_primary_key=primary_key)
+        #return True
+
+    return True
 
 
 #A call to create a named flag group, returns a UUID, name cannot be empty if so error
