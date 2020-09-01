@@ -142,19 +142,16 @@ def add_flag_to_flag_group(flag_group_name: str, new_flags: []):
     new_flag_logic = {}
     flag_errors = []
 
-
-
-
-
-
-
+    #check that flag_group_name exists
+    #query db for flag group name
+    #if flag group name does not exist, return message to user
 
     for new_flag in new_flags:
         #query to get UUID for each new_flag
         #if UUID does NOT exist:
             #missing_flags.append(new_flag)
         if len(missing_flags) != 0:
-            #return error message that flag must be created
+            #return error message that flag must be created first before added to flag group
             pass
         else:
             #run validation checks on flag and flag_logic
@@ -186,15 +183,83 @@ def add_flag_to_flag_group(flag_group_name: str, new_flags: []):
 
 
 
-#A call to remove flags from a group provided a UUID for the group and UUIDs for the flags to add
+#A call to remove flags from a group provided a UUID for the group and UUIDs for the flags to remove
+def remove_flag_from_flag_group(flag_group_name: str, del_flags: []):
+    #check that flag_group_name exists
+    #query db for flag_group_name
+    #if flag_group_name does not exist
+    #return error message to user
+
+    #flag group name does exist
+    #for ech flag in del_flags, make sure flag exists in passed flag_group_name
+
+    #only attempt to delete flags that exist in flag_group_name
+    for del_flag in del_flags:
+        #cursor.execute("""SELECT PRIMARY_KEY_ID, FLAG_GROUP_NAME, FLAGS
+        #FROM TABLE WHERE :del_flag IN FLAGS""",
+        #del_flag=del_flag)
+
+        #df_del_flag = df_from_cursor.cursor()
+
+        #if df_del_flag['PRIMARY_KEY_ID'].values[0]
+            #run query to remove del flag from FLAG
+            #query depends on database structure
+
+        #return UUID of flag_group, along with UUID of flags current in flag group
+        #pass information to front end to user
+        pass
+    return None
+
+
+
 
 
 #A call to duplicate a flag provided a new name and UUID
+def duplicate_flag(og_flag_name:str, new_flag_name: str):
+    #query to identify entry in db via og_flag_name
+    #make sure original flag already exists, otherwise return error message to user
+    #cursor.execute("""SELECT * FROM TABLE WHERE FLAG_NAME = :og_flag_name""",
+    #og_flag_name=og_flag_name)
+
+    #df_og_flag = df_from_cursor.cursor()
+
+    #if df_og_flag:
+        #query to insert copy with new name
+        #cursor.execute("""INSERT INTO TABLE(PRIMARY_KEY, :new_flag_name, TABLE.EVERYTHING_ELSE)
+        #SELECT (TABLE.EVERYTHING_ELSE FROM TABLE WHERE FLAG_NAME = :og_flag_name""",
+        #og_flag_name=og_flag_name, new_flag_name=new_flag_name)
+
+        #return new primary key to user for duplicated flag
+
+    #else:
+        #return error message to user that og_flag_name does not already exist
+
+    return None
 
 
 #A call to duplicate a flag group provided a new name and UUID
+def duplicate_flag_group(og_flag_group_name: str, new_flag_group_name:str):
+    #query to identify entry in db via og_flag_group_name
+
+    #make sure og_flag_group_name already exists as flag_group
+    #cursor.execute(""""SELECT * FROM TABLE WHERE FLAG_GROUP_NAME = :og_flag_group_name""",
+    #og_flag_group_name=og_flag_group_name)
+
+    #df_og_flag_group = df_from_cursor.cursor()
+
+    #if df_of_flag_group:
+        #query to insert copy with new name
+        #cursor.execute("""INSERT INTO TABLE(PRIMARY_KEY, :new_flag_group_name, TABLE.EVERYTING_ELSE)
+        #SELECT (TABLE.EVERYTHING_ELSE FROM TABLE WHERE FLAG_GROUP_NAME = :og_flag_group_name""",
+        #og_flag_group_name=og_flag_group_name, new_flag_group_name=new_flag_group_name)
+
+        #return new primary key to user for duplicated flag group
+
+    #else:
+        #return error message to user that og_flag_group does not exist
 
 
+    return None
 
 #TODO,
 # write new tests in tests module
