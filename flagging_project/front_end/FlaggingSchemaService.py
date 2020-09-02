@@ -197,10 +197,8 @@ def create_flag_group(flag_group_name: str):
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="unique flag group name must be created")
     else:
-
-
         #create flag group with unique Primary_key
-        #insert statment here
+        #insert statment here with
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="Unique flag group " + flag_group_name + " created",
                                                        name=flag_group_name,
@@ -211,15 +209,26 @@ def create_flag_group(flag_group_name: str):
 #A call to delete a flag group provided a UUID, return true/false
 def delete_flag_group(flag_group_name: str):
     #check that flag group exists in db
-    #query to get flag group UUID via flag_group_name passed
-    #if flag_group_name exists in db, get UUID
-        #delete row via delete statement using UUID in WHERE condition
-        #return true
-    #else
+    #query to get existing flag group names
+
+    existing_flag_groups = []
+    if flag_group_name in existing_flag_groups:
+        #query to delete entry from db via matching flag group name or uuid in try except for error hand
+
+        flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                       message="flag group " + flag_group_name + " deleted from database",
+                                                       name=flag_group_name,
+                                                       uuid=flag_group_name + "_primary_key_id")
+
+
+    else:
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="could not identify flag group " + flag_group_name + " in database",
+                                                       name=flag_group_name)
         #flag_group_name does not exist, can not delete
         #return false
 
-    return True
+    return flag_schema_object
 
 
 #Flag Groups Updating, within these calls cyclic and existing flag name checks need to occur.
