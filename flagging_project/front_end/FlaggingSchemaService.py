@@ -127,9 +127,6 @@ def update_flag_name(original_flag_name: str, new_flag_name: str):
             #return error to user that original_flag_name and new_flag_name have to be specified
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="user must specify new flag name")
-
-
-
     return flag_schema_object
 
 #Another call for flag logic
@@ -168,20 +165,30 @@ def update_flag_logic(primary_key, new_flag_logic: str):
 #A call to delete a flag provided a UUID, return true/false
 def delete_flag(primary_key):
     #check if primary_key exists in db
-    #cursor.execute("""SELECT COL_PRIMARY_KEY, COL_FLAG_NAME
-    #FROM TABLE WHERE COL_PRIMARY_KEY = :primary_key""",
-    #primary_key=primary_key)
 
-    #df_pimrary_key = df_from_cursor.cursor()
+    existing_flags = []
+    if primary_key not in existing_flags:
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="flag name specified does not exist")
+    else:
+        #cursor.execute("""SELECT COL_PRIMARY_KEY, COL_FLAG_NAME
+        #FROM TABLE WHERE COL_PRIMARY_KEY = :primary_key""",
+        #primary_key=primary_key)
 
-    #if df_primary_key.empty:
-        #return False
-    #else
-        #cursor.execute("""DELETE * FROM TABLE WHERE COL_PRIMARY_KEY = :col_primary_key""",
-        #col_primary_key=primary_key)
-        #return True
+        #df_pimrary_key = df_from_cursor.cursor()
 
-    return True
+        #if df_primary_key.empty:
+            #return False
+        #else
+            #cursor.execute("""DELETE * FROM TABLE WHERE COL_PRIMARY_KEY = :col_primary_key""",
+            #col_primary_key=primary_key)
+            #return True
+
+        flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                       message="flag " + primary_key + " has been deleted",
+                                                       name=primary_key,
+                                                       uuid=primary_key + "_primary_key_id")
+    return  flag_schema_object
 
 
 #A call to create a named flag group, returns a UUID, name cannot be empty if so error
