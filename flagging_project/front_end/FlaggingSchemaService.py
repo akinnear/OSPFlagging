@@ -188,14 +188,24 @@ def delete_flag(primary_key):
                                                        message="flag " + primary_key + " has been deleted",
                                                        name=primary_key,
                                                        uuid=primary_key + "_primary_key_id")
-    return  flag_schema_object
+    return flag_schema_object
 
 
 #A call to create a named flag group, returns a UUID, name cannot be empty if so error
 def create_flag_group(flag_group_name: str):
-    #create flag group with unique Primary_key
-    #insert statment here
-    return flag_group_name + "_primary_key"
+    if flag_group_name is None or flag_group_name.replace(" ", "") == "":
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="unique flag group name must be created")
+    else:
+
+
+        #create flag group with unique Primary_key
+        #insert statment here
+        flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                       message="Unique flag group " + flag_group_name + " created",
+                                                       name=flag_group_name,
+                                                       uuid=flag_group_name + "_primary_key_id")
+    return flag_schema_object
 
 
 #A call to delete a flag group provided a UUID, return true/false
