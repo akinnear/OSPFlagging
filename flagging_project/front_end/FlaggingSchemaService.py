@@ -1,7 +1,10 @@
 #imports
+import pandas as pd
+
 from flagging.FlaggingNodeVisitor import determine_variables
 from flag_feeders.FlagFeederService import pull_flag_feeders
 from flagging.FlaggingValidation import validate_flag_logic_information
+from front_end.FlaggingSchemaInformation import FlaggingSchemaInformation
 
 #TODO
 # interface design, html5 + bootstrap4
@@ -24,6 +27,7 @@ def validate_logic(flag_name:str, user_logic: str):
 
 
     #need flag_dependiceis from api call or direct query
+    flag_dependencies = get_flag_dependencies()
 
     #validation
     validation_result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_logic_information)
@@ -32,59 +36,132 @@ def validate_logic(flag_name:str, user_logic: str):
     return validation_result
 
 
+#A call to get flag dependencies
+def get_flag_dependencies():
+    #api endpoint of db endpoint
+    #hard code dependencies for now
+    flag_dependencies = {"Flag1": {"Flag8"},
+     "Flag2": {"Flag3"},
+     "Flag3": {"Flag4"},
+     "Flag4": {"Flag5"},
+     "Flag5": {"Flag6"},
+     "Flag6": {"Flag7"},
+     "Flag7": {"Flag8"},
+     "Flag8": {}}
+    return flag_dependencies
+
 #A call to create a flag given a name and logic, this will return a UUID,
 # name cannot be empty if so error
 
 def create_flag(flag_name: str, flag_logic: str):
     #store flag name and flag logic in db
-    #write query, with new primary key
-    #cursor.execute("""INSERT into TABLE FLAG_NAME_COL= :flag_name, FLAG_LOGIC_COL= :flag_logic""",
-    # flag_name=flag_name,
-    # flag_logic=flag_logic)
 
-    #cursor.execute("""SELECT PRIMARY_KEY_COL FROM TABLE
-    # WHERE FLAG_NAME_COL = :flag_name
-    # AND FLAG_LOGIC_COL = :flag_logic""",
-    #flag_name=flag_name,
-    #flag_logic=flag_logic)
+    if flag_name is None:
+        # return error message, no flag name specified
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="flag name not specified")
 
-    #df_new_flag = df_from_cursor.cursor()
-    #return df_new_flag['PRIMARY_KEY_COL'].values[0]
+    else:
 
+        # write query, with new primary key
+        # cursor.execute("""INSERT into TABLE FLAG_NAME_COL= :flag_name, FLAG_LOGIC_COL= :flag_logic""",
+        # flag_name=flag_name,
+        # flag_logic=flag_logic)
 
-    return flag_name
+        # cursor.execute("""SELECT PRIMARY_KEY_COL FROM TABLE
+        # WHERE FLAG_NAME_COL = :flag_name
+        # AND FLAG_LOGIC_COL = :flag_logic""",
+        # flag_name=flag_name,
+        # flag_logic=flag_logic)
 
+        # df_new_flag = df_from_cursor.cursor()
+        # return df_new_flag['PRIMARY_KEY_COL'].values[0]
 
+        flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                       message="new flag created",
+                                                       name=flag_name,
+                                                       uuid=flag_name + "_primary_key_id")
+    return flag_schema_object
 
 
 
 #A call to save changes to a flag, this will take in the change and a UUID
 #One call for flag name
 def update_flag_name(original_flag_name: str, new_flag_name: str):
-    #query to update existing flag_name with new flag_name
 
-    #cursor.execute("""UPDATE TABLE SET FLAG_NAME_COL = :new_flag_name
-    #WHERE FLAG_NAME_COL = :original_flag_name""",
-    #new_flag_name=new_flag_name,
-    #orginal_flag_name=original_flag_name)
+    #query to get existing flag names
 
-    #cursor.execute("""SELECT PRIMARY_KEY_COL FROM TALBE WHERE FLAG_NAME_COL = :new_flag_name""",
-    #new_flag_name=new_flag_name)
+    existing_flag_names = pd.DataFrame()
 
-    #df_primary_key = df_from_cursor.cursor()
+    if original_flag_name in existing_flag_names and original_flag_name is not None and new_flag_name is not None:
+        # query to update existing flag_name with new flag_name
 
-    #return df_primary_key['PRIMARY_KEY_COL'].values[0]
+        # cursor.execute("""UPDATE TABLE SET FLAG_NAME_COL = :new_flag_name
+        # WHERE FLAG_NAME_COL = :original_flag_name""",
+        # new_flag_name=new_flag_name,
+        # orginal_flag_name=original_flag_name)
 
-    return new_flag_name + "_primary_key"
+        # cursor.execute("""SELECT PRIMARY_KEY_COL FROM TALBE WHERE FLAG_NAME_COL = :new_flag_name""",
+        # new_flag_name=new_flag_name)
+
+        # df_primary_key = df_from_cursor.cursor()
+
+        # return df_primary_key['PRIMARY_KEY_COL'].values[0]
+        flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                       message="original flag name " + original_flag_name + " updated to " + new_flag_name,
+                                                       name=new_flag_name,
+                                                       uuid=new_flag_name + "_primary_key_id")
+    else:
+        if original_flag_name not in existing_flag_names:
+            #return error to user that original_flag_name does not exist
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="original flag name: " + original_flag_name + " does not exist")
+
+
+        if original_flag_name is None:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="user must specify name of original flag")
+
+
+        if new_flag_name is None:
+            #return error to user that original_flag_name and new_flag_name have to be specified
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="user must specify new flag name")
+
+
+
+    return flag_schema_object
 
 #Another call for flag logic
 def update_flag_logic(primary_key, new_flag_logic: str):
 
-    #cursor.execute("""UPDATE TABLE SET FLAG_LOGIC_COL = :new_flag_logic
-    #WHERE FLAG_PRIMARY_ID = :primary_key""",
-    #primary_key=primary_key,
-    #new_flag_logic=new_flag_logic)
-    return "flag_primary_key"
+    #check if primary_key is contained in existing flags
+    #query to get existing flags or existing UUID, whichever is passed by user
+    existing_flags = []
+
+    if primary_key not in existing_flags:
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="could not identify existing flag: " + primary_key)
+
+    if primary_key in existing_flags:
+
+        #run validation on new_flag_logic
+        validation_results = validate_logic(primary_key, new_flag_logic)
+
+        if validation_results.errors() is None and validation_results.mypy_errors is None:
+
+            #query to update existing flag logic
+
+            flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                           message="logic for flag has been updated",
+                                                           name=primary_key,
+                                                           uuid=primary_key + "primary_key_id")
+        else:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="error in flag logic")
+
+
+    return flag_schema_object
 
 
 
