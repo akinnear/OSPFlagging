@@ -15,7 +15,7 @@ from flag_names.FlagGroupService import pull_flag_group_names
 # with enough information to understand the problem and location.
 # TO perform validation please use the interface created in #67 for flag feeders.
 
-def validate_logic(flag_name:str, user_logic: str):
+def validate_logic(flag_id:str, user_logic: str):
     #get flag feeders
     flag_feeders = pull_flag_feeders(mock_api_endpiong="dummy_text_endpoint")
 
@@ -32,7 +32,7 @@ def validate_logic(flag_name:str, user_logic: str):
     flag_dependencies = get_flag_dependencies()
 
     #validation
-    validation_result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_logic_information)
+    validation_result = validate_flag_logic_information(flag_id, flag_feeders, flag_dependencies, flag_logic_information)
 
     #return errors and warning information
     return validation_result
@@ -55,13 +55,13 @@ def get_flag_dependencies():
 #A call to create a flag given a name and logic, this will return a UUID,
 # name cannot be empty if so error
 
-def create_flag(flag_name: str, flag_logic: str):
+def create_flag(flag_id: str, flag_logic: str):
     #store flag name and flag logic in db
 
-    if flag_name is None:
+    if flag_id is None:
         # return error message, no flag name specified
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag name not specified")
+                                                       message="flag id not specified")
 
     else:
 
@@ -81,41 +81,39 @@ def create_flag(flag_name: str, flag_logic: str):
 
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="new flag created",
-                                                       name=flag_name,
-                                                       uuid=flag_name + "_primary_key_id")
+                                                       uuid=flag_id + "_primary_key_id")
     return flag_schema_object
 
 
 
 #A call to save changes to a flag, this will take in the change and a UUID
 #One call for flag name
-def update_flag_name(original_flag_name: str, new_flag_name: str, existing_flags):
+def update_flag_name(original_flag_id: str, new_flag_id: str, existing_flags):
 
     #query to get existing flag names
 
 
 
-    if original_flag_name in existing_flags and original_flag_name is not None and new_flag_name is not None:
+    if original_flag_id in existing_flags and original_flag_id is not None and new_flag_id is not None:
         # query to update existing flag_name with new flag_name
 
 
         flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message="original flag name " + original_flag_name + " updated to " + new_flag_name,
-                                                       name=new_flag_name,
-                                                       uuid=new_flag_name + "_primary_key_id")
+                                                       message="original flag  " + original_flag_id + " updated to " + new_flag_id,
+                                                       uuid=new_flag_id + "_primary_key_id")
     else:
-        if original_flag_name not in existing_flags:
+        if original_flag_id not in existing_flags:
             #return error to user that original_flag_name does not exist
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="original flag name: " + original_flag_name + " does not exist")
+                                                           message="original flag id: " + original_flag_id + " does not exist")
 
 
-        if original_flag_name is None:
+        if original_flag_id is None:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="user must specify name of original flag")
 
 
-        if new_flag_name is None:
+        if new_flag_id is None:
             #return error to user that original_flag_name and new_flag_name have to be specified
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="user must specify new flag name")
@@ -339,37 +337,28 @@ def remove_flag_from_flag_group(flag_group_name: str, del_flags: [], existing_fl
 
 
 #A call to duplicate a flag provided a new name and UUID
-def duplicate_flag(og_flag_name:str, new_flag_name: str):
-    #query to identify entry in db via og_flag_name
-    #make sure original flag already exists, otherwise return error message to user
-    #cursor.execute("""SELECT * FROM TABLE WHERE FLAG_NAME = :og_flag_name""",
-    #og_flag_name=og_flag_name)
-
-    #df_og_flag = df_from_cursor.cursor()
-
-    #if df_og_flag:
-        #query to insert copy with new name
-        #cursor.execute("""INSERT INTO TABLE(PRIMARY_KEY, :new_flag_name, TABLE.EVERYTHING_ELSE)
-        #SELECT (TABLE.EVERYTHING_ELSE FROM TABLE WHERE FLAG_NAME = :og_flag_name""",
-        #og_flag_name=og_flag_name, new_flag_name=new_flag_name)
-
-        #return new primary key to user for duplicated flag
-
-    #else:
-        #return error message to user that og_flag_name does not already exist
-
-    return None
+def duplicate_flag(og_flag_name:str, new_flag_name: str, existing_flags):
+    #check that original flag already exists
+    if og_flag_name not in existing_flags:
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="flag " + og_flag_name + " does not exist")
+    else:
+        #make sure new name does not already exist
+        if new_flag_name in existing_flags:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="new flag name " + new_flag_name + " already exists")
+        else:
+            #create a new flag with new name
+            flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                           message="new flag " + new_flag_name + " based off of " + og_flag_name + " has been created",
+                                                           name=new_flag_name,
+                                                           uuid=new_flag_name + "_primary_key_id")
+    return flag_schema_object
 
 
 #A call to duplicate a flag group provided a new name and UUID
-def duplicate_flag_group(og_flag_group_name: str, new_flag_group_name:str):
-    #query to identify entry in db via og_flag_group_name
-
-    #make sure og_flag_group_name already exists as flag_group
-    #cursor.execute(""""SELECT * FROM TABLE WHERE FLAG_GROUP_NAME = :og_flag_group_name""",
-    #og_flag_group_name=og_flag_group_name)
-
-    #df_og_flag_group = df_from_cursor.cursor()
+def duplicate_flag_group(og_flag_group_id: str, new_flag_group_id:str, existing_flag_groups):
+    #make sure og_flag_group_name exists:
 
     #if df_of_flag_group:
         #query to insert copy with new name
