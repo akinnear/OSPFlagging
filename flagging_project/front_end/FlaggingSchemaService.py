@@ -5,6 +5,8 @@ from flagging.FlaggingNodeVisitor import determine_variables
 from flag_feeders.FlagFeederService import pull_flag_feeders
 from flagging.FlaggingValidation import validate_flag_logic_information
 from front_end.FlaggingSchemaInformation import FlaggingSchemaInformation
+from flag_names.FlagService import pull_flag_names
+from flag_names.FlagGroupService import pull_flag_group_names
 
 #TODO
 # interface design, html5 + bootstrap4
@@ -231,26 +233,33 @@ def add_flag_to_flag_group(flag_group_name: str, new_flags: [], existing_flags, 
     #for each new_flag in new_flags, check to see if flag exists already
     #if flag does not exist, call add method
 
+
     missing_flags = []
     #create default flag_logic_dictionary
     new_flag_logic = {}
     flag_errors = []
 
     #check that flag_group_name exists
-    #query db for flag group name
-    #existing_flag_groups = []
+    if flag_group_name not in existing_flag_groups:
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="Flag Group Name does not exist",
+                                                       name=flag_group_name,
+                                                       uuid=flag_group_name+"_primary_key_id")
 
 
-    #if flag group name does not exist, return message to user
+
+
 
 
     for new_flag in new_flags:
         #query to get UUID for each new_flag
-        #if UUID does NOT exist:
-            #missing_flags.append(new_flag)
+        if new_flag not in existing_flags:
+            missing_flags.append(new_flag)
         if len(missing_flags) != 0:
             #return error message that flag must be created first before added to flag group
-            pass
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="Flag Name(s) " + missing_flags + " do not exist")
+
         else:
             #run validation checks on flag and flag_logic
             #query db to get flag logic for each flag_name
@@ -269,12 +278,16 @@ def add_flag_to_flag_group(flag_group_name: str, new_flags: [], existing_flags, 
 
             if len(flag_errors) != 0:
                 #errors in flags, do not update existing flag group
-                pass
+                flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                               message="error in flag logic")
             else:
                 #update existing flag group with UUID for each flag
                 pass
                 #return new flag_group UUID
-                return None
+                flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                               message="flag group " + flag_group_name + " has been updated with flag(s) " + new_flags,
+                                                               name=flag_group_name,
+                                                               uuid=flag_group_name + "_primary_key_id")
 
 
 
@@ -282,11 +295,13 @@ def add_flag_to_flag_group(flag_group_name: str, new_flags: [], existing_flags, 
 
 
 #A call to remove flags from a group provided a UUID for the group and UUIDs for the flags to remove
-def remove_flag_from_flag_group(flag_group_name: str, del_flags: []):
+def remove_flag_from_flag_group(flag_group_name: str, del_flags: [], existing_flags, existing_flag_groups):
     #check that flag_group_name exists
-    #query db for flag_group_name
-    #if flag_group_name does not exist
-    #return error message to user
+    if flag_group_name not in existing_flag_groups:
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="flag_group " + flag_group_name + " does not exist")
+
+
 
     #flag group name does exist
     #for ech flag in del_flags, make sure flag exists in passed flag_group_name
@@ -360,26 +375,7 @@ def duplicate_flag_group(og_flag_group_name: str, new_flag_group_name:str):
     return None
 
 
-def get_Flags(*args, **kwargs):
-    #api call or db query to get existing flags
 
-    dummy_flags = kwargs.get("dummy_flags", None)
-    if dummy_flags:
-        return dummy_flags
-
-    else:
-        # return real flags
-        pass
-
-def get_Flag_groups(*args, **kwargs):
-    #api call or db query to get exising flag groups
-
-    dummy_flag_groups = kwargs.get("dummy_flag_groups", None)
-    if dummy_flag_groups:
-        return dummy_flag_groups
-    else:
-        #return real flag groups
-        pass
 
 
 #TODO,
