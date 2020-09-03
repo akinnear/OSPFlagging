@@ -166,22 +166,21 @@ def create_flag_group(flag_group_id: str, existing_flag_groups):
 
 
 #A call to delete a flag group provided a UUID, return true/false
-def delete_flag_group(flag_group_name: str, existing_flag_groups):
+def delete_flag_group(flag_group_id: str, existing_flag_groups):
     #check that flag group exists in db
 
 
-    if flag_group_name in existing_flag_groups:
+    if flag_group_id in existing_flag_groups:
         #query to delete entry from db via matching flag group name or uuid in try except for error hand
 
         flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message="flag group " + flag_group_name + " deleted from database",
-                                                       name=flag_group_name,
-                                                       uuid=flag_group_name + "_primary_key_id")
+                                                       message="flag group " + flag_group_id + " deleted from database",
+                                                       uuid=flag_group_id + "_primary_key_id")
 
     else:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="could not identify flag group " + flag_group_name + " in database",
-                                                       name=flag_group_name)
+                                                       message="could not identify flag group " + flag_group_id + " in database",
+                                                       uuid=flag_group_id + "_primary_key_id")
 
     return flag_schema_object
 
@@ -191,10 +190,9 @@ def delete_flag_group(flag_group_name: str, existing_flag_groups):
 # in the group such as missing and cyclic flags
 
 #A call to add flags to a group provided a UUID for the group and UUIDs for the flags to add
-def add_flag_to_flag_group(flag_group_name: str, new_flags: [], existing_flags, existing_flag_groups):
+def add_flag_to_flag_group(flag_group_id: str, new_flags: [], existing_flags, existing_flag_groups):
     #for each new_flag in new_flags, check to see if flag exists already
     #if flag does not exist, call add method
-
 
     missing_flags = []
     #create default flag_logic_dictionary
@@ -202,17 +200,10 @@ def add_flag_to_flag_group(flag_group_name: str, new_flags: [], existing_flags, 
     flag_errors = []
 
     #check that flag_group_name exists
-    if flag_group_name not in existing_flag_groups:
+    if flag_group_id not in existing_flag_groups:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="Flag Group Name does not exist",
-                                                       name=flag_group_name,
-                                                       uuid=flag_group_name+"_primary_key_id")
-
-
-
-
-
-
+                                                       uuid=flag_group_id+"_primary_key_id")
     for new_flag in new_flags:
         #query to get UUID for each new_flag
         if new_flag not in existing_flags:
@@ -220,7 +211,7 @@ def add_flag_to_flag_group(flag_group_name: str, new_flags: [], existing_flags, 
         if len(missing_flags) != 0:
             #return error message that flag must be created first before added to flag group
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="Flag Name(s) " + missing_flags + " do not exist")
+                                                           message="Flag (s) " + missing_flags + " do not exist")
 
         else:
             #run validation checks on flag and flag_logic
@@ -244,25 +235,24 @@ def add_flag_to_flag_group(flag_group_name: str, new_flags: [], existing_flags, 
                                                                message="error in flag logic")
             else:
                 #update existing flag group with UUID for each flag
-                pass
+
                 #return new flag_group UUID
                 flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                               message="flag group " + flag_group_name + " has been updated with flag(s) " + new_flags,
-                                                               name=flag_group_name,
-                                                               uuid=flag_group_name + "_primary_key_id")
-
+                                                               message="flag group " + flag_group_id + " has been updated with flag(s) " + new_flags,
+                                                               uuid=flag_group_id + "_primary_key_id")
+    return flag_schema_object
 
 
 
 
 
 #A call to remove flags from a group provided a UUID for the group and UUIDs for the flags to remove
-def remove_flag_from_flag_group(flag_group_name: str, del_flags: [], existing_flags, existing_flag_groups, flags_in_group):
+def remove_flag_from_flag_group(flag_group_id: str, del_flags: [], existing_flags, existing_flag_groups, flags_in_group):
 
     #check that flag_group_name exists
-    if flag_group_name not in existing_flag_groups:
+    if flag_group_id not in existing_flag_groups:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag_group " + flag_group_name + " does not exist")
+                                                       message="flag_group " + flag_group_id + " does not exist")
 
 
 
@@ -279,19 +269,18 @@ def remove_flag_from_flag_group(flag_group_name: str, del_flags: [], existing_fl
             flags_not_in_group.append(del_flag)
     if len(missing_flags) != 0:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag name(s) " + missing_flags + " do not exist")
+                                                       message="flag(s) " + missing_flags + " do not exist")
 
     if len(flags_not_in_group) != 0:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag name(s) " + flags_not_in_group + " do not exist in " + flag_group_name)
+                                                       message="flag(s) " + flags_not_in_group + " do not exist in " + flag_group_name)
 
     if len(missing_flags) == 0 and len(flags_not_in_group) == 0:
         #delete flag from flag group
 
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag name(s) " + del_flags + " removed from " + flag_group_name,
-                                                       name=flag_group_name,
-                                                       uuid=flag_group_name + "_primary_key_id")
+                                                       message="flag(s) " + del_flags + " removed from " + flag_group_id,
+                                                       uuid=flag_group_id + "_primary_key_id")
 
     return flag_schema_object
 
@@ -301,22 +290,21 @@ def remove_flag_from_flag_group(flag_group_name: str, del_flags: [], existing_fl
 
 
 #A call to duplicate a flag provided a new name and UUID
-def duplicate_flag(og_flag_name:str, new_flag_name: str, existing_flags):
+def duplicate_flag(og_flag_id:str, new_flag_id: str, existing_flags):
     #check that original flag already exists
-    if og_flag_name not in existing_flags:
+    if og_flag_id not in existing_flags:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag " + og_flag_name + " does not exist")
+                                                       message="flag " + og_flag_id + " does not exist")
     else:
         #make sure new name does not already exist
-        if new_flag_name in existing_flags:
+        if new_flag_id in existing_flags:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="new flag name " + new_flag_name + " already exists")
+                                                           message="new flag " + new_flag_id + " already exists")
         else:
             #create a new flag with new name
             flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                           message="new flag " + new_flag_name + " based off of " + og_flag_name + " has been created",
-                                                           name=new_flag_name,
-                                                           uuid=new_flag_name + "_primary_key_id")
+                                                           message="new flag " + new_flag_id + " based off of " + og_flag_id + " has been created",
+                                                           uuid=new_flag_id + "_primary_key_id")
     return flag_schema_object
 
 
