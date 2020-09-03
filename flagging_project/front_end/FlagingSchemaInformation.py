@@ -6,7 +6,7 @@ class FlaggingSchemaInformation:
     #UUID
     #
 
-    def __init__(self, valid, message, uuid, name=None):
+    def __init__(self, valid, message, name=None, uuid=None):
         self.valid = valid
         self.message = message
         self.name = name
