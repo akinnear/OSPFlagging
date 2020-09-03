@@ -295,7 +295,8 @@ def add_flag_to_flag_group(flag_group_name: str, new_flags: [], existing_flags, 
 
 
 #A call to remove flags from a group provided a UUID for the group and UUIDs for the flags to remove
-def remove_flag_from_flag_group(flag_group_name: str, del_flags: [], existing_flags, existing_flag_groups):
+def remove_flag_from_flag_group(flag_group_name: str, del_flags: [], existing_flags, existing_flag_groups, flags_in_group):
+
     #check that flag_group_name exists
     if flag_group_name not in existing_flag_groups:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
@@ -307,21 +308,31 @@ def remove_flag_from_flag_group(flag_group_name: str, del_flags: [], existing_fl
     #for ech flag in del_flags, make sure flag exists in passed flag_group_name
 
     #only attempt to delete flags that exist in flag_group_name
+    missing_flags = []
+    flags_not_in_group = []
     for del_flag in del_flags:
-        #cursor.execute("""SELECT PRIMARY_KEY_ID, FLAG_GROUP_NAME, FLAGS
-        #FROM TABLE WHERE :del_flag IN FLAGS""",
-        #del_flag=del_flag)
+        if del_flag not in existing_flags:
+            missing_flags.append(del_flag)
+        if del_flag not in flags_in_group:
+            flags_not_in_group.append(del_flag)
+    if len(missing_flags) != 0:
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="flag name(s) " + missing_flags + " do not exist")
 
-        #df_del_flag = df_from_cursor.cursor()
+    if len(flags_not_in_group) != 0:
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="flag name(s) " + flags_not_in_group + " do not exist in " + flag_group_name)
 
-        #if df_del_flag['PRIMARY_KEY_ID'].values[0]
-            #run query to remove del flag from FLAG
-            #query depends on database structure
+    if len(missing_flags) == 0 and len(flags_not_in_group) == 0:
+        #delete flag from flag group
 
-        #return UUID of flag_group, along with UUID of flags current in flag group
-        #pass information to front end to user
-        pass
-    return None
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="flag name(s) " + del_flags + " removed from " + flag_group_name,
+                                                       name=flag_group_name,
+                                                       uuid=flag_group_name + "_primary_key_id")
+
+    return flag_schema_object
+
 
 
 
