@@ -311,20 +311,23 @@ def duplicate_flag(og_flag_id:str, new_flag_id: str, existing_flags):
 #A call to duplicate a flag group provided a new name and UUID
 def duplicate_flag_group(og_flag_group_id: str, new_flag_group_id:str, existing_flag_groups):
     #make sure og_flag_group_name exists:
+    if og_flag_group_id not in existing_flag_groups:
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="flag group " + og_flag_group_id + " does not exist")
 
-    #if df_of_flag_group:
-        #query to insert copy with new name
-        #cursor.execute("""INSERT INTO TABLE(PRIMARY_KEY, :new_flag_group_name, TABLE.EVERYTING_ELSE)
-        #SELECT (TABLE.EVERYTHING_ELSE FROM TABLE WHERE FLAG_GROUP_NAME = :og_flag_group_name""",
-        #og_flag_group_name=og_flag_group_name, new_flag_group_name=new_flag_group_name)
+    #check that new_flag_group_id does not already exist
+    if new_flag_group_id in existing_flag_groups:
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="new flag group " + new_flag_group_id + " already exists")
 
-        #return new primary key to user for duplicated flag group
+    if og_flag_group_id in existing_flag_groups and new_flag_group_id not in existing_flag_groups:
+        #duplicate flag group
+        flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                       message="new flag group " + new_flag_group_id + " created off of " + og_flag_group_id)
 
-    #else:
-        #return error message to user that og_flag_group does not exist
 
 
-    return None
+    return flag_schema_object
 
 
 
