@@ -5,6 +5,7 @@ from flagging.FlaggingNodeVisitor import determine_variables
 from flag_feeders.FlagFeederService import pull_flag_feeders
 from flagging.FlaggingValidation import validate_flag_logic_information
 from front_end.FlaggingSchemaInformation import FlaggingSchemaInformation
+from flagging.FlagLogicInformation import FlagLogicInformation
 from flag_names.FlagService import pull_flag_names
 from flag_names.FlagGroupService import pull_flag_group_names
 
@@ -15,15 +16,12 @@ from flag_names.FlagGroupService import pull_flag_group_names
 # with enough information to understand the problem and location.
 # TO perform validation please use the interface created in #67 for flag feeders.
 
-def validate_logic(flag_id:str, user_logic: str):
+def validate_logic(flag_id:str, flag_logic_information:FlagLogicInformation()):
     #get flag feeders
     flag_feeders = pull_flag_feeders(mock_api_endpiong="dummy_text_endpoint")
 
     #perform full validation on user_logic via nodevisitor, mypy, and validation
 
-    #nodeivisitor on user_logic
-    #determine variables form FlaggingNodeVisitor
-    flag_logic_information = determine_variables(user_logic)
 
     #mypy validation is part of full validation method, do not need explicit mypy validation call
 
@@ -48,13 +46,15 @@ def get_flag_dependencies():
      "Flag5": {"Flag6"},
      "Flag6": {"Flag7"},
      "Flag7": {"Flag8"},
-     "Flag8": {}}
+     "Flag8": {},
+     "Flag9": {"Flag10"},
+     "Flag10": {"Flag9"}}
     return flag_dependencies
 
 #A call to create a flag given a name and logic, this will return a UUID,
 # name cannot be empty if so error
 
-def create_flag(flag_id: str, flag_logic: str):
+def create_flag(flag_id: str, flag_logic_information:FlagLogicInformation()):
     #store flag name and flag logic in db
 
     if flag_id is None:
@@ -64,23 +64,16 @@ def create_flag(flag_id: str, flag_logic: str):
 
     else:
 
-        # write query, with new primary key
-        # cursor.execute("""INSERT into TABLE FLAG_NAME_COL= :flag_name, FLAG_LOGIC_COL= :flag_logic""",
-        # flag_name=flag_name,
-        # flag_logic=flag_logic)
-
-        # cursor.execute("""SELECT PRIMARY_KEY_COL FROM TABLE
-        # WHERE FLAG_NAME_COL = :flag_name
-        # AND FLAG_LOGIC_COL = :flag_logic""",
-        # flag_name=flag_name,
-        # flag_logic=flag_logic)
-
-        # df_new_flag = df_from_cursor.cursor()
-        # return df_new_flag['PRIMARY_KEY_COL'].values[0]
-
-        flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message="new flag created",
-                                                       uuid=flag_id + "_primary_key_id")
+        #validate flag logic
+        flag_validation = validate_logic(flag_id, flag_logic_information)
+        if flag_validation.errors() == {} and flag_validation.mypy_errors() == {}:
+            flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                           message="new flag created",
+                                                           uuid=flag_id + "_primary_key_id")
+        else:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="error in flag logic",
+                                                           uuid=flag_id + "_primary_key_id")
     return flag_schema_object
 
 
@@ -110,7 +103,7 @@ def update_flag_name(original_flag_id: str, new_flag_id: str, existing_flags):
     return flag_schema_object
 
 #Another call for flag logic
-def update_flag_logic(flag_id, new_flag_logic: str, existing_flags):
+def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation(), existing_flags):
 
     #check if primary_key is contained in existing flags
     #query to get existing flags or existing UUID, whichever is passed by user
@@ -120,8 +113,8 @@ def update_flag_logic(flag_id, new_flag_logic: str, existing_flags):
                                                        message="could not identify existing flag: " + flag_id)
     if flag_id in existing_flags:
         #run validation on new_flag_logic
-        validation_results = validate_logic(flag_id, new_flag_logic)
-        if validation_results.errors() is None and validation_results.mypy_errors is None:
+        validation_results = validate_logic(flag_id, new_flag_logic_information)
+        if validation_results.errors() == {} and validation_results.mypy_errors == {}:
             #query to update existing flag logic
             flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                            message="logic for flag has been updated",
@@ -190,14 +183,14 @@ def delete_flag_group(flag_group_id: str, existing_flag_groups):
 # in the group such as missing and cyclic flags
 
 #A call to add flags to a group provided a UUID for the group and UUIDs for the flags to add
-def add_flag_to_flag_group(flag_group_id: str, new_flags: [], existing_flags, existing_flag_groups):
+def add_flag_to_flag_group(flag_group_id: str, new_flags:{}, existing_flags: {}, existing_flag_groups):
     #for each new_flag in new_flags, check to see if flag exists already
     #if flag does not exist, call add method
 
     missing_flags = []
     #create default flag_logic_dictionary
     new_flag_logic = {}
-    flag_errors = []
+    flag_errors = {}
 
     #check that flag_group_name exists
     if flag_group_id not in existing_flag_groups:
@@ -208,38 +201,35 @@ def add_flag_to_flag_group(flag_group_id: str, new_flags: [], existing_flags, ex
         #query to get UUID for each new_flag
         if new_flag not in existing_flags:
             missing_flags.append(new_flag)
-        if len(missing_flags) != 0:
-            #return error message that flag must be created first before added to flag group
-            flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="Flag (s) " + missing_flags + " do not exist")
 
         else:
-            #run validation checks on flag and flag_logic
-            #query db to get flag logic for each flag_name
-            # query to get flag logic
-            flag_logic = "flag_logic"
-            new_flag_logic.setdefault(new_flag, flag_logic)
+            #TODO
+            # flags exist, meaning each flag logic is valid
+            # have to perform cycliclical dependency checks on flags in flag groups
+            # combine existing flags with new flags, and run cyclical deps checks
+            # run validate_flag_logic_information
+            flag_logic_information = FlagLogicInformation(referneced_flags=existing_flags.update(new_flags))
+            validation_results = validate_logic("dummy_flag", flag_logic_information)
 
-            #run validation on flag_logic
-            flag_validation_result = validate_logic(new_flag, flag_logic)
 
-            #if there are any errors, do not update flag_group
-            if flag_validation_result.errors():
-                flag_errors.append(flag_validation_result.errors())
-            if flag_validation_result.mypy_errors():
-                flag_errors.append(flag_validation_result.mypy_errors())
+    if len(validation_results.errors()) != 0:
+        #errors in flags, do not update existing flag group
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="cyclical flag detected: " + validation_results.errors(),
+                                                       uuid=flag_group_id + "_primary_key_id")
+    else:
+        #update existing flag group with UUID for each flag
 
-            if len(flag_errors) != 0:
-                #errors in flags, do not update existing flag group
-                flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                               message="error in flag logic")
-            else:
-                #update existing flag group with UUID for each flag
+        #return new flag_group UUID
+        flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                       message="flag group " + flag_group_id + " has been updated with flag(s) " + new_flags,
+                                                       uuid=flag_group_id + "_primary_key_id")
 
-                #return new flag_group UUID
-                flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                               message="flag group " + flag_group_id + " has been updated with flag(s) " + new_flags,
-                                                               uuid=flag_group_id + "_primary_key_id")
+    if len(missing_flags) != 0:
+        # return error message that flag must be created first before added to flag group
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="Flag (s) " + missing_flags + " do not exist")
+
     return flag_schema_object
 
 
