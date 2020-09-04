@@ -1,6 +1,4 @@
 
-
-
 def pull_flag_names(*args, **kwargs):
     #method to pull flag names from api endpiont or internal db query
 
