@@ -286,9 +286,6 @@ def remove_flag_from_flag_group(flag_group_id: str, del_flags: [], existing_flag
 
 
 
-
-
-
 #A call to duplicate a flag provided a new name and UUID
 def duplicate_flag(og_flag_id:str, new_flag_id: str, existing_flags):
     #check that original flag already exists
@@ -325,11 +322,7 @@ def duplicate_flag_group(og_flag_group_id: str, new_flag_group_id:str, existing_
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="new flag group " + new_flag_group_id + " created off of " + og_flag_group_id)
 
-
-
     return flag_schema_object
-
-
 
 
 
