@@ -1,13 +1,13 @@
 #imports
 import pandas as pd
 
-from flagging.FlaggingNodeVisitor import determine_variables
 from flag_feeders.FlagFeederService import pull_flag_feeders
 from flagging.FlaggingValidation import validate_flag_logic_information
 from front_end.FlaggingSchemaInformation import FlaggingSchemaInformation
 from flagging.FlagLogicInformation import FlagLogicInformation
 from flag_names.FlagService import pull_flag_names
 from flag_names.FlagGroupService import pull_flag_group_names
+from flagging.FlaggingValidation import FlaggingValidationResults
 
 #TODO
 # interface design, html5 + bootstrap4
@@ -21,6 +21,7 @@ def validate_logic(flag_id:str, flag_logic_information:FlagLogicInformation()):
     flag_feeders = pull_flag_feeders(mock_api_endpiong="dummy_text_endpoint")
 
     #perform full validation on user_logic via nodevisitor, mypy, and validation
+
 
 
     #mypy validation is part of full validation method, do not need explicit mypy validation call
@@ -188,9 +189,7 @@ def add_flag_to_flag_group(flag_group_id: str, new_flags:{}, existing_flags: {},
     #if flag does not exist, call add method
 
     missing_flags = []
-    #create default flag_logic_dictionary
-    new_flag_logic = {}
-    flag_errors = {}
+    validation_results = FlaggingValidationResults()
 
     #check that flag_group_name exists
     if flag_group_id not in existing_flag_groups:
@@ -203,11 +202,6 @@ def add_flag_to_flag_group(flag_group_id: str, new_flags:{}, existing_flags: {},
             missing_flags.append(new_flag)
 
         else:
-            #TODO
-            # flags exist, meaning each flag logic is valid
-            # have to perform cycliclical dependency checks on flags in flag groups
-            # combine existing flags with new flags, and run cyclical deps checks
-            # run validate_flag_logic_information
             flag_logic_information = FlagLogicInformation(referneced_flags=existing_flags.update(new_flags))
             validation_results = validate_logic("dummy_flag", flag_logic_information)
 
