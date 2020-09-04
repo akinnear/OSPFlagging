@@ -8,6 +8,7 @@ from flagging.FlagLogicInformation import FlagLogicInformation
 from flag_names.FlagService import pull_flag_names
 from flag_names.FlagGroupService import pull_flag_group_names
 from flagging.FlaggingValidation import FlaggingValidationResults
+from flagging.FlaggingNodeVisitor import CodeLocation
 
 #TODO
 # interface design, html5 + bootstrap4
@@ -67,7 +68,7 @@ def create_flag(flag_id: str, flag_logic_information:FlagLogicInformation()):
 
         #validate flag logic
         flag_validation = validate_logic(flag_id, flag_logic_information)
-        if flag_validation.errors() == {} and flag_validation.mypy_errors() == {}:
+        if flag_validation.errors == {} and flag_validation.mypy_errors() == {}:
             flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                            message="new flag created",
                                                            uuid=flag_id + "_primary_key_id")
@@ -184,7 +185,7 @@ def delete_flag_group(flag_group_id: str, existing_flag_groups):
 # in the group such as missing and cyclic flags
 
 #A call to add flags to a group provided a UUID for the group and UUIDs for the flags to add
-def add_flag_to_flag_group(flag_group_id: str, new_flags:{}, existing_flags: {}, existing_flag_groups):
+def add_flag_to_flag_group(flag_group_id: str, new_flags:[], existing_flags: [], existing_flag_groups, flags_in_flag_group):
     #for each new_flag in new_flags, check to see if flag exists already
     #if flag does not exist, call add method
 
@@ -201,28 +202,36 @@ def add_flag_to_flag_group(flag_group_id: str, new_flags:{}, existing_flags: {},
         if new_flag not in existing_flags:
             missing_flags.append(new_flag)
 
-        else:
-            flag_logic_information = FlagLogicInformation(referneced_flags=existing_flags.update(new_flags))
-            validation_results = validate_logic("dummy_flag", flag_logic_information)
+    if len(missing_flags) == 0:
+        flag_set = flags_in_flag_group + new_flags
+        #need dummy dictionary
+        ref_flag_dict = {}
+        for flag in flag_set:
+            ref_flag_dict[flag] = {CodeLocation(None, None)}
+
+        flag_logic_information = FlagLogicInformation(referenced_flags=ref_flag_dict)
+        validation_results = validate_logic("dummy_flag", flag_logic_information)
 
 
-    if len(validation_results.errors()) != 0:
+    if len(validation_results.errors) != 0:
         #errors in flags, do not update existing flag group
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="cyclical flag detected: " + validation_results.errors(),
+                                                       message="cyclical flag detected: " + validation_results.errors,
                                                        uuid=flag_group_id + "_primary_key_id")
     else:
         #update existing flag group with UUID for each flag
 
         #return new flag_group UUID
         flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message="flag group " + flag_group_id + " has been updated with flag(s) " + new_flags,
+                                                       message="flag group " + flag_group_id + " has been updated with flag(s) " + " ,".join(map(str, new_flags)),
                                                        uuid=flag_group_id + "_primary_key_id")
+
 
     if len(missing_flags) != 0:
         # return error message that flag must be created first before added to flag group
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="Flag (s) " + missing_flags + " do not exist")
+                                                       message="Flag (s) " + ", ".join(map(str, missing_flags)) + " do not exist",
+                                                       uuid=flag_group_id + "_primary_key_id")
 
     return flag_schema_object
 
