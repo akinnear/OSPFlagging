@@ -190,48 +190,62 @@ def add_flag_to_flag_group(flag_group_id: str, new_flags:[], existing_flags: [],
     #if flag does not exist, call add method
 
     missing_flags = []
+    duplicate_flags = []
     validation_results = FlaggingValidationResults()
 
     #check that flag_group_name exists
     if flag_group_id not in existing_flag_groups:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="Flag Group Name does not exist",
+                                                       message="flag_group " + flag_group_id + " does not exist",
                                                        uuid=flag_group_id+"_primary_key_id")
-    for new_flag in new_flags:
-        #query to get UUID for each new_flag
-        if new_flag not in existing_flags:
-            missing_flags.append(new_flag)
-
-    if len(missing_flags) == 0:
-        flag_set = flags_in_flag_group + new_flags
-        #need dummy dictionary
-        ref_flag_dict = {}
-        for flag in flag_set:
-            ref_flag_dict[flag] = {CodeLocation(None, None)}
-
-        flag_logic_information = FlagLogicInformation(referenced_flags=ref_flag_dict)
-        validation_results = validate_logic("dummy_flag", flag_logic_information)
-
-
-    if len(validation_results.errors) != 0:
-        #errors in flags, do not update existing flag group
-        flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="cyclical flag detected: " + validation_results.errors,
-                                                       uuid=flag_group_id + "_primary_key_id")
     else:
-        #update existing flag group with UUID for each flag
+        for new_flag in new_flags:
+            #query to get UUID for each new_flag
+            if new_flag not in existing_flags:
+                missing_flags.append(new_flag)
+            if new_flag in flags_in_flag_group:
+                duplicate_flags.append(new_flag)
 
-        #return new flag_group UUID
-        flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message="flag group " + flag_group_id + " has been updated with flag(s) " + " ,".join(map(str, new_flags)),
-                                                       uuid=flag_group_id + "_primary_key_id")
+        if len(missing_flags) == 0 and len(duplicate_flags) == 0:
+            flag_set = flags_in_flag_group + new_flags
+
+            #need dummy dictionary
+            ref_flag_dict = {}
+            for flag in flag_set:
+                ref_flag_dict[flag] = {CodeLocation(None, None)}
+
+            flag_logic_information = FlagLogicInformation(referenced_flags=ref_flag_dict)
+            validation_results = validate_logic("dummy_flag", flag_logic_information)
 
 
-    if len(missing_flags) != 0:
-        # return error message that flag must be created first before added to flag group
-        flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="Flag (s) " + ", ".join(map(str, missing_flags)) + " do not exist",
-                                                       uuid=flag_group_id + "_primary_key_id")
+        if len(validation_results.errors) != 0:
+            #errors in flags, do not update existing flag group
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="cyclical flag detected: " + validation_results.errors,
+                                                           uuid=flag_group_id + "_primary_key_id")
+
+        elif len(missing_flags) != 0:
+            # return error message that flag must be created first before added to flag group
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="Flag(s) " + ", ".join(map(str, missing_flags)) + " do not exist",
+                                                           uuid=flag_group_id + "_primary_key_id")
+
+        elif len(duplicate_flags) != 0:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="Flag(s) " + ", ".join(map(str, duplicate_flags)) + " already exist in flag group",
+                                                           uuid=flag_group_id + "_primary_key_id")
+
+        else:
+            #check that flag uuid does not already exist in flag_group
+
+
+            #update existing flag group with UUID for each flag
+
+            #return new flag_group UUID
+            flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                           message="flag group " + flag_group_id + " has been updated with flag(s) " + " ,".join(map(str, new_flags)),
+                                                           uuid=flag_group_id + "_primary_key_id")
+
 
     return flag_schema_object
 
@@ -240,40 +254,42 @@ def add_flag_to_flag_group(flag_group_id: str, new_flags:[], existing_flags: [],
 
 
 #A call to remove flags from a group provided a UUID for the group and UUIDs for the flags to remove
-def remove_flag_from_flag_group(flag_group_id: str, del_flags: [], existing_flags, existing_flag_groups, flags_in_group):
+def remove_flag_from_flag_group(flag_group_id: str, del_flags: [], existing_flags, existing_flag_groups, flags_in_flag_group):
 
     #check that flag_group_name exists
     if flag_group_id not in existing_flag_groups:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag_group " + flag_group_id + " does not exist")
-
-
-
-    #flag group name does exist
-    #for ech flag in del_flags, make sure flag exists in passed flag_group_name
-
-    #only attempt to delete flags that exist in flag_group_name
-    missing_flags = []
-    flags_not_in_group = []
-    for del_flag in del_flags:
-        if del_flag not in existing_flags:
-            missing_flags.append(del_flag)
-        if del_flag not in flags_in_group:
-            flags_not_in_group.append(del_flag)
-    if len(missing_flags) != 0:
-        flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag(s) " + missing_flags + " do not exist")
-
-    if len(flags_not_in_group) != 0:
-        flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag(s) " + flags_not_in_group + " do not exist in " + flag_group_name)
-
-    if len(missing_flags) == 0 and len(flags_not_in_group) == 0:
-        #delete flag from flag group
-
-        flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag(s) " + del_flags + " removed from " + flag_group_id,
+                                                       message="flag_group " + flag_group_id + " does not exist",
                                                        uuid=flag_group_id + "_primary_key_id")
+    else:
+
+        #flag group name does exist
+        #for ech flag in del_flags, make sure flag exists in passed flag_group_name
+
+        #only attempt to delete flags that exist in flag_group_name
+        missing_flags = []
+        flags_not_in_group = []
+        for del_flag in del_flags:
+            if del_flag not in existing_flags:
+                missing_flags.append(del_flag)
+            if del_flag not in flags_in_flag_group:
+                flags_not_in_group.append(del_flag)
+        if len(missing_flags) != 0:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="Flag(s) " + ", ".join(map(str, missing_flags)) + " do not exist",
+                                                           uuid=flag_group_id + "_primary_key_id")
+
+        elif len(flags_not_in_group) != 0:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="Flag(s) " + ", ".join(map(str, flags_not_in_group)) + " do not exist in " + flag_group_id,
+                                                           uuid=flag_group_id + "_primary_key_id")
+
+        else:
+            #delete flag from flag group
+
+            flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                           message="Flag(s) " + ", ".join(map(str, del_flags)) + " removed from " + flag_group_id,
+                                                           uuid=flag_group_id + "_primary_key_id")
 
     return flag_schema_object
 
