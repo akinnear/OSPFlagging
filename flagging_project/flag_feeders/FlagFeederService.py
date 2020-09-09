@@ -3,12 +3,16 @@
 #function/method declartion
 
 #pull flag feeders via GET api call to endpoint or local storage location query
-def pull_flag_feeders (*args, **kwargs):
+def pull_flag_feeders(*args, **kwargs):
     #TODO
     # valid data pull
-    api_endpoint = kwargs.get("api_endpoint", "mock_api_endpoint")
+    api_endpoint = kwargs.get("api_endpoint")
+    flag_feeders = dict()
 
-    flag_feeders = {"FF1": str, "FF2": int, "FF3": bool, "FF4": float}
+    dummy_flag_feeders = kwargs.get("dummy_flag_feeders", None)
+    if dummy_flag_feeders:
+        return dummy_flag_feeders
+
     return flag_feeders
 
 
