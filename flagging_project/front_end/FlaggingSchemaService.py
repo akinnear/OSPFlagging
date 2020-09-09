@@ -104,7 +104,7 @@ def update_flag_name(original_flag_id: str, new_flag_id: str, existing_flags):
             if original_flag_id not in existing_flags:
                 #return error to user that original_flag_name does not exist
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                               message="original flag id: " + original_flag_id + " does not exist")
+                                                               message="original flag id " + original_flag_id + " does not exist")
 
     return flag_schema_object
 
@@ -116,18 +116,20 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
 
     if flag_id not in existing_flags:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="could not identify existing flag: " + flag_id)
+                                                       message="could not identify existing flag " + flag_id,
+                                                       uuid=flag_id + "_primary_key_id")
     if flag_id in existing_flags:
         #run validation on new_flag_logic
         validation_results = validate_logic(flag_id, new_flag_logic_information)
-        if validation_results.errors() == {} and validation_results.mypy_errors == {}:
+        if validation_results.errors == {} and validation_results.mypy_errors == {}:
             #query to update existing flag logic
             flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                           message="logic for flag has been updated",
-                                                           uuid=flag_id + "primary_key_id")
+                                                           message="logic for flag " + flag_id + " has been updated",
+                                                           uuid=flag_id + "_primary_key_id")
         else:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="error in flag logic")
+                                                           message="error in flag logic",
+                                                           uuid=flag_id + "_primary_key_id")
     return flag_schema_object
 
 
@@ -300,11 +302,11 @@ def remove_flag_from_flag_group(flag_group_id: str, del_flags: [], existing_flag
 
 
 #A call to duplicate a flag provided a new name and UUID
-def duplicate_flag(og_flag_id:str, new_flag_id: str, existing_flags):
+def duplicate_flag(original_flag_id:str, new_flag_id: str, existing_flags):
     #check that original flag already exists
-    if og_flag_id not in existing_flags:
+    if original_flag_id not in existing_flags:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag " + og_flag_id + " does not exist")
+                                                       message="flag " + original_flag_id + " does not exist")
     else:
         #make sure new name does not already exist
         if new_flag_id in existing_flags:
@@ -313,27 +315,27 @@ def duplicate_flag(og_flag_id:str, new_flag_id: str, existing_flags):
         else:
             #create a new flag with new name
             flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                           message="new flag " + new_flag_id + " based off of " + og_flag_id + " has been created",
+                                                           message="new flag " + new_flag_id + " based off of " + original_flag_id + " has been created",
                                                            uuid=new_flag_id + "_primary_key_id")
     return flag_schema_object
 
 
 #A call to duplicate a flag group provided a new name and UUID
-def duplicate_flag_group(og_flag_group_id: str, new_flag_group_id:str, existing_flag_groups):
+def duplicate_flag_group(original_flag_group_id:str, new_flag_group_id:str, existing_flag_groups):
     #make sure og_flag_group_name exists:
-    if og_flag_group_id not in existing_flag_groups:
+    if original_flag_group_id not in existing_flag_groups:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag group " + og_flag_group_id + " does not exist")
+                                                       message="flag group " + original_flag_group_id + " does not exist")
 
     #check that new_flag_group_id does not already exist
     if new_flag_group_id in existing_flag_groups:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="new flag group " + new_flag_group_id + " already exists")
 
-    if og_flag_group_id in existing_flag_groups and new_flag_group_id not in existing_flag_groups:
+    if original_flag_group_id in existing_flag_groups and new_flag_group_id not in existing_flag_groups:
         #duplicate flag group
         flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message="new flag group " + new_flag_group_id + " created off of " + og_flag_group_id)
+                                                       message="new flag group " + new_flag_group_id + " created off of " + original_flag_group_id)
 
     return flag_schema_object
 
