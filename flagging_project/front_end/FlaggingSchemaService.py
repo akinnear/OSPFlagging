@@ -18,17 +18,20 @@ from flagging.FlaggingNodeVisitor import CodeLocation
 # TO perform validation please use the interface created in #67 for flag feeders.
 
 def validate_logic(flag_id:str, flag_logic_information:FlagLogicInformation()):
-    #get flag feeders
-    flag_feeders = pull_flag_feeders(mock_api_endpiong="dummy_text_endpoint")
+    #TODO
+    # get flag feeders
+    flag_feeders = pull_flag_feeders(dummy_flag_feeders={"FF1": int, "FF2": bool, "FF3": str, "FF4": int})
 
-    #perform full validation on user_logic via nodevisitor, mypy, and validation
-
-
-
-    #mypy validation is part of full validation method, do not need explicit mypy validation call
-
-    #need flag_dependiceis from api call or direct query
+    #TODO
+    # need flag_dependiceis from api call or direct query
     flag_dependencies = get_flag_dependencies()
+
+
+    #TODO
+    # perform full validation on user_logic via nodevisitor, mypy, and validation
+    # mypy validation is part of full validation method, do not need explicit mypy validation call
+
+
 
     #validation
     validation_result = validate_flag_logic_information(flag_id, flag_feeders, flag_dependencies, flag_logic_information)
@@ -68,7 +71,7 @@ def create_flag(flag_id: str, flag_logic_information:FlagLogicInformation()):
 
         #validate flag logic
         flag_validation = validate_logic(flag_id, flag_logic_information)
-        if flag_validation.errors == {} and flag_validation.mypy_errors() == {}:
+        if flag_validation.errors == {} and flag_validation.mypy_errors == {}:
             flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                            message="new flag created",
                                                            uuid=flag_id + "_primary_key_id")
