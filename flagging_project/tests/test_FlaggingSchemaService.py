@@ -175,8 +175,57 @@ def test_create_flag_with_errors(mvrb):
 
 
 
-#test update flag name
 
+#test update flag name, valid update
+def test_update_flag_name_valid():
+    original_flag_name = "Flag1"
+    new_flag_name = "Flag2"
+    existing_flags = pull_flag_names(dummy_flag_names=["Flag1", "Flag2", "Flag3"])
+    result = update_flag_name(original_flag_name, new_flag_name, existing_flags)
+    assert result.valid == True
+    assert result.message == "original flag Flag1 updated to Flag2"
+    assert result.uuid == "Flag2_primary_key_id"
+
+def test_update_flag_name_valid_2():
+    original_flag_name = "Flag1"
+    new_flag_name = "Flag2"
+    existing_flags = pull_flag_names(dummy_flag_names=["Flag1", "Flag3"])
+    result = update_flag_name(original_flag_name, new_flag_name, existing_flags)
+    assert result.valid == True
+    assert result.message == "original flag Flag1 updated to Flag2"
+    assert result.uuid == "Flag2_primary_key_id"
+
+
+#test update flag name, missing orginal flag name
+def test_update_flag_name_missing_original_flag():
+    original_flag_name = None
+    new_flag_name = "Flag2"
+    existing_flags = pull_flag_names(dummy_flag_names=["Flag1", "Flag3"])
+    result = update_flag_name(original_flag_name, new_flag_name, existing_flags)
+    assert result.valid == False
+    assert result.message == "user must specify name of original flag"
+    assert result.uuid == None
+
+
+#test update flag name, missing new flag name
+def test_update_flag_name_missing_new_flag():
+    original_flag_name = "Flag1"
+    new_flag_name = None
+    existing_flags = pull_flag_names(dummy_flag_names=["Flag1", "Flag3"])
+    result = update_flag_name(original_flag_name, new_flag_name, existing_flags)
+    assert result.valid == False
+    assert result.message == "user must specify name of new flag"
+    assert result.uuid == None
+
+#test update flag name, orignal flag name does not exist
+def test_update_flag_name_does_not_exist():
+    original_flag_name = "Flag2"
+    new_flag_name = "Flag3"
+    existing_flags = pull_flag_names(dummy_flag_names=["Flag1", "Flag3"])
+    result = update_flag_name(original_flag_name, new_flag_name, existing_flags)
+    assert result.valid == False
+    assert result.message == "original flag id: Flag2 does not exist"
+    assert result.uuid == None
 
 #test update flag logic
 
