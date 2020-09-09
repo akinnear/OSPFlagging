@@ -110,7 +110,7 @@ def test_create_flag(mvrb):
     validation_results=TypeValidationResults())
     result = create_flag(flag_name, flag_logic_information)
     assert result.valid == True
-    assert result.message == "new flag create"
+    assert result.message == "new flag created"
     assert result.uuid == "Flag1_primary_key_id"
 
 #test create new flag, missing flag id
@@ -224,10 +224,23 @@ def test_update_flag_name_does_not_exist():
     existing_flags = pull_flag_names(dummy_flag_names=["Flag1", "Flag3"])
     result = update_flag_name(original_flag_name, new_flag_name, existing_flags)
     assert result.valid == False
-    assert result.message == "original flag id: Flag2 does not exist"
+    assert result.message == "original flag id Flag2 does not exist"
     assert result.uuid == None
 
-#test update flag logic
+#test update flag logic, valid
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+def test_update_flag_logic(mvrb):
+    flag_name = "Flag1"
+    existing_flags = pull_flag_names(dummy_flag_names=["Flag1", "Flag2"])
+    new_flag_logic = FlagLogicInformation(used_variables={VariableInformation("FF1"): (CodeLocation(1, 1)),
+                                                          VariableInformation("FF2"): (CodeLocation(2, 2))})
+    result = update_flag_logic(flag_name, new_flag_logic, existing_flags)
+    print("hello")
+
+#test update flag logic, flag does not exist
+
+#test update flag logic, error in new logic
+
 
 
 #test delete flag
