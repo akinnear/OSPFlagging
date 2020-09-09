@@ -86,25 +86,26 @@ def create_flag(flag_id: str, flag_logic_information:FlagLogicInformation()):
 #A call to save changes to a flag, this will take in the change and a UUID
 #One call for flag name
 def update_flag_name(original_flag_id: str, new_flag_id: str, existing_flags):
-
+    if original_flag_id is None:
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="user must specify name of original flag")
+    elif new_flag_id is None:
+        # return error to user that original_flag_name and new_flag_name have to be specified
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="user must specify name of new flag")
     #query to get existing flag names
-    if original_flag_id in existing_flags and original_flag_id is not None and new_flag_id is not None:
-        # query to update existing flag_name with new flag_name
-        flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message="original flag  " + original_flag_id + " updated to " + new_flag_id,
-                                                       uuid=new_flag_id + "_primary_key_id")
     else:
-        if original_flag_id not in existing_flags:
-            #return error to user that original_flag_name does not exist
-            flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="original flag id: " + original_flag_id + " does not exist")
-        if original_flag_id is None:
-            flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="user must specify name of original flag")
-        if new_flag_id is None:
-            #return error to user that original_flag_name and new_flag_name have to be specified
-            flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="user must specify new flag name")
+        if original_flag_id in existing_flags and original_flag_id is not None and new_flag_id is not None:
+            # query to update existing flag_name with new flag_name
+            flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                           message="original flag " + original_flag_id + " updated to " + new_flag_id,
+                                                           uuid=new_flag_id + "_primary_key_id")
+        else:
+            if original_flag_id not in existing_flags:
+                #return error to user that original_flag_name does not exist
+                flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                               message="original flag id: " + original_flag_id + " does not exist")
+
     return flag_schema_object
 
 #Another call for flag logic
