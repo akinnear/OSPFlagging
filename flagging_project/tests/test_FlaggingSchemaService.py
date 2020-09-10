@@ -247,7 +247,6 @@ def test_update_flag_logic_missing_flag(mvrb):
     new_flag_logic = FlagLogicInformation(used_variables={VariableInformation("FF1"): {CodeLocation(1, 1)},
                                                           VariableInformation("FF2"): {CodeLocation(2, 2)}})
     result = update_flag_logic(flag_name, new_flag_logic, existing_flags)
-    print("hello")
     assert result.valid == False
     assert result.message == "could not identify existing flag " + flag_name
     assert result.uuid == flag_name + "_primary_key_id"
@@ -358,7 +357,6 @@ def test_validation_flag_group_flag_no_exist():
                                     existing_flags=existing_flags,
                                     existing_flag_groups=existing_flag_groups,
                                     flags_in_flag_group=flags_in_flag_group)
-    print("hello")
     assert result.valid == False
     assert result.message == "Flag(s) Flag4 do not exist"
     assert result.uuid == "FG1A1A_primary_key_id"
@@ -503,7 +501,6 @@ def test_validation_flag_group_duplicate_flag():
                                     existing_flags=existing_flags,
                                     existing_flag_groups=existing_flag_groups,
                                     flags_in_flag_group=flags_in_flag_group)
-    print('hello')
     assert result.valid == False
     assert result.message == "Flag(s) Flag3 already exist in flag group"
     assert result.uuid == "FG1A1A_primary_key_id"
@@ -519,14 +516,43 @@ def test_validation_flag_group_duplicate_flag_2():
                                     existing_flags=existing_flags,
                                     existing_flag_groups=existing_flag_groups,
                                     flags_in_flag_group=flags_in_flag_group)
-    print('hello')
     assert result.valid == False
     assert result.message == "Flag(s) Flag3, Flag4 already exist in flag group"
     assert result.uuid == "FG1A1A_primary_key_id"
 
 
 
-#test duplicate flag group
+#test duplicate flag group, valid
+def test_duplicate_flag_group_valid():
+    original_flag_group_id = "FG1A1A"
+    new_flag_group_id = "FG1A1B"
+    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=["FG1A1A", "FG2B2B"])
+    result = duplicate_flag_group(original_flag_group_id, new_flag_group_id, existing_flag_groups)
+    result.valid == True
+    result.message == "new flag group " + new_flag_group_id + " created off of " + original_flag_group_id
+    result.uuid == "FG1A1B" + "_primary_key_id"
+
+#test duplicate flag group, flag group does not exist
+def test_duplicate_flag_group_invalid_original_flag_group():
+    original_flag_group_id = "FG3C3C"
+    new_flag_group_id = "FG1A1B"
+    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=["FG1A1A", "FG2B2B"])
+    result = duplicate_flag_group(original_flag_group_id, new_flag_group_id, existing_flag_groups)
+    result.valid == False
+    result.message == "flag group " + original_flag_group_id + " does not exist"
+    result.uuid == None
+
+#test duplicate flag group, new name of flag group already exists
+def test_duplicate_flag_group_invalid_new_flag_group():
+    original_flag_group_id = "FG1A1A"
+    new_flag_group_id = "FG2B2B"
+    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=["FG1A1A", "FG2B2B"])
+    result = duplicate_flag_group(original_flag_group_id, new_flag_group_id, existing_flag_groups)
+    result.valid == False
+    result.message == "new flag group " + new_flag_group_id + " already exists"
+    result.uuid == new_flag_group_id + "_primary_key_id"
+
+
 
 
 
