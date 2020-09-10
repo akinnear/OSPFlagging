@@ -232,15 +232,37 @@ def test_update_flag_name_does_not_exist():
 def test_update_flag_logic(mvrb):
     flag_name = "Flag1"
     existing_flags = pull_flag_names(dummy_flag_names=["Flag1", "Flag2"])
-    new_flag_logic = FlagLogicInformation(used_variables={VariableInformation("FF1"): (CodeLocation(1, 1)),
-                                                          VariableInformation("FF2"): (CodeLocation(2, 2))})
+    new_flag_logic = FlagLogicInformation(used_variables={VariableInformation("FF1"): {CodeLocation(1, 1)},
+                                                          VariableInformation("FF2"): {CodeLocation(2, 2)}})
     result = update_flag_logic(flag_name, new_flag_logic, existing_flags)
-    print("hello")
+    assert result.valid == True
+    assert result.message == "logic for flag " + flag_name + " has been updated"
+    assert result.uuid == flag_name + "_primary_key_id"
 
 #test update flag logic, flag does not exist
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+def test_update_flag_logic_missing_flag(mvrb):
+    flag_name = "Flag3"
+    existing_flags = pull_flag_names(dummy_flag_names=["Flag1", "Flag2"])
+    new_flag_logic = FlagLogicInformation(used_variables={VariableInformation("FF1"): {CodeLocation(1, 1)},
+                                                          VariableInformation("FF2"): {CodeLocation(2, 2)}})
+    result = update_flag_logic(flag_name, new_flag_logic, existing_flags)
+    print("hello")
+    assert result.valid == False
+    assert result.message == "could not identify existing flag " + flag_name
+    assert result.uuid == flag_name + "_primary_key_id"
 
 #test update flag logic, error in new logic
-
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+def test_update_flag_logic_error(mvrb):
+    flag_name = "Flag1"
+    existing_flags = pull_flag_names(dummy_flag_names=["Flag1", "Flag2"])
+    new_flag_logic = FlagLogicInformation(used_variables={VariableInformation("FF1"): {CodeLocation(1, 1)},
+                                                          VariableInformation("ff1"): {CodeLocation(2, 2)}})
+    result = update_flag_logic(flag_name, new_flag_logic, existing_flags)
+    assert result.valid == False
+    assert result.message == "error in flag logic"
+    assert result.uuid == flag_name + "_primary_key_id"
 
 
 #test delete flag
