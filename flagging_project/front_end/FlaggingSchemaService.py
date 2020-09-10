@@ -310,17 +310,16 @@ def duplicate_flag(original_flag_id:str, new_flag_id: str, existing_flags):
     #check that original flag already exists
     if original_flag_id not in existing_flags:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag " + original_flag_id + " does not exist")
+                                                       message="flag " + original_flag_id + " does not exist",
+                                                       uuid=original_flag_id + "_primary_key_id")
+    elif new_flag_id not in existing_flags:
+        flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                       message="new flag " + new_flag_id + " based off of " + original_flag_id + " has been created",
+                                                       uuid=new_flag_id + "_primary_key_id")
     else:
-        #make sure new name does not already exist
-        if new_flag_id in existing_flags:
-            flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="new flag " + new_flag_id + " already exists")
-        else:
-            #create a new flag with new name
-            flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                           message="new flag " + new_flag_id + " based off of " + original_flag_id + " has been created",
-                                                           uuid=new_flag_id + "_primary_key_id")
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="new flag " + new_flag_id + " already exists",
+                                                       uuid=new_flag_id + "_primary_key_id")
     return flag_schema_object
 
 
@@ -331,15 +330,16 @@ def duplicate_flag_group(original_flag_group_id:str, new_flag_group_id:str, exis
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="flag group " + original_flag_group_id + " does not exist")
 
-    #check that new_flag_group_id does not already exist
-    if new_flag_group_id in existing_flag_groups:
-        flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="new flag group " + new_flag_group_id + " already exists")
 
-    if original_flag_group_id in existing_flag_groups and new_flag_group_id not in existing_flag_groups:
-        #duplicate flag group
+    elif new_flag_group_id in existing_flag_groups:
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="new flag group " + new_flag_group_id + " already exists",
+                                                       uuid=new_flag_group_id + "_primary_key_id")
+
+    else:
         flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message="new flag group " + new_flag_group_id + " created off of " + original_flag_group_id)
+                                                       message="new flag group " + new_flag_group_id + " created off of " + original_flag_group_id,
+                                                       uuid=new_flag_group_id + "_primary_key_id")
 
     return flag_schema_object
 
