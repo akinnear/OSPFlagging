@@ -139,10 +139,13 @@ def delete_flag(flag_id, existing_flags):
     #check if primary_key exists in db
     if flag_id not in existing_flags:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag name specified does not exist")
+                                                       message="flag name specified does not exist",
+                                                       uuid=flag_id + "_primary_key_id")
     else:
+        #TODO
+        # remove flag from databse
         flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message="flag " + flag_id + " has been deleted",
+                                                       message=flag_id + " has been deleted",
                                                        uuid=flag_id + "_primary_key_id")
     return flag_schema_object
 
@@ -152,9 +155,10 @@ def create_flag_group(flag_group_id: str, existing_flag_groups):
     if flag_group_id in existing_flag_groups:
         #flag group already exists, should update existing flag group
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag group " + flag_group_id + " already exists")
+                                                       message=flag_group_id + " already exists",
+                                                       uuid=flag_group_id + "_primary_key_id")
 
-    if flag_group_id is None or flag_group_id.replace(" ", "") == "":
+    elif flag_group_id is None or flag_group_id.replace(" ", "") == "":
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="unique flag group name must be created")
     else:
