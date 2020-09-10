@@ -345,5 +345,3 @@ def duplicate_flag_group(original_flag_group_id:str, new_flag_group_id:str, exis
 
 
 
-#TODO,
-# write new tests in tests module
