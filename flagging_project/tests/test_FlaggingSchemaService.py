@@ -265,10 +265,53 @@ def test_update_flag_logic_error(mvrb):
     assert result.uuid == flag_name + "_primary_key_id"
 
 
-#test delete flag
+#test delete flag valid
+def test_delete_flag_valid():
+    flag_name = "Flag1"
+    existing_flags = pull_flag_names(dummy_flag_names=["Flag1", "Flag2"])
+    result = delete_flag(flag_name, existing_flags)
+    assert result.valid == True
+    assert result.message == flag_name + " has been deleted"
+    assert result.uuid == flag_name + "_primary_key_id"
+
+#test delete flag, invalid, flag name does not exist
+def test_delete_flag_does_not_exist():
+    flag_name = "Flag3"
+    existing_flags = pull_flag_names(dummy_flag_names=["Flag1", "Flag2"])
+    result = delete_flag(flag_name, existing_flags)
+    assert result.valid == False
+    assert result.message == "flag name specified does not exist"
+    assert result.uuid == flag_name + "_primary_key_id"
+
+#test create flag group, valid
+def test_create_flag_group_valid():
+    flag_group_id = "FG3AC3C"
+    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=["FG1A1A", "FG2B2B"])
+    result = create_flag_group(flag_group_id, existing_flag_groups)
+    assert result.valid == True
+    assert result.message == "Unique flag group " + flag_group_id + " created"
+    assert result.uuid == flag_group_id + "_primary_key_id"
 
 
-#test create flag group
+#test create flag group, flag group id already exists
+def test_create_flag_group_duplicate_groups():
+    flag_group_id = "FG1A1A"
+    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=["FG1A1A", "FG2B2B"])
+    result = create_flag_group(flag_group_id, existing_flag_groups)
+    assert result.valid == False
+    assert result.message == flag_group_id + " already exists"
+    assert result.uuid == flag_group_id + "_primary_key_id"
+
+
+
+#test create flag group, missing flag group name
+def test_create_flag_group_missing_name():
+    flag_group_id = None
+    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=["FG1A1A", "FG2B2B"])
+    result = create_flag_group(flag_group_id, existing_flag_groups)
+    assert result.valid == False
+    assert result.message == "unique flag group name must be created"
+    assert result.uuid == None
 
 
 #test delete flag group
