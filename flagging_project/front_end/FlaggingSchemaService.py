@@ -1,6 +1,3 @@
-#imports
-import pandas as pd
-
 from flag_feeders.FlagFeederService import pull_flag_feeders
 from flagging.FlaggingValidation import validate_flag_logic_information
 from front_end.FlaggingSchemaInformation import FlaggingSchemaInformation

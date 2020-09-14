@@ -1,10 +1,5 @@
 class FlaggingSchemaInformation:
 
-    #was it succesful or not, pass
-    #error message
-    #flag_name
-    #UUID
-    #
 
     def __init__(self, valid, message, name=None, uuid=None):
         self.valid = valid
