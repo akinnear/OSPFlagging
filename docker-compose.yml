@@ -2,7 +2,7 @@ version: '3.8'
 services:
   mongo:
     image: mongo:4.4.1
-    container_name: mongo-flagging
+    container_name: mongo
     volumes:
       - ./.docker/mongo/data/:/data/db
     ports:
