@@ -72,6 +72,8 @@ def create_flag(flag_id: str, flag_logic_information:FlagLogicInformation()):
         #validate flag logic
         flag_validation = validate_logic(flag_id, flag_logic_information)
         if flag_validation.errors == {} and flag_validation.mypy_errors == {}:
+            #TODO
+            # create flag
             flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                            message="new flag created",
                                                            uuid=flag_id + "_primary_key_id")
@@ -96,6 +98,7 @@ def update_flag_name(original_flag_id: str, new_flag_id: str, existing_flags):
     #query to get existing flag names
     else:
         if original_flag_id in existing_flags and original_flag_id is not None and new_flag_id is not None:
+            #TODO
             # query to update existing flag_name with new flag_name
             flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                            message="original flag " + original_flag_id + " updated to " + new_flag_id,
@@ -122,7 +125,8 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
         #run validation on new_flag_logic
         validation_results = validate_logic(flag_id, new_flag_logic_information)
         if validation_results.errors == {} and validation_results.mypy_errors == {}:
-            #query to update existing flag logic
+            #TODO
+            # query to update existing flag logic
             flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                            message="logic for flag " + flag_id + " has been updated",
                                                            uuid=flag_id + "_primary_key_id")
@@ -143,7 +147,7 @@ def delete_flag(flag_id, existing_flags):
                                                        uuid=flag_id + "_primary_key_id")
     else:
         #TODO
-        # remove flag from databse
+        # remove flag from database
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message=flag_id + " has been deleted",
                                                        uuid=flag_id + "_primary_key_id")
@@ -246,10 +250,11 @@ def add_flag_to_flag_group(flag_group_id: str, new_flags:[], existing_flags: [],
                                                            uuid=flag_group_id + "_primary_key_id")
 
         else:
-            #check that flag uuid does not already exist in flag_group
+            #TODO
+            # check that flag uuid does not already exist in flag_group
 
-
-            #update existing flag group with UUID for each flag
+            #TODO
+            # update existing flag group with UUID for each flag
 
             #return new flag_group UUID
             flag_schema_object = FlaggingSchemaInformation(valid=True,
@@ -295,7 +300,8 @@ def remove_flag_from_flag_group(flag_group_id: str, del_flags: [], existing_flag
                                                            uuid=flag_group_id + "_primary_key_id")
 
         else:
-            #delete flag from flag group
+            #TODO
+            # delete flag from flag group
 
             flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                            message="Flag(s) " + ", ".join(map(str, del_flags)) + " removed from " + flag_group_id,
