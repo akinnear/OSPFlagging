@@ -10,6 +10,7 @@ from flagging.FlaggingNodeVisitor import CodeLocation
 #TODO
 # interface design, html5 + bootstrap4
 
+
 #A call to validate logic, this will return only warning and errors
 # with enough information to understand the problem and location.
 # TO perform validation please use the interface created in #67 for flag feeders.
@@ -56,7 +57,7 @@ def get_flag_dependencies():
 #A call to create a flag given a name and logic, this will return a UUID,
 # name cannot be empty if so error
 
-def create_flag(flag_id: str, flag_logic_information:FlagLogicInformation()):
+def create_flag(flag_id: str, flag_logic_information:FlagLogicInformation):
     #store flag name and flag logic in db
 
     if flag_id is None:
@@ -94,7 +95,7 @@ def update_flag_name(original_flag_id: str, new_flag_id: str, existing_flags):
                                                        message="user must specify name of new flag")
     #query to get existing flag names
     else:
-        if original_flag_id in existing_flags and original_flag_id is not None and new_flag_id is not None:
+        if original_flag_id in existing_flags:
             #TODO
             # query to update existing flag_name with new flag_name
             flag_schema_object = FlaggingSchemaInformation(valid=True,
@@ -199,6 +200,9 @@ def delete_flag_group(flag_group_id: str, existing_flag_groups):
 def add_flag_to_flag_group(flag_group_id: str, new_flags:[], existing_flags: [], existing_flag_groups, flags_in_flag_group):
     #for each new_flag in new_flags, check to see if flag exists already
     #if flag does not exist, call add method
+
+    #TODO
+    # cyclical check as individual
 
     missing_flags = []
     duplicate_flags = []
