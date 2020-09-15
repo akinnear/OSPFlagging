@@ -77,10 +77,60 @@ def test_get_flag_data_by_name():
                                                        "FLAG_STATUS": flag_status,
                                                        "UPDATE_TIMESTAMP": datetime.datetime.now()}).inserted_id
 
-            pulled_flag_1 = db[FLAGGING_COLLECTION].find({"FLAG_NAME": flag_name_1})
-            pulled_flag_2 = db[FLAGGING_COLLECTION].find({"FLAG_NAME": flag_name_2})
-            assert pulled_flag_1.get_flags()[0]["_id"] == id_1
-            assert pulled_flag_2.get_flags()[0]["_id"] == id_2
+            pulled_flag_1 = db[FLAGGING_COLLECTION].find_one({"FLAG_NAME": flag_name_1})
+            pulled_flag_2 = db[FLAGGING_COLLECTION].find_one({"FLAG_NAME": flag_name_2})
+
+            assert pulled_flag_1["_id"] == id_1
+            assert pulled_flag_2["_id"] == id_2
+
+
+def test_remove_flag_based_on_name():
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+        _create_flagging_mongo(container) as flagging_mongo:
+
+        assert flagging_mongo.get_flags() == []
+
+        with _create_mongo_client(container) as client:
+            flag_name_1 = "Flag1A1A"
+            flag_status = "Development"
+            referenced_flags = "Flag3"
+            flag_validation_results = FlaggingValidationResults()
+            db = client[FLAGGING_DATABASE]
+            id_1 = db[FLAGGING_COLLECTION].insert_one({"FLAG_NAME": flag_name_1,
+                                                         "FLAG_VALIDATION_RESULTS": vars(flag_validation_results),
+                                                         "REFERENCED_FLAGS": referenced_flags,
+                                                         "FLAG_STATUS":  flag_status,
+                                                         "UPDATE_TIMESTAMP": datetime.datetime.now()}).inserted_id
+
+            #get flags
+            flags = flagging_mongo.get_flags()
+            # Only 1
+            assert len(flags) == 1
+            # The whole object
+            assert flags[0]['_id'] == id_1
+
+            flag_name_2 = "FLAG2B2B"
+            id_2 = db[FLAGGING_COLLECTION].insert_one({"FLAG_NAME": flag_name_2,
+                                                       "FLAG_VALIDATION_RESULTS": vars(flag_validation_results),
+                                                       "REFERENCED_FLAGS": referenced_flags,
+                                                       "FLAG_STATUS": flag_status,
+                                                       "UPDATE_TIMESTAMP": datetime.datetime.now()}).inserted_id
+
+            pulled_flag_1 = db[FLAGGING_COLLECTION].find_one({"FLAG_NAME": flag_name_1})
+            pulled_flag_2 = db[FLAGGING_COLLECTION].find_one({"FLAG_NAME": flag_name_2})
+            flags = flagging_mongo.get_flags()
+            assert len(flags) == 2
+            assert pulled_flag_1["_id"] == id_1
+            assert pulled_flag_2["_id"] == id_2
+
+            #remove flag
+            db[FLAGGING_COLLECTION].delete_one({"FLAG_NAME": flag_name_1})
+            flags = flagging_mongo.get_flags()
+            assert len(flags) == 1
+            assert flags[0]["_id"] == id_2
+            assert flags[0]["FLAG_NAME"] == flag_name_2
+
+
 
 
 
