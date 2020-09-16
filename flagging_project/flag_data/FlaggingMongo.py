@@ -75,7 +75,7 @@ class FlaggingMongo:
         flag_id = flagging.insert_one(flag_group).inserted_id
         return flag_id
 
-    def remove_flag(self, query):
+    def remove_flag_group(self, query):
         db = self.client[FLAGGING_DATABASE]
         flag_groups = db[FLAG_GROUPS]
         flag_group_id = flag_groups.find_and_modify(query=query, remove=True, new=False)["_id"]
