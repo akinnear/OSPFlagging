@@ -1,6 +1,7 @@
 from typing import Callable
 
 from pymongo import MongoClient
+import datetime
 
 FLAGGING_DATABASE = 'flagging_test'
 FLAGGING_COLLECTION = 'flagging'
@@ -34,15 +35,36 @@ class FlaggingMongo:
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAGGING_COLLECTION]
         flag_id = flagging.insert_one(flag).inserted_id
+        return flag_id
 
-        # TODO Remove this portion
-        flag = flagging.find_one({"_id": flag_id})
-        print(flag)
+    def remove_flag(self, query):
+        db = self.client[FLAGGING_DATABASE]
+        flagging = db[FLAGGING_COLLECTION]
+        flag_id = flagging.find_and_modify(query=query, remove=True, new=False)["_id"]
+        return flag_id
+
+    def update_flag(self, query, update):
+        db = self.client[FLAGGING_DATABASE]
+        flagging = db[FLAGGING_COLLECTION]
+        flag_id = flagging.find_and_modify(query=query, remove=False, update=update)["_id"]
+        return flag_id
+
+    def duplicate_flag(self, flag_name):
+        db = self.client[FLAGGING_DATABASE]
+        flagging = db[FLAGGING_COLLECTION]
+        flag_2_duplicate = flagging.find_one({"FLAG_NAME": flag_name})
+        flag_2_duplicate.update({"UPDATE_TIMESTAMP": datetime.datetime.now()})
+        flag_2_duplicate.pop("_id", None)
+        flag_id = flagging.insert_one(flag_2_duplicate).inserted_id
+        return flag_id
+
 
     def get_flags(self):
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAGGING_COLLECTION]
         return list(flagging.find())
+
+
 
 
     def add_flag_dependencies(self, flag_deps):
@@ -54,3 +76,9 @@ class FlaggingMongo:
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
         return list(flagging_dependencies.find())
+
+    def remove_flag_dependency(self, query):
+        db = self.client[FLAGGING_DATABASE]
+        flagging_dependencies = db[FLAG_DEPENDENCIES]
+        flagging_dependencies.delete_one(query)
+
