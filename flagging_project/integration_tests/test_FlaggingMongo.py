@@ -391,9 +391,47 @@ def test_update_flag_group_based_on_name():
             print("hello")
 
 
-#test duplicate flag group
+def test_duplicate_flag_group_based_on_name():
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_mongo(container) as flagging_mongo:
+        # No data is in the database
+        assert flagging_mongo.get_flag_groups() == []
 
+        # Add a flag to the database
+        with _create_mongo_client(container) as client:
+            db = client[FLAGGING_DATABASE]
+            flag_group_name_1 = "FLAG_GROUP_NAME_1"
+            id_1 = flagging_mongo.add_flag_group({'FLAG_GROUP_NAME': flag_group_name_1,
+                                                  "FLAGS": ["FLAG5", "FLAG6", "FLAG7"]})
 
+            flag_groups = flagging_mongo.get_flag_groups()
+            # Only 1
+            assert len(flag_groups) == 1
+            # The whole object
+            assert flag_groups[0]['_id'] == id_1
+
+            #add another
+            flag_group_name_2 = "FLAG_GROUP_NAME_2"
+            id_2 = flagging_mongo.add_flag_group({"FLAG_GROUP_NAME": flag_group_name_2,
+                                                  "FLAGS": ["FLAG2", "FLAG3"]})
+            flag_groups = flagging_mongo.get_flag_groups()
+            assert len(flag_groups) == 2
+            assert flag_groups[1]["_id"] == id_2
+
+            #pull flag group based on name
+            pulled_flag_group_1 = db[FLAG_GROUPS].find_one({"FLAG_GROUP_NAME": flag_group_name_1})
+            pulled_flag_group_2 = db[FLAG_GROUPS].find_one({"FLAG_GROUP_NAME": flag_group_name_2})
+
+            assert pulled_flag_group_1["_id"] == id_1
+            assert pulled_flag_group_2["_id"] == id_2
+
+            flag_group_dup_id = flagging_mongo.duplicate_flag_groups(flag_group_name_1)
+            assert flag_group_dup_id != id_1
+            flag_groups = flagging_mongo.get_flag_groups()
+            assert len(flag_groups) == 3
+
+            df_flag_groups = pd.DataFrame(flag_groups)
+            assert df_flag_groups[df_flag_groups["_id"] == flag_group_dup_id]["FLAG_GROUP_NAME"].item() ==  df_flag_groups[df_flag_groups["_id"] == id_1]["FLAG_GROUP_NAME"].item()
 
 
 
