@@ -226,6 +226,134 @@ def test_duplicate_flag():
             assert len(list(flag_1s)) == 2
 
 
+def test_flag_w_errors_1():
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+        _create_flagging_mongo(container) as flagging_mongo:
+
+        assert flagging_mongo.get_flags() == []
+
+        with _create_mongo_client(container) as client:
+            flag_name_1 = "Flag1A1A"
+            flag_status = "Development"
+            referenced_flags = "Flag3"
+            flag_validation_results = FlaggingValidationResults(errors={"my_add": {CodeLocation(2, 2)}},
+                                                                mypy_errors={"mypy_error": {CodeLocation(3, 4)}})
+            flag_validation_information = [error for error in flag_validation_results.errors.keys()] + [mypy_error for mypy_error in flag_validation_results.mypy_errors.keys()]
+            flag_validation_information = [error.__str__() for error in flag_validation_information if isinstance(error, object)]
+            db = client[FLAGGING_DATABASE]
+            id_1 = flagging_mongo.add_flag({"FLAG_NAME": flag_name_1,
+                                                         "FLAG_VALIDATION_RESULTS": flag_validation_information,
+                                                         "REFERENCED_FLAGS": referenced_flags,
+                                                         "FLAG_STATUS":  flag_status,
+                                                         "UPDATE_TIMESTAMP": datetime.datetime.now()})
+
+            #get flags
+            flags = flagging_mongo.get_flags()
+            # Only 1
+            assert len(flags) == 1
+            # The whole object
+            assert flags[0]['_id'] == id_1
+
+            flag_name_2 = "FLAG2B2B"
+            id_2 = flagging_mongo.add_flag({"FLAG_NAME": flag_name_2,
+                                                       "FLAG_VALIDATION_RESULTS": flag_validation_information,
+                                                       "REFERENCED_FLAGS": referenced_flags,
+                                                       "FLAG_STATUS": flag_status,
+                                                       "UPDATE_TIMESTAMP": datetime.datetime.now()})
+
+            pulled_flag_1 = db[FLAGGING_COLLECTION].find_one({"FLAG_NAME": flag_name_1})
+            pulled_flag_2 = db[FLAGGING_COLLECTION].find_one({"FLAG_NAME": flag_name_2})
+
+            assert pulled_flag_1["_id"] == id_1
+            assert pulled_flag_2["_id"] == id_2
+
+def test_flag_w_errors_2():
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+        _create_flagging_mongo(container) as flagging_mongo:
+
+        assert flagging_mongo.get_flags() == []
+
+        with _create_mongo_client(container) as client:
+            flag_name_1 = "Flag1A1A"
+            flag_status = "Development"
+            referenced_flags = "Flag3"
+            flag_validation_results = FlaggingValidationResults(errors={VariableInformation("x"): {CodeLocation(2, 2)}},
+                                                                mypy_errors={"mypy_error": {CodeLocation(3, 4)}})
+            flag_validation_information = [error for error in flag_validation_results.errors.keys()] + [mypy_error for mypy_error in flag_validation_results.mypy_errors.keys()]
+            flag_validation_information = [error.__str__() for error in flag_validation_information if isinstance(error, object)]
+            db = client[FLAGGING_DATABASE]
+            id_1 = flagging_mongo.add_flag({"FLAG_NAME": flag_name_1,
+                                                         "FLAG_VALIDATION_RESULTS": flag_validation_information,
+                                                         "REFERENCED_FLAGS": referenced_flags,
+                                                         "FLAG_STATUS":  flag_status,
+                                                         "UPDATE_TIMESTAMP": datetime.datetime.now()})
+
+            #get flags
+            flags = flagging_mongo.get_flags()
+            # Only 1
+            assert len(flags) == 1
+            # The whole object
+            assert flags[0]['_id'] == id_1
+
+            flag_name_2 = "FLAG2B2B"
+            id_2 = flagging_mongo.add_flag({"FLAG_NAME": flag_name_2,
+                                                       "FLAG_VALIDATION_RESULTS": flag_validation_information,
+                                                       "REFERENCED_FLAGS": referenced_flags,
+                                                       "FLAG_STATUS": flag_status,
+                                                       "UPDATE_TIMESTAMP": datetime.datetime.now()})
+
+            pulled_flag_1 = db[FLAGGING_COLLECTION].find_one({"FLAG_NAME": flag_name_1})
+            pulled_flag_2 = db[FLAGGING_COLLECTION].find_one({"FLAG_NAME": flag_name_2})
+
+            assert pulled_flag_1["_id"] == id_1
+            assert pulled_flag_2["_id"] == id_2
+
+def test_flag_w_errors_3():
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+        _create_flagging_mongo(container) as flagging_mongo:
+
+        assert flagging_mongo.get_flags() == []
+
+        with _create_mongo_client(container) as client:
+            flag_name_1 = "Flag1A1A"
+            flag_status = "Development"
+            referenced_flags = "Flag3"
+            flag_validation_results = FlaggingValidationResults(errors={VariableInformation("x"): {CodeLocation(2, 2)},
+                                                                        "FlagLogicInformationError invalid syntax":
+                                                                            {ErrorInformation(CodeLocation(3, 5),
+                                                                                       "invalid syntax",
+                                                                                       "x = == = 5")}                                                        },
+                                                                mypy_errors={"mypy_error": {CodeLocation(3, 4)}})
+            flag_validation_information = [error for error in flag_validation_results.errors.keys()] + [mypy_error for mypy_error in flag_validation_results.mypy_errors.keys()]
+            flag_validation_information = [error.__str__() for error in flag_validation_information if isinstance(error, object)]
+            db = client[FLAGGING_DATABASE]
+            id_1 = flagging_mongo.add_flag({"FLAG_NAME": flag_name_1,
+                                                         "FLAG_VALIDATION_RESULTS": flag_validation_information,
+                                                         "REFERENCED_FLAGS": referenced_flags,
+                                                         "FLAG_STATUS":  flag_status,
+                                                         "UPDATE_TIMESTAMP": datetime.datetime.now()})
+
+            #get flags
+            flags = flagging_mongo.get_flags()
+            # Only 1
+            assert len(flags) == 1
+            # The whole object
+            assert flags[0]['_id'] == id_1
+
+            flag_name_2 = "FLAG2B2B"
+            id_2 = flagging_mongo.add_flag({"FLAG_NAME": flag_name_2,
+                                                       "FLAG_VALIDATION_RESULTS": flag_validation_information,
+                                                       "REFERENCED_FLAGS": referenced_flags,
+                                                       "FLAG_STATUS": flag_status,
+                                                       "UPDATE_TIMESTAMP": datetime.datetime.now()})
+
+            pulled_flag_1 = db[FLAGGING_COLLECTION].find_one({"FLAG_NAME": flag_name_1})
+            pulled_flag_2 = db[FLAGGING_COLLECTION].find_one({"FLAG_NAME": flag_name_2})
+
+            assert pulled_flag_1["_id"] == id_1
+            assert pulled_flag_2["_id"] == id_2
+
+
 #test get flag groups
 def test_get_flag_groups():
     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
@@ -388,7 +516,7 @@ def test_update_flag_group_based_on_name():
             assert update_id == id_2
 
 
-            print("hello")
+
 
 
 def test_duplicate_flag_group_based_on_name():
