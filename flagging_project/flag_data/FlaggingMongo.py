@@ -8,6 +8,7 @@ FLAGGING_DATABASE = 'flagging_test'
 FLAGGING_COLLECTION = 'flagging'
 FLAG_DEPENDENCIES = "flag_dependencies"
 FLAG_GROUPS = "flag_groups"
+flag_id = "_id"
 
 
 class FlaggingMongo:
@@ -47,13 +48,12 @@ class FlaggingMongo:
         flag_id = flagging.insert_one(flag).inserted_id
         return flag_id
 
-    #TODO,
-    # remove query, make generic
-    def remove_flag(self, query):
+
+    def remove_flag(self, flag):
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAGGING_COLLECTION]
-        flag_id = flagging.find_and_modify(query=query, remove=True, new=False)["_id"]
-        return flag_id
+        flagging.remove({flag_id: flag})
+        return flag
 
     #TODO,
     # remove query, make generic
