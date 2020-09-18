@@ -45,8 +45,8 @@ class FlaggingMongo:
     def add_flag(self, flag):
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAGGING_COLLECTION]
-        flag_id = flagging.insert_one(flag).inserted_id
-        return flag_id
+        inserted_flag = flagging.insert_one(flag).inserted_id
+        return inserted_flag
 
 
     def remove_flag(self, flag):
@@ -57,11 +57,19 @@ class FlaggingMongo:
 
     #TODO,
     # remove query, make generic
-    def update_flag(self, query, update):
+    def update_flag_old(self, query, update):
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAGGING_COLLECTION]
-        flag_id = flagging.find_and_modify(query=query, remove=False, update=update)["_id"]
-        return flag_id
+        updated_flag = flagging.find_and_modify(query=query, remove=False, update=update)["_id"]
+        return updated_flag
+
+
+    def update_flag(self, flag, update_col, update_value):
+        db = self.client[FLAGGING_DATABASE]
+        flagging = db[FLAGGING_COLLECTION]
+        updated_flag = flagging.find_and_modify({flag_id: flag}, remove=False, update={update_col: update_value})[flag_id]
+        return updated_flag
+
 
     #TODO,
     # remove FLAG_NAME, can use "_id"
@@ -71,8 +79,8 @@ class FlaggingMongo:
         flag_2_duplicate = flagging.find_one({"FLAG_NAME": flag_name})
         flag_2_duplicate.update({"UPDATE_TIMESTAMP": datetime.datetime.now()})
         flag_2_duplicate.pop("_id", None)
-        flag_id = flagging.insert_one(flag_2_duplicate).inserted_id
-        return flag_id
+        duplicated_flag = flagging.insert_one(flag_2_duplicate).inserted_id
+        return duplicated_flag
 
 
     #flag groups
@@ -92,8 +100,8 @@ class FlaggingMongo:
     def add_flag_group(self, flag_group):
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAG_GROUPS]
-        flag_id = flagging.insert_one(flag_group).inserted_id
-        return flag_id
+        new_flag_group = flagging.insert_one(flag_group).inserted_id
+        return new_flag_group
 
     #TODO,
     # remove query, make generic
@@ -188,8 +196,10 @@ class FlaggingMongo:
                     item[1].remove(rm_dep)
         item[1] = set(item[1])
         item[1] = list(item[1])
-        flag_id = flagging_dependencies.find_and_modify(query={"FLAG_NAME": flag}, remove=False, update=item[1])["_id"]
-        return flag_id
+        modified_flag = flagging_dependencies.find_and_modify(query={"FLAG_NAME": flag}, remove=False, update=item[1])["_id"]
+        return modified_flag
+
+
 
 
 
