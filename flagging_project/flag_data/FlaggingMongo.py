@@ -47,18 +47,24 @@ class FlaggingMongo:
         flag_id = flagging.insert_one(flag).inserted_id
         return flag_id
 
+    #TODO,
+    # remove query, make generic
     def remove_flag(self, query):
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAGGING_COLLECTION]
         flag_id = flagging.find_and_modify(query=query, remove=True, new=False)["_id"]
         return flag_id
 
+    #TODO,
+    # remove query, make generic
     def update_flag(self, query, update):
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAGGING_COLLECTION]
         flag_id = flagging.find_and_modify(query=query, remove=False, update=update)["_id"]
         return flag_id
 
+    #TODO,
+    # remove FLAG_NAME, can use "_id"
     def duplicate_flag(self, flag_name):
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAGGING_COLLECTION]
@@ -89,18 +95,24 @@ class FlaggingMongo:
         flag_id = flagging.insert_one(flag_group).inserted_id
         return flag_id
 
+    #TODO,
+    # remove query, make generic
     def remove_flag_group(self, query):
         db = self.client[FLAGGING_DATABASE]
         flag_groups = db[FLAG_GROUPS]
         flag_group_id = flag_groups.find_and_modify(query=query, remove=True, new=False)["_id"]
         return flag_group_id
 
+    #TODO,
+    # remove query, make generic
     def update_flag_group(self, query, update):
         db = self.client[FLAGGING_DATABASE]
         flag_groups = db[FLAG_GROUPS]
         flag_group_id = flag_groups.find_and_modify(query=query, remove=False, update=update)["_id"]
         return flag_group_id
 
+    #TODO,
+    # remove FLAG_GROUP_NAME, can use _id
     def duplicate_flag_groups(self, flag_group):
         db = self.client[FLAGGING_DATABASE]
         flag_groups = db[FLAG_GROUPS]
@@ -129,22 +141,27 @@ class FlaggingMongo:
         flagging = db[FLAG_DEPENDENCIES]
         flagging.insert_one(flag_deps)
 
+    #TODO,
+    # remove query, make generic
     def remove_flag_dependency(self, query):
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
         flagging_dependencies.delete_one(query)
 
+    #TODO,
+    # remove FLAG_NAME, can use _id
     def get_specific_flag_dependencies(self, flag):
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
         flagging_dependencies = flagging_dependencies.find_one({"FLAG_NAME": flag})
         return list(flagging_dependencies)
 
-
+    #TODO,
+    # remove FLAG_NAME, DEPDENDENT_FLAGS
     def add_specific_flag_dependencies(self, flag, new_deps: []):
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        flag_deps_flag = flagging_dependencies.find_one({"FLAG_NAME": flag}, {"DEPENDENT_FLAGS": 1})["DEPENDENT_FLAGS"][0]
+        flag_deps_flag = flagging_dependencies.find_one({"FLAG_NAME": flag})["DEPENDENT_FLAGS"][0]
         flag_deps_list = []
         if isinstance(flag_deps_flag, list):
             for x in flag_deps_flag:
@@ -157,6 +174,8 @@ class FlaggingMongo:
         updated_id = flagging_dependencies.find_and_modify(query={"FLAG_NAME": flag}, remove=False, update={"DEPENDENT_FLAGS": flag_deps_list})["_id"]
         return updated_id
 
+    #TODO
+    # debugg remove_specific_flag_dependencies
     def remove_specific_flag_dependencies(self, flag, rm_deps: []):
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
