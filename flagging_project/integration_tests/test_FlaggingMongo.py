@@ -564,7 +564,6 @@ def test_pull_flag_group_by_name():
             assert pulled_flag_group_2["_id"] == id_2
 
 
-
 def test_remove_flag_group_based_on_id():
     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
             _create_flagging_mongo(container) as flagging_mongo:
@@ -648,10 +647,7 @@ def test_update_flag_group_based_on_id():
             assert update_id == id_2
 
 
-
-
-
-def test_duplicate_flag_group_based_on_name():
+def test_duplicate_flag_group_based_on_id():
     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
             _create_flagging_mongo(container) as flagging_mongo:
         # No data is in the database
@@ -685,13 +681,13 @@ def test_duplicate_flag_group_based_on_name():
             assert pulled_flag_group_1["_id"] == id_1
             assert pulled_flag_group_2["_id"] == id_2
 
-            flag_group_dup_id = flagging_mongo.duplicate_flag_groups(flag_group_name_1)
+            flag_group_dup_id = flagging_mongo.duplicate_flag_group(id_1)
             assert flag_group_dup_id != id_1
             flag_groups = flagging_mongo.get_flag_groups()
             assert len(flag_groups) == 3
 
             df_flag_groups = pd.DataFrame(flag_groups)
-            assert df_flag_groups[df_flag_groups["_id"] == flag_group_dup_id]["FLAG_GROUP_NAME"].item() ==  df_flag_groups[df_flag_groups["_id"] == id_1]["FLAG_GROUP_NAME"].item()
+            assert df_flag_groups[df_flag_groups["_id"] == flag_group_dup_id]["FLAG_GROUP_NAME"].item() == df_flag_groups[df_flag_groups["_id"] == id_1]["FLAG_GROUP_NAME"].item()
 
 
 
