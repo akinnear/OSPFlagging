@@ -10,6 +10,7 @@ FLAG_DEPENDENCIES = "flag_dependencies"
 FLAG_GROUPS = "flag_groups"
 
 flag_id = "_id"
+flag_group_id = "_id"
 flag_timestamp = "FLAG_TIMESTAMP"
 
 
@@ -103,13 +104,12 @@ class FlaggingMongo:
         new_flag_group = flagging.insert_one(flag_group).inserted_id
         return new_flag_group
 
-    #TODO,
-    # remove query, make generic
-    def remove_flag_group(self, query):
+
+    def remove_flag_group(self, flag_group):
         db = self.client[FLAGGING_DATABASE]
         flag_groups = db[FLAG_GROUPS]
-        flag_group_id = flag_groups.find_and_modify(query=query, remove=True, new=False)["_id"]
-        return flag_group_id
+        flag_groups.remove({flag_group_id: flag_group})
+        return flag_group
 
     #TODO,
     # remove query, make generic
