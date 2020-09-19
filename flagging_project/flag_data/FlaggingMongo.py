@@ -12,6 +12,7 @@ FLAG_GROUPS = "flag_groups"
 flag_id = "_id"
 flag_group_id = "_id"
 flag_timestamp = "FLAG_TIMESTAMP"
+flag_group_timestamp = "FLAG_GROUP_TIMESTAMP"
 
 
 class FlaggingMongo:
@@ -51,28 +52,17 @@ class FlaggingMongo:
         inserted_flag = flagging.insert_one(flag).inserted_id
         return inserted_flag
 
-
     def remove_flag(self, flag):
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAGGING_COLLECTION]
         flagging.remove({flag_id: flag})
         return flag
 
-
-    # def update_flag_old(self, query, update):
-    #     db = self.client[FLAGGING_DATABASE]
-    #     flagging = db[FLAGGING_COLLECTION]
-    #     updated_flag = flagging.find_and_modify(query=query, remove=False, update=update)["_id"]
-    #     return updated_flag
-
-
     def update_flag(self, flag, update_col, update_value):
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAGGING_COLLECTION]
         updated_flag = flagging.find_and_modify({flag_id: flag}, remove=False, update={update_col: update_value})[flag_id]
         return updated_flag
-
-
 
     def duplicate_flag(self, flag):
         db = self.client[FLAGGING_DATABASE]
@@ -82,7 +72,6 @@ class FlaggingMongo:
         flag_2_duplicate.pop(flag_id, None)
         duplicated_flag = flagging.insert_one(flag_2_duplicate).inserted_id
         return duplicated_flag
-
 
     #flag groups
     '''
@@ -104,7 +93,6 @@ class FlaggingMongo:
         new_flag_group = flagging.insert_one(flag_group).inserted_id
         return new_flag_group
 
-
     def remove_flag_group(self, flag_group):
         db = self.client[FLAGGING_DATABASE]
         flag_groups = db[FLAG_GROUPS]
@@ -117,16 +105,14 @@ class FlaggingMongo:
         updated_flag_group = flag_groups.find_and_modify({flag_group_id: flag_group}, remove=False, update={update_col: update_value})[flag_group_id]
         return updated_flag_group
 
-    #TODO,
-    # remove FLAG_GROUP_NAME, can use _id
-    def duplicate_flag_groups(self, flag_group):
+    def duplicate_flag_group(self, flag_group):
         db = self.client[FLAGGING_DATABASE]
         flag_groups = db[FLAG_GROUPS]
-        flag_group_2_duplicate = flag_groups.find_one({"FLAG_GROUP_NAME": flag_group})
-        flag_group_2_duplicate.update({flag_timestamp: datetime.datetime.now()})
-        flag_group_2_duplicate.pop("_id", None)
-        flag_group_id = flag_groups.insert_one(flag_group_2_duplicate).inserted_id
-        return flag_group_id
+        flag_group_2_duplicate = flag_groups.find_one({flag_group_id: flag_group})
+        flag_group_2_duplicate.update({flag_group_timestamp: datetime.datetime.now()})
+        flag_group_2_duplicate.pop(flag_group_id, None)
+        duplicated_flag_groups = flag_groups.insert_one(flag_group_2_duplicate).inserted_id
+        return duplicated_flag_groups
 
 
     #flag dependencies
