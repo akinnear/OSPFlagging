@@ -225,6 +225,9 @@ def test_update_flag():
             assert updated_flag == id_2
             assert updated_flag == production_flag
 
+
+
+
 def test_duplicate_flag():
     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
             _create_flagging_mongo(container) as flagging_mongo:
@@ -264,13 +267,14 @@ def test_duplicate_flag():
             assert pulled_flag_2["_id"] == id_2
 
             #duplicate flag, new id
-            duplicate_flag_1_id = flagging_mongo.duplicate_flag(flag_name_1)
+            duplicate_flag_1_id = flagging_mongo.duplicate_flag(id_1)
             flags = flagging_mongo.get_flags()
             assert len(flags) == 3
             assert duplicate_flag_1_id != id_1
             flag_1s = db[FLAGGING_COLLECTION].find({"FLAG_NAME": flag_name_1})
+            flag_1_id = db[FLAGGING_COLLECTION].find({"_id": id_1})
             assert len(list(flag_1s)) == 2
-
+            assert len(list(flag_1_id)) == 1
 
 def test_flag_w_errors_1():
     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
