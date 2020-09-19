@@ -111,13 +111,11 @@ class FlaggingMongo:
         flag_groups.remove({flag_group_id: flag_group})
         return flag_group
 
-    #TODO,
-    # remove query, make generic
-    def update_flag_group(self, query, update):
+    def update_flag_group(self, flag_group, update_col, update_value):
         db = self.client[FLAGGING_DATABASE]
         flag_groups = db[FLAG_GROUPS]
-        flag_group_id = flag_groups.find_and_modify(query=query, remove=False, update=update)["_id"]
-        return flag_group_id
+        updated_flag_group = flag_groups.find_and_modify({flag_group_id: flag_group}, remove=False, update={update_col: update_value})[flag_group_id]
+        return updated_flag_group
 
     #TODO,
     # remove FLAG_GROUP_NAME, can use _id
