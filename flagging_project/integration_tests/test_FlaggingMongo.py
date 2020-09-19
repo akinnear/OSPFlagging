@@ -565,7 +565,7 @@ def test_pull_flag_group_by_name():
 
 
 
-def test_remove_flag_group_based_on_name():
+def test_remove_flag_group_based_on_id():
     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
             _create_flagging_mongo(container) as flagging_mongo:
         # No data is in the database
@@ -598,7 +598,7 @@ def test_remove_flag_group_based_on_name():
             assert pulled_flag_group_2["_id"] == id_2
 
             #remove flag_group
-            removed_flag_group_id = flagging_mongo.remove_flag_group({"FLAG_GROUP_NAME": flag_group_name_1})
+            removed_flag_group_id = flagging_mongo.remove_flag_group(id_1)
             flag_groups = flagging_mongo.get_flag_groups()
             assert len(flag_groups) == 1
             assert removed_flag_group_id == id_1
