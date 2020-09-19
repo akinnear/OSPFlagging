@@ -606,7 +606,7 @@ def test_remove_flag_group_based_on_id():
             assert flag_groups[0]["FLAG_GROUP_NAME"] == flag_group_name_2
 
 
-def test_update_flag_group_based_on_name():
+def test_update_flag_group_based_on_id():
     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
             _create_flagging_mongo(container) as flagging_mongo:
         # No data is in the database
@@ -641,7 +641,7 @@ def test_update_flag_group_based_on_name():
             assert pulled_flag_group_2["_id"] == id_2
 
             # update flag group
-            flagging_mongo.update_flag_group({"FLAG_GROUP_NAME": flag_group_name_2}, {"FLAGS": ["FLAG1", "FLAG2", "FLAG4"]})
+            flagging_mongo.update_flag_group(flag_group=id_2, update_col="FLAGS", update_value=["FLAG1", "FLAG2", "FLAG4"])
             df_test = pd.DataFrame(list(db[FLAG_GROUPS].find({}, {"FLAGS": 1})))
             df_update = df_test[df_test['FLAGS'].astype(str).str.contains('FLAG1')]
             update_id = df_update["_id"].item()
