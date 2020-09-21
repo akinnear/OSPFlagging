@@ -756,8 +756,6 @@ def test_get_flag_deps():
             flag_deps = flagging_mongo.get_flag_dependencies()
             assert len(flag_deps) == 2
 
-#TODO,
-# failing
 def test_add_dependencies_to_flag():
     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
         _create_flagging_mongo(container) as flagging_mongo:
@@ -795,9 +793,8 @@ def test_add_dependencies_to_flag():
             #get len of deps for FLAG9
             assert len(db[FLAG_DEPENDENCIES].find_one({"_id": flag_deps_id_add})["DEPENDENT_FLAGS"]) == 2
             assert "FLAG4" in db[FLAG_DEPENDENCIES].find_one({"_id": flag_deps_id_2})["DEPENDENT_FLAGS"]
+            assert id_flag_9 == db[FLAG_DEPENDENCIES].find_one({"FLAG_NAME": "FLAG9"})["_id"]
 
-#TODO,
-# failing
 def test_add_dependencies_to_flag_2():
     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
         _create_flagging_mongo(container) as flagging_mongo:
@@ -842,13 +839,13 @@ def test_add_dependencies_to_flag_2():
 
 
             #add FLAG9 dependent on FLAG6, FLAG7
-            #TODO,
-            # bugg
+
             flag_deps_id_add_2 = flagging_mongo.add_specific_flag_dependencies(flag=id_flag_9, new_deps=["FLAG6", "FLAG7"], dependent_flag_column="DEPENDENT_FLAGS")
             assert flag_deps_id_add_2 == flag_deps_id_2
 
             assert len(db[FLAG_DEPENDENCIES].find_one({"_id": flag_deps_id_add_2})["DEPENDENT_FLAGS"]) == 4
             assert "FLAG7" in db[FLAG_DEPENDENCIES].find_one({"_id": flag_deps_id_2})["DEPENDENT_FLAGS"]
+            assert "FLAG4" in db[FLAG_DEPENDENCIES].find_one({"_id": flag_deps_id_2})["DEPENDENT_FLAGS"]
 
 
 #remove deps from flag
