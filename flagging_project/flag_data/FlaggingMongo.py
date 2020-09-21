@@ -127,24 +127,21 @@ class FlaggingMongo:
         flagging_dependencies = db[FLAG_DEPENDENCIES]
         return list(flagging_dependencies.find())
 
-    def add_flag_dependencies(self, flag_deps):
+    def add_flag_dependencies(self, flag):
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAG_DEPENDENCIES]
-        flagging.insert_one(flag_deps)
+        new_flag_dep = flagging.insert_one(flag).inserted_id
+        return new_flag_dep
 
-    #TODO,
-    # remove query, make generic
-    def remove_flag_dependency(self, query):
+    def remove_flag_dependencies(self, flag):
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        flagging_dependencies.delete_one(query)
+        flagging_dependencies.remove({flag_id: flag})
 
-    #TODO,
-    # remove FLAG_NAME, can use _id
     def get_specific_flag_dependencies(self, flag):
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        flagging_dependencies = flagging_dependencies.find_one({"FLAG_NAME": flag})
+        flagging_dependencies = flagging_dependencies.find_one({flag_id: flag})
         return list(flagging_dependencies)
 
 
