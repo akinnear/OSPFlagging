@@ -147,12 +147,11 @@ class FlaggingMongo:
         flagging_dependencies = flagging_dependencies.find_one({"FLAG_NAME": flag})
         return list(flagging_dependencies)
 
-    #TODO,
-    # remove FLAG_NAME, DEPDENDENT_FLAGS
+
     def add_specific_flag_dependencies(self, flag, new_deps: [], dependent_flag_column):
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        flag_deps_flag = flagging_dependencies.find_one({flag_id: flag})[dependent_flag_column][0]
+        flag_deps_flag = flagging_dependencies.find_one({flag_id: flag})[dependent_flag_column]
         flag_deps_list = []
         if isinstance(flag_deps_flag, list):
             for x in flag_deps_flag:
@@ -162,7 +161,7 @@ class FlaggingMongo:
         for new_dep in new_deps:
             if new_dep not in flag_deps_list:
                 flag_deps_list.append(new_dep)
-        updated_id = flagging_dependencies.update(query={flag_id: flag}, remove=False, update={dependent_flag_column: flag_deps_list})[flag_id]
+        updated_id = flagging_dependencies.find_one_and_update({flag_id: flag}, {"$set": {dependent_flag_column: flag_deps_list}}, upsert=True)[flag_group_id]
         return updated_id
 
     #TODO
