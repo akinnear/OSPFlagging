@@ -58,10 +58,10 @@ class FlaggingMongo:
         flagging.remove({flag_id: flag})
         return flag
 
-    def update_flag(self, flag, update_col, update_value):
+    def update_flag(self, flag, update_command):
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAGGING_COLLECTION]
-        updated_flag = flagging.find_and_modify({flag_id: flag}, remove=False, update={update_col: update_value})[flag_id]
+        updated_flag = flagging.find_one_and_update({flag_id: flag}, update_command, upsert=True)[flag_id]
         return updated_flag
 
     def duplicate_flag(self, flag):
@@ -99,10 +99,10 @@ class FlaggingMongo:
         flag_groups.remove({flag_group_id: flag_group})
         return flag_group
 
-    def update_flag_group(self, flag_group, update_col, update_value):
+    def update_flag_group(self, flag_group, update_command):
         db = self.client[FLAGGING_DATABASE]
         flag_groups = db[FLAG_GROUPS]
-        updated_flag_group = flag_groups.find_and_modify({flag_group_id: flag_group}, remove=False, update={update_col: update_value})[flag_group_id]
+        updated_flag_group = flag_groups.find_one_and_update({flag_group_id: flag_group}, update_command, upsert=True)[flag_group_id]
         return updated_flag_group
 
     def duplicate_flag_group(self, flag_group):
@@ -113,7 +113,6 @@ class FlaggingMongo:
         flag_group_2_duplicate.pop(flag_group_id, None)
         duplicated_flag_groups = flag_groups.insert_one(flag_group_2_duplicate).inserted_id
         return duplicated_flag_groups
-
 
     #flag dependencies
     '''
@@ -150,10 +149,10 @@ class FlaggingMongo:
 
     #TODO,
     # remove FLAG_NAME, DEPDENDENT_FLAGS
-    def add_specific_flag_dependencies(self, flag, new_deps: []):
+    def add_specific_flag_dependencies(self, flag, new_deps: [], dependent_flag_column):
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        flag_deps_flag = flagging_dependencies.find_one({"FLAG_NAME": flag})["DEPENDENT_FLAGS"][0]
+        flag_deps_flag = flagging_dependencies.find_one({flag_id: flag})[dependent_flag_column][0]
         flag_deps_list = []
         if isinstance(flag_deps_flag, list):
             for x in flag_deps_flag:
@@ -163,7 +162,7 @@ class FlaggingMongo:
         for new_dep in new_deps:
             if new_dep not in flag_deps_list:
                 flag_deps_list.append(new_dep)
-        updated_id = flagging_dependencies.find_and_modify(query={"FLAG_NAME": flag}, remove=False, update={"DEPENDENT_FLAGS": flag_deps_list})["_id"]
+        updated_id = flagging_dependencies.update(query={flag_id: flag}, remove=False, update={dependent_flag_column: flag_deps_list})[flag_id]
         return updated_id
 
     #TODO
