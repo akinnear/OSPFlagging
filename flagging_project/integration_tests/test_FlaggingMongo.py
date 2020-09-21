@@ -137,48 +137,48 @@ def test_remove_flag_based_on_name():
 
 
 
-def test_update_flag_old():
-    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
-            _create_flagging_mongo(container) as flagging_mongo:
-        assert flagging_mongo.get_flags() == []
-
-        with _create_mongo_client(container) as client:
-            flag_name_1 = "Flag1A1A"
-            flag_status = "Development"
-            referenced_flags = "Flag3"
-            flag_validation_results = FlaggingValidationResults()
-            db = client[FLAGGING_DATABASE]
-            id_1 = db[FLAGGING_COLLECTION].insert_one({"FLAG_NAME": flag_name_1,
-                                                       "FLAG_VALIDATION_RESULTS": vars(flag_validation_results),
-                                                       "REFERENCED_FLAGS": referenced_flags,
-                                                       "FLAG_STATUS": flag_status,
-                                                       "FLAG_TIMESTAMP": datetime.datetime.now()}).inserted_id
-
-            # get flags
-            flags = flagging_mongo.get_flags()
-            # Only 1
-            assert len(flags) == 1
-            # The whole object
-            assert flags[0]['_id'] == id_1
-
-            flag_name_2 = "FLAG2B2B"
-            id_2 = db[FLAGGING_COLLECTION].insert_one({"FLAG_NAME": flag_name_2,
-                                                       "FLAG_VALIDATION_RESULTS": vars(flag_validation_results),
-                                                       "REFERENCED_FLAGS": referenced_flags,
-                                                       "FLAG_STATUS": flag_status,
-                                                       "FLAG_TIMESTAMP": datetime.datetime.now()}).inserted_id
-
-            pulled_flag_1 = db[FLAGGING_COLLECTION].find_one({"FLAG_NAME": flag_name_1})
-            pulled_flag_2 = db[FLAGGING_COLLECTION].find_one({"FLAG_NAME": flag_name_2})
-            flags = flagging_mongo.get_flags()
-            assert len(flags) == 2
-            assert pulled_flag_1["_id"] == id_1
-            assert pulled_flag_2["_id"] == id_2
-
-            #update flag
-            flagging_mongo.update_flag_old({"FLAG_NAME": flag_name_2}, {"FLAG_STATUS": "PRODUCTION"})
-            updated_flag = db[FLAGGING_COLLECTION].find_one({"FLAG_STATUS": "PRODUCTION"})
-            assert updated_flag["_id"] == id_2
+# def test_update_flag_old():
+#     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+#             _create_flagging_mongo(container) as flagging_mongo:
+#         assert flagging_mongo.get_flags() == []
+#
+#         with _create_mongo_client(container) as client:
+#             flag_name_1 = "Flag1A1A"
+#             flag_status = "Development"
+#             referenced_flags = "Flag3"
+#             flag_validation_results = FlaggingValidationResults()
+#             db = client[FLAGGING_DATABASE]
+#             id_1 = db[FLAGGING_COLLECTION].insert_one({"FLAG_NAME": flag_name_1,
+#                                                        "FLAG_VALIDATION_RESULTS": vars(flag_validation_results),
+#                                                        "REFERENCED_FLAGS": referenced_flags,
+#                                                        "FLAG_STATUS": flag_status,
+#                                                        "FLAG_TIMESTAMP": datetime.datetime.now()}).inserted_id
+#
+#             # get flags
+#             flags = flagging_mongo.get_flags()
+#             # Only 1
+#             assert len(flags) == 1
+#             # The whole object
+#             assert flags[0]['_id'] == id_1
+#
+#             flag_name_2 = "FLAG2B2B"
+#             id_2 = db[FLAGGING_COLLECTION].insert_one({"FLAG_NAME": flag_name_2,
+#                                                        "FLAG_VALIDATION_RESULTS": vars(flag_validation_results),
+#                                                        "REFERENCED_FLAGS": referenced_flags,
+#                                                        "FLAG_STATUS": flag_status,
+#                                                        "FLAG_TIMESTAMP": datetime.datetime.now()}).inserted_id
+#
+#             pulled_flag_1 = db[FLAGGING_COLLECTION].find_one({"FLAG_NAME": flag_name_1})
+#             pulled_flag_2 = db[FLAGGING_COLLECTION].find_one({"FLAG_NAME": flag_name_2})
+#             flags = flagging_mongo.get_flags()
+#             assert len(flags) == 2
+#             assert pulled_flag_1["_id"] == id_1
+#             assert pulled_flag_2["_id"] == id_2
+#
+#             #update flag
+#             flagging_mongo.update_flag_old({"FLAG_NAME": flag_name_2}, {"FLAG_STATUS": "PRODUCTION"})
+#             updated_flag = db[FLAGGING_COLLECTION].find_one({"FLAG_STATUS": "PRODUCTION"})
+#             assert updated_flag["_id"] == id_2
 
 
 def test_update_flag():
@@ -220,7 +220,7 @@ def test_update_flag():
             assert pulled_flag_2["_id"] == id_2
 
             #update flag
-            updated_flag = flagging_mongo.update_flag_new(id_2, update_value="PRODUCTION", update_col="FLAG_STATUS")
+            updated_flag = flagging_mongo.update_flag(flag=id_2, update_command={"$set": {"FLAG_STATUS": "PRODUCTION"}})
             production_flag = db[FLAGGING_COLLECTION].find_one({"FLAG_STATUS": "PRODUCTION"})["_id"]
             assert updated_flag == id_2
             assert updated_flag == production_flag
@@ -640,10 +640,11 @@ def test_update_flag_group_based_on_id():
             assert pulled_flag_group_2["_id"] == id_2
 
             # update flag group
-            flagging_mongo.update_flag_group(flag_group=id_2, update_col="FLAGS", update_value=["FLAG1", "FLAG2", "FLAG4"])
+            flagging_mongo.update_flag_group(flag_group=id_2, update_command={"$set": {"FLAGS": ["FLAG1", "Flag2", "FLAG4"]}})
             df_test = pd.DataFrame(list(db[FLAG_GROUPS].find({}, {"FLAGS": 1})))
             df_update = df_test[df_test['FLAGS'].astype(str).str.contains('FLAG1')]
             update_id = df_update["_id"].item()
+            flag_groups = flagging_mongo.get_flag_groups()
             assert update_id == id_2
 
 
@@ -726,6 +727,7 @@ def test_add_flag_dependencies():
 
 
 #get flag deps collection
+def test_get_flag_deps():
     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
         _create_flagging_mongo(container) as flagging_mongo:
 
@@ -754,7 +756,8 @@ def test_add_flag_dependencies():
             flag_deps = flagging_mongo.get_flag_dependencies()
             assert len(flag_deps) == 2
 
-#add deps to flag
+#TODO,
+# failing
 def test_add_dependencies_to_flag():
     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
         _create_flagging_mongo(container) as flagging_mongo:
@@ -785,13 +788,16 @@ def test_add_dependencies_to_flag():
             assert len(flag_deps) == 2
 
             #add FLAG9 dependent on FLAG4
-            flag_deps_id_add = flagging_mongo.add_specific_flag_dependencies(flag="FLAG9", new_deps=["FLAG4"])
+            id_flag_9 = db[FLAG_DEPENDENCIES].find_one({"FLAG_NAME": "FLAG9"})["_id"]
+            flag_deps_id_add = flagging_mongo.add_specific_flag_dependencies(flag=id_flag_9, new_deps=["FLAG4"], dependent_flag_column="DEPENDENT_FLAGS")
             assert flag_deps_id_add == flag_deps_id_2
 
             #get len of deps for FLAG9
             assert len(db[FLAG_DEPENDENCIES].find_one({"_id": flag_deps_id_add})["DEPENDENT_FLAGS"]) == 2
             assert "FLAG4" in db[FLAG_DEPENDENCIES].find_one({"_id": flag_deps_id_2})["DEPENDENT_FLAGS"]
 
+#TODO,
+# failing
 def test_add_dependencies_to_flag_2():
     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
         _create_flagging_mongo(container) as flagging_mongo:
@@ -822,17 +828,23 @@ def test_add_dependencies_to_flag_2():
             assert len(flag_deps) == 2
 
             #add FLAG9 dependent on FLAG4
-            flag_deps_id_add = flagging_mongo.add_specific_flag_dependencies(flag="FLAG9", new_deps=["FLAG4"])
+            id_flag_9 = db[FLAG_DEPENDENCIES].find_one({"FLAG_NAME": "FLAG9"})["_id"]
+            flag_deps_id_add = flagging_mongo.add_specific_flag_dependencies(flag=id_flag_9, new_deps=["FLAG4"], dependent_flag_column="DEPENDENT_FLAGS")
             assert flag_deps_id_add == flag_deps_id_2
 
             #get len of deps for FLAG9
             assert len(db[FLAG_DEPENDENCIES].find_one({"_id": flag_deps_id_add})["DEPENDENT_FLAGS"]) == 2
             assert "FLAG4" in db[FLAG_DEPENDENCIES].find_one({"_id": flag_deps_id_2})["DEPENDENT_FLAGS"]
 
+            #check id on flag 9
+            id_flag_9_check = db[FLAG_DEPENDENCIES].find_one({"FLAG_NAME": "FLAG9"})["_id"]
+            assert id_flag_9 == id_flag_9_check
+
+
             #add FLAG9 dependent on FLAG6, FLAG7
             #TODO,
             # bugg
-            flag_deps_id_add_2 = flagging_mongo.add_specific_flag_dependencies(flag="FLAG9", new_deps=["FLAG6", "FLAG7"])
+            flag_deps_id_add_2 = flagging_mongo.add_specific_flag_dependencies(flag=id_flag_9, new_deps=["FLAG6", "FLAG7"], dependent_flag_column="DEPENDENT_FLAGS")
             assert flag_deps_id_add_2 == flag_deps_id_2
 
             assert len(db[FLAG_DEPENDENCIES].find_one({"_id": flag_deps_id_add_2})["DEPENDENT_FLAGS"]) == 4
