@@ -839,7 +839,6 @@ def test_add_dependencies_to_flag_2():
 
 
             #add FLAG9 dependent on FLAG6, FLAG7
-
             flag_deps_id_add_2 = flagging_mongo.add_specific_flag_dependencies(flag=id_flag_9, new_deps=["FLAG6", "FLAG7"], dependent_flag_column="DEPENDENT_FLAGS")
             assert flag_deps_id_add_2 == flag_deps_id_2
 
@@ -849,6 +848,38 @@ def test_add_dependencies_to_flag_2():
 
 
 #remove deps from flag
+def test_remove_deps_from_flag():
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+        _create_flagging_mongo(container) as flagging_mongo:
+
+        with _create_mongo_client(container) as client:
+            #add flag_deps
+            db = client[FLAGGING_DATABASE]
+            flag_name = "FLAG1"
+            flag_dependencies = ["FLAG9", "FLAG3"]
+            flag_deps_id_1 = db[FLAG_DEPENDENCIES].insert_one({"FLAG_NAME": flag_name,
+                                                              "DEPENDENT_FLAGS": flag_dependencies}).inserted_id
+            flag_deps_id_2 = db[FLAG_DEPENDENCIES].insert_one({"FLAG_NAME": "FLAG9",
+                                                              "DEPENDENT_FLAGS": ["FLAG3"]}).inserted_id
+            id_flag_9 = db[FLAG_DEPENDENCIES].find_one({"FLAG_NAME": "FLAG9"})["_id"]
+            flag_deps_id_add = flagging_mongo.add_specific_flag_dependencies(flag=id_flag_9, new_deps=["FLAG4", "FLAG6", "FLAG7"], dependent_flag_column="DEPENDENT_FLAGS")
+
+            #remove FLAG4 dependency from FLAG9
+            flag_deps_id_rm = flagging_mongo.remove_specific_flag_dependencies(flag=id_flag_9, rm_deps=["FLAG4"], dependent_flag_column="DEPENDENT_FLAGS")
+            assert id_flag_9 == flag_deps_id_rm
+            assert len(db[FLAG_DEPENDENCIES].find_one({"_id": id_flag_9})["DEPENDENT_FLAGS"]) == 3
+            assert "FLAG4" not in db[FLAG_DEPENDENCIES].find_one({"_id": id_flag_9})["DEPENDENT_FLAGS"]
+            assert "FLAG7" in db[FLAG_DEPENDENCIES].find_one({"_id": id_flag_9})["DEPENDENT_FLAGS"]
+
+            #romve FLAG5, FLAG6, FLAG7 dependency from FLAG9, FLAG5 not in set, no action
+            flag_deps_id_rm_2 = flagging_mongo.remove_specific_flag_dependencies(flag=id_flag_9, rm_deps=["FLAG5", "FLAG6", "FLAG7"], dependent_flag_column="DEPENDENT_FLAGS")
+            assert id_flag_9 == flag_deps_id_rm_2
+            assert len(db[FLAG_DEPENDENCIES].find_one({"_id": id_flag_9})["DEPENDENT_FLAGS"]) == 1
+            assert "FLAG6" not in db[FLAG_DEPENDENCIES].find_one({"_id": id_flag_9})["DEPENDENT_FLAGS"]
+            assert "FLAG7" not in db[FLAG_DEPENDENCIES].find_one({"_id": id_flag_9})["DEPENDENT_FLAGS"]
+            assert "FLAG3" in db[FLAG_DEPENDENCIES].find_one({"_id": id_flag_9})["DEPENDENT_FLAGS"]
+
+
 
 #add new flag key
 
