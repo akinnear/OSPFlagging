@@ -164,22 +164,24 @@ class FlaggingMongo:
         updated_id = flagging_dependencies.find_one_and_update({flag_id: flag}, {"$set": {dependent_flag_column: flag_deps_list}}, upsert=True)[flag_group_id]
         return updated_id
 
-    #TODO
-    # debugg remove_specific_flag_dependencies
-    def remove_specific_flag_dependencies(self, flag, rm_deps: []):
+    def remove_specific_flag_dependencies(self, flag, rm_deps: [], dependent_flag_column):
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        flag_deps_flag = list(flagging_dependencies.find_on({"FLAG_NAME": flag}))
-        df_flagging_dependencies = pd.DataFrame(list(flagging_dependencies.find()))
-        df_flag_deps_flag = df_flagging_dependencies[df_flagging_dependencies["FLAG_NAME"] == flag]
+        flag_deps_flag = flagging_dependencies.find_one({flag_id: flag})[dependent_flag_column]
+        flag_deps_list = []
+        if isinstance(flag_deps_flag, list):
+            for x in flag_deps_flag:
+                flag_deps_list.append(x)
+        else:
+            flag_deps_list.append(flag_deps_flag)
         for rm_dep in rm_deps:
-            if not df_flag_deps_flag[df_flag_deps_flag["FLAG_DEPENDENCIES"].astype(str).str.contains(rm_dep)].empty:
-                for item in df_flag_deps_flag.items():
-                    item[1].remove(rm_dep)
-        item[1] = set(item[1])
-        item[1] = list(item[1])
-        modified_flag = flagging_dependencies.find_and_modify(query={"FLAG_NAME": flag}, remove=False, update=item[1])["_id"]
+            if rm_dep in flag_deps_list:
+                flag_deps_list.remove(rm_dep)
+
+
+        modified_flag = flagging_dependencies.find_one_and_update({flag_id: flag}, {"$set": {dependent_flag_column: flag_deps_list}}, upsert=True)[flag_id]
         return modified_flag
+
 
 
 
