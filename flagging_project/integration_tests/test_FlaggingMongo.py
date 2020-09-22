@@ -220,7 +220,7 @@ def test_update_flag():
             assert pulled_flag_2["_id"] == id_2
 
             #update flag
-            updated_flag = flagging_mongo.update_flag(flag=id_2, update_command={"$set": {"FLAG_STATUS": "PRODUCTION"}})
+            updated_flag = flagging_mongo.update_flag(flag=id_2, update_value="PRODUCTION", update_column="FLAG_STATUS")
             production_flag = db[FLAGGING_COLLECTION].find_one({"FLAG_STATUS": "PRODUCTION"})["_id"]
             assert updated_flag == id_2
             assert updated_flag == production_flag
