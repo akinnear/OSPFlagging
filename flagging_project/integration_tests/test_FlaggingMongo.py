@@ -640,13 +640,12 @@ def test_update_flag_group_based_on_id():
             assert pulled_flag_group_2["_id"] == id_2
 
             # update flag group
-            flagging_mongo.update_flag_group(flag_group=id_2, update_command={"$set": {"FLAGS": ["FLAG1", "Flag2", "FLAG4"]}})
-            df_test = pd.DataFrame(list(db[FLAG_GROUPS].find({}, {"FLAGS": 1})))
-            df_update = df_test[df_test['FLAGS'].astype(str).str.contains('FLAG1')]
-            update_id = df_update["_id"].item()
-            flag_groups = flagging_mongo.get_flag_groups()
-            assert update_id == id_2
-
+            updated_flag_group_id = flagging_mongo.update_flag_group(flag_group=id_2, update_value=["FLAG1", "FLAG2", "FLAG4"], update_column="FLAGS")
+            assert updated_flag_group_id == id_2
+            assert "FLAG1" in db[FLAG_GROUPS].find_one({"_id": updated_flag_group_id})["FLAGS"]
+            assert "FLAG2" in db[FLAG_GROUPS].find_one({"_id": updated_flag_group_id})["FLAGS"]
+            assert "FLAG4" in db[FLAG_GROUPS].find_one({"_id": updated_flag_group_id})["FLAGS"]
+            assert "FLAG3" not in db[FLAG_GROUPS].find_one({"_id": updated_flag_group_id})["FLAGS"]
 
 def test_duplicate_flag_group_based_on_id():
     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
