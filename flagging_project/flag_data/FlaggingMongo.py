@@ -180,5 +180,8 @@ class FlaggingMongo:
     def update_flag_dependencies(self, flag, dependent_flag_value: [], dependent_flag_column: str):
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        modified_flag = flagging_dependencies.find_one_and_update({flag_id: flag}, {"$set": {dependent_flag_column: dependent_flag_value}}, upsert=True)[flag_id]
+        matching_flag = flagging_dependencies.find_one({flag_id: flag})[flag_id]
+        modified_flag = None
+        if matching_flag:
+            modified_flag = flagging_dependencies.find_one_and_update({flag_id: flag}, {"$set": {dependent_flag_column: dependent_flag_value}}, upsert=True)[flag_id]
         return modified_flag
