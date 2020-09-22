@@ -99,12 +99,10 @@ class FlaggingMongo:
         flag_groups.remove({flag_group_id: flag_group})
         return flag_group
 
-    #TODO
-    # update commmand must be generic
-    def update_flag_group(self, flag_group, update_command):
+    def update_flag_group(self, flag_group, update_value, update_column):
         db = self.client[FLAGGING_DATABASE]
         flag_groups = db[FLAG_GROUPS]
-        updated_flag_group = flag_groups.find_one_and_update({flag_group_id: flag_group}, update_command, upsert=True)[flag_group_id]
+        updated_flag_group = flag_groups.find_one_and_update({flag_group_id: flag_group}, {"$set": {update_column: update_value}}, upsert=True)[flag_group_id]
         return updated_flag_group
 
     def duplicate_flag_group(self, flag_group):
