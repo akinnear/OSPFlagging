@@ -923,3 +923,20 @@ def test_remove_flag_deps_key():
             assert db[FLAG_DEPENDENCIES].find_one({"_id": new_flag_deps_key})["FLAG_NAME"] == "FLAG3"
             assert flagging_mongo.get_flag_dependencies()[0]["FLAG_NAME"] == "FLAG3"
 
+def test_update_flag_dependencies():
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_mongo(container) as flagging_mongo:
+        with _create_mongo_client(container) as client:
+            # add flag_deps
+            db = client[FLAGGING_DATABASE]
+            flag_name = "FLAG1"
+            flag_dependencies = ["FLAG9", "FLAG3"]
+            flag_deps_id_1 = db[FLAG_DEPENDENCIES].insert_one({"FLAG_NAME": flag_name,
+                                                               "DEPENDENT_FLAGS": flag_dependencies}).inserted_id
+            #update flag1 deps
+            updated_flag_1_deps = flagging_mongo.update_flag_dependencies(flag=flag_deps_id_1, dependent_flag_value=["FLAG2", "FLAG8"], dependent_flag_column="DEPENDENT_FLAGS")
+            assert "FLAG8" in db[FLAG_DEPENDENCIES].find_one({"_id": updated_flag_1_deps})["DEPENDENT_FLAGS"]
+            assert "FLAG2" in db[FLAG_DEPENDENCIES].find_one({"_id": updated_flag_1_deps})["DEPENDENT_FLAGS"]
+            assert "FLAG9" not in db[FLAG_DEPENDENCIES].find_one({"_id": updated_flag_1_deps})["DEPENDENT_FLAGS"]
+            assert "FLAG3" not in db[FLAG_DEPENDENCIES].find_one({"_id": updated_flag_1_deps})["DEPENDENT_FLAGS"]
+
