@@ -899,7 +899,6 @@ def test_add_new_flag_deps_key():
             assert len(flagging_mongo.get_flag_dependencies()) == 2
             assert "FLAG1" in db[FLAG_DEPENDENCIES].find_one({"_id": flag_3_id})["DEPENDENT_FLAGS"]
 
-
 #remove flag key
 def test_remove_flag_deps_key():
     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
