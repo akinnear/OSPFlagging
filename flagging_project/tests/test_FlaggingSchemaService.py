@@ -10,7 +10,7 @@ from flagging.TypeValidationResults import TypeValidationResults
 from flagging.FlaggingNodeVisitor import CodeLocation
 from flagging.VariableInformation import VariableInformation
 from flagging.FlaggingValidation import FlaggingValidationResults
-
+from flag_data.FlaggingMongo import FlaggingMongo
 from unittest import mock
 
 # notes
@@ -551,6 +551,15 @@ def test_duplicate_flag_group_invalid_new_flag_group():
     result.valid == False
     result.message == "new flag group " + new_flag_group_id + " already exists"
     result.uuid == new_flag_group_id + "_primary_key_id"
+
+#test interface, simple mock pull
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo", return_value=FlaggingMongo("mock_url"), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo.get_flags", return_value="FlagID", autospec=True)
+def test_pull_flag_interface(mfm, mgf):
+    flag_mongo = FlaggingMongo(connection_url="mock_url")
+    flags = flag_mongo.get_flags()
+    assert "FlagID" in flags
+
 
 
 
