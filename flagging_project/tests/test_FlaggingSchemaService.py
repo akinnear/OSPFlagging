@@ -12,6 +12,18 @@ from flagging.VariableInformation import VariableInformation
 from flagging.FlaggingValidation import FlaggingValidationResults
 from flag_data.FlaggingMongo import FlaggingMongo
 from unittest import mock
+import pymongo
+import mongomock
+from mongomock import MongoClient
+
+# def _get_connection_string(container):
+#     return "mongodb://test:test@localhost:"+container.get_exposed_port(27017)
+#
+# def _create_flagging_mongo(container):
+#     return FlaggingMongo(_get_connection_string(container))
+#
+# def _create_mongo_client(container):
+#     return MongoClient(_get_connection_string(container))
 
 # notes
 # pass errors as such
@@ -552,6 +564,8 @@ def test_duplicate_flag_group_invalid_new_flag_group():
     result.message == "new flag group " + new_flag_group_id + " already exists"
     result.uuid == new_flag_group_id + "_primary_key_id"
 
+
+
 #test interface, simple mock pull
 @mock.patch("flag_data.FlaggingMongo.FlaggingMongo", return_value=FlaggingMongo("mock_url"), autospec=True)
 @mock.patch("flag_data.FlaggingMongo.FlaggingMongo.get_flags", return_value="FlagID", autospec=True)
@@ -559,6 +573,34 @@ def test_pull_flag_interface(mfm, mgf):
     flag_mongo = FlaggingMongo(connection_url="mock_url")
     flags = flag_mongo.get_flags()
     assert "FlagID" in flags
+
+#urilize mongomock as Mongo DB client
+def test_mongomock():
+    flagging_mongo = FlaggingMongo(connection_url="mongodb://test:test@localhost:27017")
+    flagging_mongo.client = mongomock.MongoClient()
+    print("hello")
+    add_id = flagging_mongo.add_flag({"_id": "FlagID1"})
+    flags = flagging_mongo.get_flags()
+    print('hello')
+
+
+
+
+# #test with mongomock
+# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo", return_value=FlaggingMongo("mock_url"), autospec=True)
+# @mongomock.patch(servers=(("mongodb://test:test@localhost", 27017), ))
+# def test_mongomock(mock_FlaggingMongo):
+#     with FlaggingMongo(connection_url="mock_url") as flagging_mongo:
+#         with mongomock.MongoClient("mongodb://test:test@localhost") as client:
+#             add_id = flagging_mongo.add_flag({"_id": "FLAGID1"})
+#             flags = flagging_mongo.get_flags()
+#             print("hello")
+
+
+
+
+
+
 
 
 
