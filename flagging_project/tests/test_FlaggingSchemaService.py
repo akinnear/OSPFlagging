@@ -14,7 +14,7 @@ from flag_data.FlaggingMongo import FlaggingMongo
 from unittest import mock
 import pymongo
 import mongomock
-from mongomock import MongoClient
+
 
 # def _get_connection_string(container):
 #     return "mongodb://test:test@localhost:"+container.get_exposed_port(27017)
@@ -587,15 +587,7 @@ def test_mongomock():
 
 
 
-# #test with mongomock
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo", return_value=FlaggingMongo("mock_url"), autospec=True)
-# @mongomock.patch(servers=(("mongodb://test:test@localhost", 27017), ))
-# def test_mongomock(mock_FlaggingMongo):
-#     with FlaggingMongo(connection_url="mock_url") as flagging_mongo:
-#         with mongomock.MongoClient("mongodb://test:test@localhost") as client:
-#             add_id = flagging_mongo.add_flag({"_id": "FLAGID1"})
-#             flags = flagging_mongo.get_flags()
-#             print("hello")
+
 
 
 

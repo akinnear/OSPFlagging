@@ -75,4 +75,3 @@ def test_create_flag(mvrb):
     assert flags[0]["flag_logic"] == flag_logic_information.flag_logic
     assert flags[0]["flag_name"] == "Flag1"
     assert flags[0]["referenced_flags"] == ["MY_FLAG"]
-    
