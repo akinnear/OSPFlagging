@@ -574,14 +574,15 @@ def test_pull_flag_interface(mfm, mgf):
     flags = flag_mongo.get_flags()
     assert "FlagID" in flags
 
-#urilize mongomock as Mongo DB client
+#utilize mongomock as Mongo DB client
 def test_mongomock():
     flagging_mongo = FlaggingMongo(connection_url="mongodb://test:test@localhost:27017")
     flagging_mongo.client = mongomock.MongoClient()
-    print("hello")
     add_id = flagging_mongo.add_flag({"_id": "FlagID1"})
     flags = flagging_mongo.get_flags()
-    print('hello')
+    assert len(flags) == 1
+    assert flags[0]['_id'] == "FlagID1"
+
 
 
 
