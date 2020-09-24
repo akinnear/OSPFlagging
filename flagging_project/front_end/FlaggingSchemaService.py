@@ -6,79 +6,42 @@ from flag_names.FlagService import pull_flag_names
 from flag_names.FlagGroupService import pull_flag_group_names
 from flagging.FlaggingValidation import FlaggingValidationResults
 from flagging.FlaggingNodeVisitor import CodeLocation
-
-#TODO
-# interface design, html5 + bootstrap4
-
-
-#A call to validate logic, this will return only warning and errors
-# with enough information to understand the problem and location.
-# TO perform validation please use the interface created in #67 for flag feeders.
-
-def validate_logic(flag_id:str, flag_logic_information:FlagLogicInformation()):
-    #TODO
-    # get flag feeders
-    flag_feeders = pull_flag_feeders(dummy_flag_feeders={"FF1": int, "FF2": bool, "FF3": str, "FF4": int})
-
-    #TODO
-    # need flag_dependiceis from api call or direct query
-    flag_dependencies = get_flag_dependencies()
-
-
-    #TODO
-    # perform full validation on user_logic via nodevisitor, mypy, and validation
-    # mypy validation is part of full validation method, do not need explicit mypy validation call
+from flag_data.FlaggingMongo import FlaggingMongo
+from front_end.FlaggingValidateLogic import validate_logic
 
 
 
-    #validation
-    validation_result = validate_flag_logic_information(flag_id, flag_feeders, flag_dependencies, flag_logic_information)
-
-    #return errors and warning information
-    return validation_result
-
-
-#A call to get flag dependencies
-def get_flag_dependencies():
-    #api endpoint of db endpoint
-    #hard code dependencies for now
-    flag_dependencies = {"Flag1": {"Flag8"},
-     "Flag2": {"Flag3"},
-     "Flag3": {"Flag4"},
-     "Flag4": {"Flag5"},
-     "Flag5": {"Flag6"},
-     "Flag6": {"Flag7"},
-     "Flag7": {"Flag8"},
-     "Flag8": {},
-     "Flag9": {"Flag10"},
-     "Flag10": {"Flag9"}}
-    return flag_dependencies
 
 #A call to create a flag given a name and logic, this will return a UUID,
 # name cannot be empty if so error
 
-def create_flag(flag_id: str, flag_logic_information:FlagLogicInformation):
+def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, flagging_mongo:FlaggingMongo):
     #store flag name and flag logic in db
 
-    if flag_id is None:
+    #call databse to get id based on name
+
+    if flag_name is None:
         # return error message, no flag name specified
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag id not specified")
+                                                       message="flag name not specified")
 
     else:
 
+        add_flag_id = flagging_mongo.add_flag({"flag_name": flag_name,
+                                 "flag_logic_information": flag_logic_information})
+
         #validate flag logic
-        flag_validation = validate_logic(flag_id, flag_logic_information)
+        flag_validation = validate_logic(flag_name, flag_logic_information)
         if flag_validation.errors == {} and flag_validation.mypy_errors == {}:
-            #TODO
-            # create flag
             flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                            message="new flag created",
-                                                           uuid=flag_id + "_primary_key_id")
+                                                           uuid=add_flag_id)
+
+
         else:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="error in flag logic",
-                                                           uuid=flag_id + "_primary_key_id")
+                                                           uuid=add_flag_id)
     return flag_schema_object
 
 
