@@ -48,22 +48,24 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
 
 #A call to save changes to a flag, this will take in the change and a UUID
 #One call for flag name
-def update_flag_name(original_flag_id: str, new_flag_id: str, existing_flags):
+def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, flagging_mongo: FlaggingMongo):
     if original_flag_id is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="user must specify name of original flag")
-    elif new_flag_id is None:
+                                                       message="user must specify id of original flag")
+    elif new_flag_name is None:
         # return error to user that original_flag_name and new_flag_name have to be specified
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="user must specify name of new flag")
     #query to get existing flag names
     else:
         if original_flag_id in existing_flags:
-            #TODO
-            # query to update existing flag_name with new flag_name
+
+
+            new_flag_id = flagging_mongo.update_flag(flag=original_flag_id, update_value=new_flag_name, update_column="FLAG_NAME")
+
             flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                           message="original flag " + original_flag_id + " updated to " + new_flag_id,
-                                                           uuid=new_flag_id + "_primary_key_id")
+                                                           message="original flag " + original_flag_id + " has been renamed " + new_flag_name,
+                                                           uuid=new_flag_id)
         else:
             if original_flag_id not in existing_flags:
                 #return error to user that original_flag_name does not exist
