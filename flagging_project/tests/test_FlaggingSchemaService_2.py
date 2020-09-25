@@ -232,5 +232,174 @@ def test_update_flag_name_og_flag_not_found(flagging_mongo, mvrb, mvl):
     assert result.valid == False
     assert result.message == "original flag id " + og_flag_id + " does not exist"
 
+#test update flag logic informatio
+@mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_update_flag_logic(flagging_mongo, mvrb, mvl):
+    flagging_mongo.return_value.update_flag.return_value = 3
+    mock_flagging_mongo = flagging_mongo()
+    existing_flags = pull_flag_names(dummy_flag_names=["FLAGID1", "FLAGID2"])
+    og_flag_id = "FLAGID1"
+    nw_flag_logic_information = FlagLogicInformation(
+    used_variables={VariableInformation("FF1"): {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15),
+                                                 CodeLocation(9, 5), CodeLocation(17, 15)},
+                    VariableInformation("FF2"): {CodeLocation(4, 15), CodeLocation(5, 9)},
+                    VariableInformation("FF3"): {CodeLocation(7, 9)},
+                    VariableInformation("FF4"): {CodeLocation(2, 3), CodeLocation(8, 15)}},
+    assigned_variables={VariableInformation("a"): {CodeLocation(12, 4), CodeLocation(16, 8)},
+                        VariableInformation("b"): {CodeLocation(13, 4)},
+                        VariableInformation("c"): {CodeLocation(14, 4)}},
+    referenced_functions=dict(),
+    defined_functions=dict(),
+    defined_classes=dict(),
+    referenced_modules=dict(),
+    referenced_flags={"MY_FLAG2B2B": {CodeLocation(9, 9)}},
+    return_points={CodeLocation(4, 8), CodeLocation(6, 8), CodeLocation(8, 8),
+                   CodeLocation(10, 4), CodeLocation(17, 8)},
+    used_lambdas=dict(),
+    errors=[],
+    flag_logic="""does not matter""",
+    validation_results=TypeValidationResults())
+    result = update_flag_logic(flag_id=og_flag_id, new_flag_logic_information=nw_flag_logic_information, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+    assert result.valid == True
+    assert result.message == "logic for flag " + og_flag_id + " has been updated"
+    assert result.uuid == 3
 
 
+#update flag logic, flag id not specified
+@mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_update_flag_logic_missing_flag(flagging_mongo, mvrb, mvl):
+    flagging_mongo.return_value.update_flag.return_value = 3
+    mock_flagging_mongo = flagging_mongo()
+    existing_flags = pull_flag_names(dummy_flag_names=["FLAGID1", "FLAGID2"])
+    og_flag_id = None
+    nw_flag_logic_information = FlagLogicInformation(
+        used_variables={VariableInformation("FF1"): {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15),
+                                                     CodeLocation(9, 5), CodeLocation(17, 15)},
+                        VariableInformation("FF2"): {CodeLocation(4, 15), CodeLocation(5, 9)},
+                        VariableInformation("FF3"): {CodeLocation(7, 9)},
+                        VariableInformation("FF4"): {CodeLocation(2, 3), CodeLocation(8, 15)}},
+        assigned_variables={VariableInformation("a"): {CodeLocation(12, 4), CodeLocation(16, 8)},
+                            VariableInformation("b"): {CodeLocation(13, 4)},
+                            VariableInformation("c"): {CodeLocation(14, 4)}},
+        referenced_functions=dict(),
+        defined_functions=dict(),
+        defined_classes=dict(),
+        referenced_modules=dict(),
+        referenced_flags={"MY_FLAG2B2B": {CodeLocation(9, 9)}},
+        return_points={CodeLocation(4, 8), CodeLocation(6, 8), CodeLocation(8, 8),
+                       CodeLocation(10, 4), CodeLocation(17, 8)},
+        used_lambdas=dict(),
+        errors=[],
+        flag_logic="""does not matter""",
+        validation_results=TypeValidationResults())
+    result = update_flag_logic(flag_id=og_flag_id, new_flag_logic_information=nw_flag_logic_information,
+                               existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+    assert result.valid == False
+    assert result.message == "user must specify flag id"
+
+#update flag logic, flag id does not exists
+@mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_update_flag_logic_missing_flag(flagging_mongo, mvrb, mvl):
+    flagging_mongo.return_value.update_flag.return_value = 3
+    mock_flagging_mongo = flagging_mongo()
+    existing_flags = pull_flag_names(dummy_flag_names=["FLAGID1", "FLAGID2"])
+    og_flag_id = "FLAGID3"
+    nw_flag_logic_information = FlagLogicInformation(
+        used_variables={VariableInformation("FF1"): {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15),
+                                                     CodeLocation(9, 5), CodeLocation(17, 15)},
+                        VariableInformation("FF2"): {CodeLocation(4, 15), CodeLocation(5, 9)},
+                        VariableInformation("FF3"): {CodeLocation(7, 9)},
+                        VariableInformation("FF4"): {CodeLocation(2, 3), CodeLocation(8, 15)}},
+        assigned_variables={VariableInformation("a"): {CodeLocation(12, 4), CodeLocation(16, 8)},
+                            VariableInformation("b"): {CodeLocation(13, 4)},
+                            VariableInformation("c"): {CodeLocation(14, 4)}},
+        referenced_functions=dict(),
+        defined_functions=dict(),
+        defined_classes=dict(),
+        referenced_modules=dict(),
+        referenced_flags={"MY_FLAG2B2B": {CodeLocation(9, 9)}},
+        return_points={CodeLocation(4, 8), CodeLocation(6, 8), CodeLocation(8, 8),
+                       CodeLocation(10, 4), CodeLocation(17, 8)},
+        used_lambdas=dict(),
+        errors=[],
+        flag_logic="""does not matter""",
+        validation_results=TypeValidationResults())
+    result = update_flag_logic(flag_id=og_flag_id, new_flag_logic_information=nw_flag_logic_information,
+                               existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+    assert result.valid == False
+    assert result.message == "could not identify existing flag " + og_flag_id
+    assert result.uuid == og_flag_id
+
+#update flag logic, error in result
+@mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(errors={"some_error": {"some_code_location"}}), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_update_flag_logic_errors(flagging_mongo, mvrb, mvl):
+    flagging_mongo.return_value.update_flag.return_value = 3
+    mock_flagging_mongo = flagging_mongo()
+    existing_flags = pull_flag_names(dummy_flag_names=["FLAGID1", "FLAGID2"])
+    og_flag_id = "FLAGID1"
+    nw_flag_logic_information = FlagLogicInformation(
+    used_variables={VariableInformation("FF1"): {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15),
+                                                 CodeLocation(9, 5), CodeLocation(17, 15)},
+                    VariableInformation("FF2"): {CodeLocation(4, 15), CodeLocation(5, 9)},
+                    VariableInformation("FF3"): {CodeLocation(7, 9)},
+                    VariableInformation("FF4"): {CodeLocation(2, 3), CodeLocation(8, 15)}},
+    assigned_variables={VariableInformation("a"): {CodeLocation(12, 4), CodeLocation(16, 8)},
+                        VariableInformation("b"): {CodeLocation(13, 4)},
+                        VariableInformation("c"): {CodeLocation(14, 4)}},
+    referenced_functions=dict(),
+    defined_functions=dict(),
+    defined_classes=dict(),
+    referenced_modules=dict(),
+    referenced_flags={"MY_FLAG2B2B": {CodeLocation(9, 9)}},
+    return_points={CodeLocation(4, 8), CodeLocation(6, 8), CodeLocation(8, 8),
+                   CodeLocation(10, 4), CodeLocation(17, 8)},
+    used_lambdas=dict(),
+    errors=[],
+    flag_logic="""does not matter""",
+    validation_results=TypeValidationResults())
+    result = update_flag_logic(flag_id=og_flag_id, new_flag_logic_information=nw_flag_logic_information, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+    assert result.valid == False
+    assert result.message == "error in flag logic"
+    assert result.uuid == og_flag_id
+
+#update flag lgoic, mypy_error in result
+@mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(mypy_errors={"some_mypy_error": {"some_code_location"}}), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_update_flag_logic_mypy_errors(flagging_mongo, mvrb, mvl):
+    flagging_mongo.return_value.update_flag.return_value = 3
+    mock_flagging_mongo = flagging_mongo()
+    existing_flags = pull_flag_names(dummy_flag_names=["FLAGID1", "FLAGID2"])
+    og_flag_id = "FLAGID1"
+    nw_flag_logic_information = FlagLogicInformation(
+    used_variables={VariableInformation("FF1"): {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15),
+                                                 CodeLocation(9, 5), CodeLocation(17, 15)},
+                    VariableInformation("FF2"): {CodeLocation(4, 15), CodeLocation(5, 9)},
+                    VariableInformation("FF3"): {CodeLocation(7, 9)},
+                    VariableInformation("FF4"): {CodeLocation(2, 3), CodeLocation(8, 15)}},
+    assigned_variables={VariableInformation("a"): {CodeLocation(12, 4), CodeLocation(16, 8)},
+                        VariableInformation("b"): {CodeLocation(13, 4)},
+                        VariableInformation("c"): {CodeLocation(14, 4)}},
+    referenced_functions=dict(),
+    defined_functions=dict(),
+    defined_classes=dict(),
+    referenced_modules=dict(),
+    referenced_flags={"MY_FLAG2B2B": {CodeLocation(9, 9)}},
+    return_points={CodeLocation(4, 8), CodeLocation(6, 8), CodeLocation(8, 8),
+                   CodeLocation(10, 4), CodeLocation(17, 8)},
+    used_lambdas=dict(),
+    errors=[],
+    flag_logic="""does not matter""",
+    validation_results=TypeValidationResults())
+    result = update_flag_logic(flag_id=og_flag_id, new_flag_logic_information=nw_flag_logic_information, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+    assert result.valid == False
+    assert result.message == "error in flag logic"
+    assert result.uuid == og_flag_id
