@@ -132,18 +132,18 @@ def create_flag_group(flag_group_name: str, existing_flag_groups, flagging_mongo
 
 
 #A call to delete a flag group provided a UUID, return true/false
-def delete_flag_group(flag_group_id: str, existing_flag_groups):
-    if flag_group_id is None:
+def delete_flag_group(flag_group_name: str, existing_flag_groups, flagging_mongo: FlaggingMongo):
+    if flag_group_name is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag group id must be specified")
-    elif flag_group_id not in existing_flag_groups:
+                                                       message="flag group name must be specified")
+    elif flag_group_name not in existing_flag_groups:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="could not identify flag group " + flag_group_id + " in database",
-                                                       uuid=flag_group_id)
+                                                       message="could not identify flag group " + flag_group_name + " in database")
     else:
+        removed_flag_group = flagging_mongo.remove_flag_group(flag_group_name)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message="flag group " + flag_group_id + " deleted from database",
-                                                       uuid=flag_group_id + "_primary_key_id")
+                                                       message="flag group " + flag_group_name + " deleted from database",
+                                                       uuid=removed_flag_group)
     return flag_schema_object
 
 
