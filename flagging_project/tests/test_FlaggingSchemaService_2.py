@@ -403,3 +403,44 @@ def test_update_flag_logic_mypy_errors(flagging_mongo, mvrb, mvl):
     assert result.valid == False
     assert result.message == "error in flag logic"
     assert result.uuid == og_flag_id
+
+
+#test to delete flag, valid
+@mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_update_delete_flag(flagging_mongo, mvrb, mvl):
+    mock_flagging_mongo = flagging_mongo()
+    existing_flags = pull_flag_names(dummy_flag_names=["FLAGID1", "FLAGID2"])
+    og_flag_id = "FLAGID1"
+    result = delete_flag(flag_id=og_flag_id, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+    assert result.valid == True
+    assert result.message == og_flag_id + " has been deleted"
+    assert result.uuid == og_flag_id
+
+#test to delete flag, missign flag id
+@mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_update_delete_flag_missing_flag_id(flagging_mongo, mvrb, mvl):
+    mock_flagging_mongo = flagging_mongo()
+    existing_flags = pull_flag_names(dummy_flag_names=["FLAGID1", "FLAGID2"])
+    og_flag_id = None
+    result = delete_flag(flag_id=og_flag_id, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+    assert result.valid == False
+    assert result.message == "user must specify flag id"
+    assert result.uuid == og_flag_id
+
+#test to delete flag, flag does not exist
+@mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_update_delete_flag_flag_does_not_exist(flagging_mongo, mvrb, mvl):
+    mock_flagging_mongo = flagging_mongo()
+    existing_flags = pull_flag_names(dummy_flag_names=["FLAGID1", "FLAGID2"])
+    og_flag_id = "FLAGID3"
+    result = delete_flag(flag_id=og_flag_id, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+    assert result.valid == False
+    assert result.message == "flag id specified does not exist"
+    assert result.uuid == og_flag_id
+
