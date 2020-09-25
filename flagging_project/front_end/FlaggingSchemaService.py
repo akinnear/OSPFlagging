@@ -116,22 +116,18 @@ def delete_flag(flag_id, existing_flags, flagging_mongo: FlaggingMongo):
 
 
 #A call to create a named flag group, returns a UUID, name cannot be empty if so error
-def create_flag_group(flag_group_id: str, existing_flag_groups):
-    if flag_group_id in existing_flag_groups:
-        #flag group already exists, should update existing flag group
+def create_flag_group(flag_group_name: str, existing_flag_groups, flagging_mongo: FlaggingMongo):
+    if flag_group_name is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message=flag_group_id + " already exists",
-                                                       uuid=flag_group_id + "_primary_key_id")
-
-    elif flag_group_id is None or flag_group_id.replace(" ", "") == "":
+                                                       message="unique flag group name must be specified")
+    elif flag_group_name in existing_flag_groups:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="unique flag group name must be created")
+                                                       message="new flag group name must be unique")
     else:
-        #create flag group with unique Primary_key
-        #insert statment here with
+        new_flag_group_id = flagging_mongo.add_flag_group(flag_group_name)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message="Unique flag group " + flag_group_id + " created",
-                                                       uuid=flag_group_id + "_primary_key_id")
+                                                       message="unique flag group " + flag_group_name + " created",
+                                                       uuid=new_flag_group_id)
     return flag_schema_object
 
 
