@@ -67,31 +67,32 @@ def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, 
             if original_flag_id not in existing_flags:
                 #return error to user that original_flag_name does not exist
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                               message="original flag id " + original_flag_id + " does not exist")
+                                                               message="original flag id " + original_flag_id + " does not exist",
+                                                               uuid=original_flag_id)
     return flag_schema_object
 
 #Another call for flag logic
 def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation(), existing_flags, flagging_mongo:FlaggingMongo):
-    #check if primary_key is contained in existing flags
-    #query to get existing flags or existing UUID, whichever is passed by user
-    if flag_id not in existing_flags:
+    if flag_id is None:
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="user must specify flag id")
+    elif flag_id not in existing_flags:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="could not identify existing flag " + flag_id,
-                                                       uuid=flag_id + "_primary_key_id")
-    if flag_id in existing_flags:
+                                                       uuid=flag_id)
+    else:
         #run validation on new_flag_logic
         validation_results = validate_logic(flag_id, new_flag_logic_information)
         if validation_results.errors == {} and validation_results.mypy_errors == {}:
-
             updated_flag_id = flagging_mongo.update_flag(flag=flag_id, update_value=new_flag_logic_information,
                                                      update_column="FLAG_LOGIC_INFORMATION")
             flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                           message="logic for flag " + flag_id + " has been updated",
+                                                           message="logic for flag " + str(updated_flag_id)+ " has been updated",
                                                            uuid=updated_flag_id)
         else:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="error in flag logic",
-                                                           uuid=flag_id + "_primary_key_id")
+                                                           uuid=flag_id)
     return flag_schema_object
 
 
