@@ -98,18 +98,20 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
 
 
 #A call to delete a flag provided a UUID, return true/false
-def delete_flag(flag_id, existing_flags):
-    #check if primary_key exists in db
-    if flag_id not in existing_flags:
+def delete_flag(flag_id, existing_flags, flagging_mongo: FlaggingMongo):
+    if flag_id is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag name specified does not exist",
-                                                       uuid=flag_id + "_primary_key_id")
+                                                       message="user must specify flag id")
+    #check if primary_key exists in db
+    elif flag_id not in existing_flags:
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="flag id specified does not exist",
+                                                       uuid=flag_id)
     else:
-        #TODO
-        # remove flag from database
+        removed_flag = flagging_mongo.remove_flag(flag=flag_id)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message=flag_id + " has been deleted",
-                                                       uuid=flag_id + "_primary_key_id")
+                                                       uuid=flag_id)
     return flag_schema_object
 
 
@@ -135,21 +137,17 @@ def create_flag_group(flag_group_id: str, existing_flag_groups):
 
 #A call to delete a flag group provided a UUID, return true/false
 def delete_flag_group(flag_group_id: str, existing_flag_groups):
-    #check that flag group exists in db
-
-
-    if flag_group_id in existing_flag_groups:
-        #query to delete entry from db via matching flag group name or uuid in try except for error hand
-
+    if flag_group_id is None:
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="flag group id must be specified")
+    elif flag_group_id not in existing_flag_groups:
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="could not identify flag group " + flag_group_id + " in database",
+                                                       uuid=flag_group_id)
+    else:
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="flag group " + flag_group_id + " deleted from database",
                                                        uuid=flag_group_id + "_primary_key_id")
-
-    else:
-        flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="could not identify flag group " + flag_group_id + " in database",
-                                                       uuid=flag_group_id + "_primary_key_id")
-
     return flag_schema_object
 
 
