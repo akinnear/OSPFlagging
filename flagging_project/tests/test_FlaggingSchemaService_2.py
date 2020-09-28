@@ -263,7 +263,7 @@ def test_update_flag_logic(flagging_mongo, mvrb, mvl):
     validation_results=TypeValidationResults())
     result = update_flag_logic(flag_id=og_flag_id, new_flag_logic_information=nw_flag_logic_information, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
-    assert result.message == "logic for flag " + og_flag_id + " has been updated"
+    assert result.message == "logic for flag " + str(3) + " has been updated"
     assert result.uuid == 3
 
 
@@ -444,27 +444,44 @@ def test_update_delete_flag_flag_does_not_exist(flagging_mongo, mvrb, mvl):
     assert result.message == "flag id specified does not exist"
     assert result.uuid == og_flag_id
 
+#test, duplicate flag
+@mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_duplicate_flag(flagging_mongo, mvrb, mvl):
+    flagging_mongo.duplicate_flag.return_value = 4
+    mock_flagging_mongo = flagging_mongo
+    flag_id = "FLAG1A"
+    existing_flag_ids = ["FLAG1A", "FLAG2B"]
+    result = duplicate_flag(original_flag_id=flag_id, existing_flags=existing_flag_ids, flagging_mongo=mock_flagging_mongo)
+    assert result.valid == True
+    assert result.message == flag_id + " has be duplicated"
+    assert result.uuid == 4
+
+#test, duplicate flag, flag name not specified
+#test, duplicate flag, flag name does not exist
+
 
 #test, create new flag group
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
 def test_create_flag_group(flagging_mongo, mvrb, mvl):
-    flagging_mongo.return_value.add_flag_group.return_value = 4
+    flagging_mongo.return_value.add_flag_group.return_value = 5
     mock_flagging_mongo = flagging_mongo()
     existing_flag_group_names = ["FlagGroup1", "FlagGroup2"]
     new_flag_group = "FlagGroup3"
     result = create_flag_group(flag_group_name=new_flag_group, existing_flag_groups=existing_flag_group_names, flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
     assert result.message == "unique flag group " + new_flag_group + " created"
-    assert result.uuid == 4
+    assert result.uuid == 5
 
 #test, create new flag group, flag group name not specifed
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
 def test_create_flag_group_name_not_specified(flagging_mongo, mvrb, mvl):
-    flagging_mongo.return_value.add_flag_group.return_value = 4
+    flagging_mongo.return_value.add_flag_group.return_value = 5
     mock_flagging_mongo = flagging_mongo()
     existing_flag_group_names = ["FlagGroup1", "FlagGroup2"]
     new_flag_group = None
@@ -477,7 +494,7 @@ def test_create_flag_group_name_not_specified(flagging_mongo, mvrb, mvl):
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
 def test_create_flag_group_name_not_unique(flagging_mongo, mvrb, mvl):
-    flagging_mongo.return_value.add_flag_group.return_value = 4
+    flagging_mongo.return_value.add_flag_group.return_value = 5
     mock_flagging_mongo = flagging_mongo()
     existing_flag_group_names = ["FlagGroup1", "FlagGroup2"]
     new_flag_group = "FlagGroup1"
@@ -492,13 +509,13 @@ def test_create_flag_group_name_not_unique(flagging_mongo, mvrb, mvl):
 @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
 def test_remove_flag_group(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
-    flagging_mongo.return_value.remove_flag_group.return_value = 5
+    flagging_mongo.return_value.remove_flag_group.return_value = 6
     existing_flag_group_names = ["FlagGroup1", "FlagGroup2"]
     flag_group_2_remove = "FlagGroup1"
     result = delete_flag_group(flag_group_name=flag_group_2_remove, existing_flag_groups=existing_flag_group_names, flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
     assert result.message == "flag group " + flag_group_2_remove + " deleted from database"
-    assert result.uuid == 5
+    assert result.uuid == 6
 
 #test remove flag group, name not specified
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
@@ -506,7 +523,7 @@ def test_remove_flag_group(flagging_mongo, mvrb, mvl):
 @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
 def test_remove_flag_group_missing_flag_group_name(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
-    flagging_mongo.return_value.remove_flag_group.return_value = 5
+    flagging_mongo.return_value.remove_flag_group.return_value = 6
     existing_flag_group_names = ["FlagGroup1", "FlagGroup2"]
     flag_group_2_remove = None
     result = delete_flag_group(flag_group_name=flag_group_2_remove, existing_flag_groups=existing_flag_group_names, flagging_mongo=mock_flagging_mongo)
@@ -519,7 +536,7 @@ def test_remove_flag_group_missing_flag_group_name(flagging_mongo, mvrb, mvl):
 @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
 def test_remove_flag_group_flag_group_name_does_not_exist(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
-    flagging_mongo.return_value.remove_flag_group.return_value = 5
+    flagging_mongo.return_value.remove_flag_group.return_value = 6
     existing_flag_group_names = ["FlagGroup1", "FlagGroup2"]
     flag_group_2_remove = "FlagGrup3"
     result = delete_flag_group(flag_group_name=flag_group_2_remove, existing_flag_groups=existing_flag_group_names, flagging_mongo=mock_flagging_mongo)
