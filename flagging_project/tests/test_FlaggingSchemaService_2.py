@@ -459,7 +459,30 @@ def test_duplicate_flag(flagging_mongo, mvrb, mvl):
     assert result.uuid == 4
 
 #test, duplicate flag, flag name not specified
+@mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_duplicate_flag_missing_flag_id(flagging_mongo, mvrb, mvl):
+    flagging_mongo.duplicate_flag.return_value = 4
+    mock_flagging_mongo = flagging_mongo
+    flag_id = None
+    existing_flag_ids = ["FLAG1A", "FLAG2B"]
+    result = duplicate_flag(original_flag_id=flag_id, existing_flags=existing_flag_ids, flagging_mongo=mock_flagging_mongo)
+    assert result.valid == False
+    assert result.message == "flag id must be specified"
+
 #test, duplicate flag, flag name does not exist
+@mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_duplicate_flag_flag_does_not_exist(flagging_mongo, mvrb, mvl):
+    flagging_mongo.duplicate_flag.return_value = 4
+    mock_flagging_mongo = flagging_mongo
+    flag_id = "FLAG3C"
+    existing_flag_ids = ["FLAG1A", "FLAG2B"]
+    result = duplicate_flag(original_flag_id=flag_id, existing_flags=existing_flag_ids, flagging_mongo=mock_flagging_mongo)
+    assert result.valid == False
+    assert result.message == "flag " + flag_id + " does not exist"
 
 
 #test, create new flag group
