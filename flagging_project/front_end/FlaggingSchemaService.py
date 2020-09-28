@@ -272,7 +272,7 @@ def duplicate_flag(original_flag_id:str, existing_flags, flagging_mongo: Flaggin
     #check that original flag already exists
     if original_flag_id is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag name must be specified")
+                                                       message="flag id must be specified")
     elif original_flag_id not in existing_flags:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="flag " + original_flag_id + " does not exist")
@@ -285,22 +285,23 @@ def duplicate_flag(original_flag_id:str, existing_flags, flagging_mongo: Flaggin
 
 
 #A call to duplicate a flag group provided a new name and UUID
-def duplicate_flag_group(original_flag_group_id:str, new_flag_group_id:str, existing_flag_groups):
+def duplicate_flag_group(original_flag_group_id: str, existing_flag_groups, flagging_mongo: FlaggingMongo):
+    #make sure ids are past
+    if original_flag_group_id is None:
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="user must specify flag group id")
+
     #make sure og_flag_group_name exists:
-    if original_flag_group_id not in existing_flag_groups:
+    elif original_flag_group_id not in existing_flag_groups:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="flag group " + original_flag_group_id + " does not exist")
 
-
-    elif new_flag_group_id in existing_flag_groups:
-        flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="new flag group " + new_flag_group_id + " already exists",
-                                                       uuid=new_flag_group_id + "_primary_key_id")
-
     else:
+        #get new id
+        new_flag_group_id = flagging_mongo.duplicate_flag_group(original_flag_group_id)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="new flag group " + new_flag_group_id + " created off of " + original_flag_group_id,
-                                                       uuid=new_flag_group_id + "_primary_key_id")
+                                                       uuid=new_flag_group_id)
 
     return flag_schema_object
 
