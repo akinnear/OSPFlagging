@@ -152,7 +152,7 @@ def delete_flag_group(flag_group_name: str, existing_flag_groups, flagging_mongo
 # in the group such as missing and cyclic flags
 
 #A call to add flags to a group provided a UUID for the group and UUIDs for the flags to add
-def add_flag_to_flag_group(flag_group_id: str, new_flags:[], existing_flags: [], existing_flag_groups, flags_in_flag_group):
+def add_flag_to_flag_group(flag_group_name: str, new_flags:[], existing_flags: [], existing_flag_groups, flags_in_flag_group):
     #for each new_flag in new_flags, check to see if flag exists already
     #if flag does not exist, call add method
 
@@ -164,10 +164,10 @@ def add_flag_to_flag_group(flag_group_id: str, new_flags:[], existing_flags: [],
     validation_results = FlaggingValidationResults()
 
     #check that flag_group_name exists
-    if flag_group_id not in existing_flag_groups:
+    if flag_group_name not in existing_flag_groups:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag_group " + flag_group_id + " does not exist",
-                                                       uuid=flag_group_id+"_primary_key_id")
+                                                       message="flag_group " + flag_group_name + " does not exist",
+                                                       uuid=flag_group_name+"_primary_key_id")
     else:
         for new_flag in new_flags:
             #query to get UUID for each new_flag
@@ -192,18 +192,18 @@ def add_flag_to_flag_group(flag_group_id: str, new_flags:[], existing_flags: [],
             #errors in flags, do not update existing flag group
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="cyclical flag detected: " + validation_results.errors,
-                                                           uuid=flag_group_id + "_primary_key_id")
+                                                           uuid=flag_group_name + "_primary_key_id")
 
         elif len(missing_flags) != 0:
             # return error message that flag must be created first before added to flag group
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="Flag(s) " + ", ".join(map(str, missing_flags)) + " do not exist",
-                                                           uuid=flag_group_id + "_primary_key_id")
+                                                           uuid=flag_group_name + "_primary_key_id")
 
         elif len(duplicate_flags) != 0:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="Flag(s) " + ", ".join(map(str, duplicate_flags)) + " already exist in flag group",
-                                                           uuid=flag_group_id + "_primary_key_id")
+                                                           uuid=flag_group_name + "_primary_key_id")
 
         else:
             #TODO
@@ -214,8 +214,8 @@ def add_flag_to_flag_group(flag_group_id: str, new_flags:[], existing_flags: [],
 
             #return new flag_group UUID
             flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                           message="flag group " + flag_group_id + " has been updated with flag(s) " + " ,".join(map(str, new_flags)),
-                                                           uuid=flag_group_id + "_primary_key_id")
+                                                           message="flag group " + flag_group_name + " has been updated with flag(s) " + " ,".join(map(str, new_flags)),
+                                                           uuid=flag_group_name + "_primary_key_id")
 
 
     return flag_schema_object
@@ -268,20 +268,19 @@ def remove_flag_from_flag_group(flag_group_id: str, del_flags: [], existing_flag
 
 
 #A call to duplicate a flag provided a new name and UUID
-def duplicate_flag(original_flag_id:str, new_flag_id: str, existing_flags):
+def duplicate_flag(original_flag_id:str, existing_flags, flagging_mongo: FlaggingMongo):
     #check that original flag already exists
-    if original_flag_id not in existing_flags:
+    if original_flag_id is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag " + original_flag_id + " does not exist",
-                                                       uuid=original_flag_id + "_primary_key_id")
-    elif new_flag_id not in existing_flags:
-        flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message="new flag " + new_flag_id + " based off of " + original_flag_id + " has been created",
-                                                       uuid=new_flag_id + "_primary_key_id")
+                                                       message="flag name must be specified")
+    elif original_flag_id not in existing_flags:
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="flag " + original_flag_id + " does not exist")
     else:
-        flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="new flag " + new_flag_id + " already exists",
-                                                       uuid=new_flag_id + "_primary_key_id")
+        duplicated_flag_new_id = flagging_mongo.duplicate_flag(original_flag_id)
+        flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                       message=original_flag_id + " has be duplicated",
+                                                       uuid=duplicated_flag_new_id)
     return flag_schema_object
 
 
