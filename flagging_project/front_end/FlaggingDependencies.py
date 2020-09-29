@@ -95,10 +95,10 @@ def add_flag_dependencies(flag, new_deps: [], existing_flags: [], current_flag_d
     cyclical_check = validate_flag_logic_information(flag_name=flag,
                                                      flag_feeders=None,
                                                      flag_dependencies=current_flag_dependencies,
-                                                     flag_info=FlagLogicInformation(referenced_flags=all_deps_dict))
+                                                     flag_logic_info=FlagLogicInformation(referenced_flags=all_deps_dict))
 
     cyclical_errors = []
-    for k, v in cyclical_check.items():
+    for k, v in cyclical_check.errors.items():
         if FlagErrorInformation in v:
             cyclical_errors.append(k)
     if len(cyclical_errors) > 0:
