@@ -12,6 +12,7 @@ from flagging.FlagErrorInformation import FlagErrorInformation
 from flag_names.FlagService import pull_flag_names, \
     pull_flag_names_in_flag_group
 from flag_names.FlagGroupService import pull_flag_group_names
+from front_end.FlaggingDependencies import add_flag_dependencies
 
 
 
@@ -608,4 +609,101 @@ def test_duplicate_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb, mv
     assert result.valid == False
     assert result.message == "flag group " + flag_group_id + " does not exist"
 
+#test, add new dependency to flag
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_add_new_flag_dependency(flagging_mongo, mvrb):
+    current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
+    new_deps = ["FLAG5E", "FLAG6F"]
+    flagging_mongo.add_specific_flag_dependencies.return_value = "FLAG13M"
+    flagging_mongo.return_value.get_specific_flag_dependencies.return_value = current_flag_deps
+    mock_flagging_mongo = flagging_mongo
+    flag_id = "FLAG1A"
+    existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
+                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
+    flag_dependencies = {"FLAG1A": {"FLAG2B", "FLAG3C"},
+                          "FLAG2B": {"FLAG3C"},
+                          "FLAG3C": set(),
+                          "FLAG4D": {"FLAG5E"},
+                          "FLAG5E": set(),
+                          "FLAG6F": set(),
+                          "FLAG7G": {"FLAG8G"},
+                          "FLAG8G": {"FLAG9I", "FLAG10J", "FLAG11k"},
+                          "FLAG9I": set(),
+                          "FLAG10J": "FLAG9I",
+                          "FLAG11K": set(),
+                          "FLAG12J": set()}
+    result = add_flag_dependencies(flag=flag_id, new_deps=new_deps, existing_flags=existing_flags, current_flag_dependencies=flag_dependencies, flagging_mongo=mock_flagging_mongo)
+    assert result.valid == True
+    assert result.message == "the following flag has been updated with new dependencies: " + flag_id
+    assert result.uuid == "FLAG13M"
+
+#test, add new dependency to flag, missing flag_name/id (flag being modified)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_add_new_flag_dependency_missing_flag(flagging_mongo, mvrb):
+    current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
+    new_deps = ["FLAG5E", "FLAG6F"]
+    flagging_mongo.add_specific_flag_dependencies.return_value = "FLAG13M"
+    flagging_mongo.return_value.get_specific_flag_dependencies.return_value = current_flag_deps
+    mock_flagging_mongo = flagging_mongo
+    flag_id = None
+    existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
+                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
+    flag_dependencies = {"FLAG1A": {"FLAG2B", "FLAG3C"},
+                          "FLAG2B": {"FLAG3C"},
+                          "FLAG3C": set(),
+                          "FLAG4D": {"FLAG5E"},
+                          "FLAG5E": set(),
+                          "FLAG6F": set(),
+                          "FLAG7G": {"FLAG8G"},
+                          "FLAG8G": {"FLAG9I", "FLAG10J", "FLAG11k"},
+                          "FLAG9I": set(),
+                          "FLAG10J": "FLAG9I",
+                          "FLAG11K": set(),
+                          "FLAG12J": set()}
+    result = add_flag_dependencies(flag=flag_id, new_deps=new_deps, existing_flags=existing_flags, current_flag_dependencies=flag_dependencies, flagging_mongo=mock_flagging_mongo)
+    assert result.valid == False
+    assert result.message == "flag name not specified"
+
+#test, add new depdendnecy to flag, flag_name/id does not exist (flag being modified)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_add_new_flag_dependency_flag_does_not_exist(flagging_mongo, mvrb):
+    current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
+    new_deps = ["FLAG5E", "FLAG6F"]
+    flagging_mongo.add_specific_flag_dependencies.return_value = "FLAG13M"
+    flagging_mongo.return_value.get_specific_flag_dependencies.return_value = current_flag_deps
+    mock_flagging_mongo = flagging_mongo
+    flag_id = "FLAG14N"
+    existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
+                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
+    flag_dependencies = {"FLAG1A": {"FLAG2B", "FLAG3C"},
+                          "FLAG2B": {"FLAG3C"},
+                          "FLAG3C": set(),
+                          "FLAG4D": {"FLAG5E"},
+                          "FLAG5E": set(),
+                          "FLAG6F": set(),
+                          "FLAG7G": {"FLAG8G"},
+                          "FLAG8G": {"FLAG9I", "FLAG10J", "FLAG11k"},
+                          "FLAG9I": set(),
+                          "FLAG10J": "FLAG9I",
+                          "FLAG11K": set(),
+                          "FLAG12J": set()}
+    result = add_flag_dependencies(flag=flag_id, new_deps=new_deps, existing_flags=existing_flags, current_flag_dependencies=flag_dependencies, flagging_mongo=mock_flagging_mongo)
+    assert result.valid == False
+    assert result.message == "flag " + flag_id + " does not exist"
+#test, add new dependency to flag, missing flag_name/id (flag dependency being added)
+#test, add new dependeny to flag, flag_name/id does not exist (flag dependency being added)
+#test, add new dependency to flag, new depdendency being added results in cyclical flag
+#test, add new dependeny to flag, flag is already dependent on flag dependency being added
+
+
+#test, add flag to flag_group
+#test, add flag to flag_group, flag group_name/id not passed
+#test, add flag to flag_gropu, flag_group_name/id does not exist
+#test, add flag to flag_group, new flag in flag group results in cyclical flagging
+#test, add flag to flag_group, new flag already exists in flag group
+#test, add flag to flag_group, flag name/id is not passed
+#test, add flag to flag_group, flag_name/id does not exist
 
