@@ -152,19 +152,22 @@ def delete_flag_group(flag_group_name: str, existing_flag_groups, flagging_mongo
 # in the group such as missing and cyclic flags
 
 #A call to add flags to a group provided a UUID for the group and UUIDs for the flags to add
-def add_flag_to_flag_group(flag_group_name: str, new_flags:[], existing_flags: [], existing_flag_groups, flags_in_flag_group):
+def add_flag_to_flag_group(flag_group_name: str, new_flags: [], existing_flags: [], existing_flag_groups, flags_in_flag_group, flagging_mongo: FlaggingMongo):
     #for each new_flag in new_flags, check to see if flag exists already
     #if flag does not exist, call add method
 
-    #TODO
-    # cyclical check as individual
+
 
     missing_flags = []
     duplicate_flags = []
     validation_results = FlaggingValidationResults()
 
+    if flag_group_name is None:
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="flag group must be specified")
+
     #check that flag_group_name exists
-    if flag_group_name not in existing_flag_groups:
+    elif flag_group_name not in existing_flag_groups:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="flag_group " + flag_group_name + " does not exist",
                                                        uuid=flag_group_name+"_primary_key_id")
@@ -184,6 +187,7 @@ def add_flag_to_flag_group(flag_group_name: str, new_flags:[], existing_flags: [
             for flag in flag_set:
                 ref_flag_dict[flag] = {CodeLocation(None, None)}
 
+            #perform cyclical flag check with flags in group and flags attempted to be added to group
             flag_logic_information = FlagLogicInformation(referenced_flags=ref_flag_dict)
             validation_results = validate_logic("dummy_flag", flag_logic_information)
 
@@ -206,11 +210,12 @@ def add_flag_to_flag_group(flag_group_name: str, new_flags:[], existing_flags: [
                                                            uuid=flag_group_name + "_primary_key_id")
 
         else:
-            #TODO
-            # check that flag uuid does not already exist in flag_group
+
+
 
             #TODO
-            # update existing flag group with UUID for each flag
+            # update existing flag group with new flag UUID for each flag
+
 
             #return new flag_group UUID
             flag_schema_object = FlaggingSchemaInformation(valid=True,
