@@ -42,7 +42,7 @@ def add_flag_dependencies(flag, new_deps: [], existing_flags: [], current_flag_d
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="flag name not specified")
     #make sure new_deps is not None
-    elif new_deps is None or new_deps.empty:
+    elif new_deps is None or len(new_deps) == 0:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="no new flag dependencies were identified")
     #make sure flag exists
@@ -92,7 +92,7 @@ def add_flag_dependencies(flag, new_deps: [], existing_flags: [], current_flag_d
     all_deps_dict = {}
     for dep in all_deps:
         all_deps_dict[dep] = {CodeLocation(0, 0)}
-    cyclical_check = validate_flag_logic_information(flag=flag,
+    cyclical_check = validate_flag_logic_information(flag_name=flag,
                                                      flag_feeders=None,
                                                      flag_dependencies=current_flag_dependencies,
                                                      flag_info=FlagLogicInformation(referenced_flags=all_deps_dict))
