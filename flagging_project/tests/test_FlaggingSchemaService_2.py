@@ -917,8 +917,84 @@ def test_remove_flag_dependencies_deps_to_remove_do_not_exist_as_current_depende
     assert result.message == "the following flags are not part of the flag dependency set: FLAG5E, FLAG6F"
 
 
+#test, create flag group
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_create_flag_group(flagging_mongo, mvrb):
+    mock_flagging_mongo = flagging_mongo
+    flagging_mongo.add_flag_group.return_value = "FLAG_GROUP_13M"
+    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP_3C"])
+    flag_group = "FLAG_GROUP_4D"
+    result = create_flag_group(flag_group_name=flag_group, existing_flag_groups=existing_flag_groups, flagging_mongo=mock_flagging_mongo)
+    assert result.valid == True
+    assert result.message == "unique flag group " + flag_group + " created"
+    assert result.uuid == "FLAG_GROUP_13Mid"
+
+
+#test, create flag group, missing flag group name
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_create_flag_group_missing_flag_group_new(flagging_mongo, mvrb):
+    mock_flagging_mongo = flagging_mongo
+    flagging_mongo.add_flag_group.return_value = "FLAG_GROUP_13M_id"
+    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP_3C"])
+    flag_group = None
+    result = create_flag_group(flag_group_name=flag_group, existing_flag_groups=existing_flag_groups, flagging_mongo=mock_flagging_mongo)
+    assert result.valid == False
+    assert result.message == "unique flag group name must be specified"
+
+#test, create flag group, flag group name already exists
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_create_flag_group_non_unique_flag_group_name(flagging_mongo, mvrb):
+    mock_flagging_mongo = flagging_mongo
+    flagging_mongo.add_flag_group.return_value = "FLAG_GROUP_13M_id"
+    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP_3C"])
+    flag_group = "FLAG_GROUP_1A"
+    result = create_flag_group(flag_group_name=flag_group, existing_flag_groups=existing_flag_groups, flagging_mongo=mock_flagging_mongo)
+    assert result.valid == False
+    assert result.message == "new flag group name must be unique"
+
+#test, remove flag group
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_remove_flag_group(flagging_mongo, mvrb):
+    mock_flagging_mongo = flagging_mongo
+    flagging_mongo.remove_flag_group.return_value = "FLAG_GROUP_13M_id"
+    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP3C"])
+    flag_group = "FLAG_GROUP_1A"
+    result = delete_flag_group(flag_group_name=flag_group, existing_flag_groups=existing_flag_groups, flagging_mongo=mock_flagging_mongo)
+    assert result.valid == True
+    assert result.message == "flag group " + flag_group + " deleted from database"
+    assert result.uuid == "FLAG_GROUP_13M_id"
+
+#test, remove flag group, flag group name is not specified
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_remove_flag_group_flag_group_not_specified(flagging_mongo, mvrb):
+    mock_flagging_mongo = flagging_mongo
+    flagging_mongo.remove_flag_group.return_value = "FLAG_GROUP_13M_id"
+    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP3C"])
+    flag_group = None
+    result = delete_flag_group(flag_group_name=flag_group, existing_flag_groups=existing_flag_groups, flagging_mongo=mock_flagging_mongo)
+    assert result.valid == False
+    assert result.message == "flag group name must be specified"
+
+#tst, remove flag group, flag group does not exist
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_remove_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb):
+    mock_flagging_mongo = flagging_mongo
+    flagging_mongo.remove_flag_group.return_value = "FLAG_GROUP_13M_id"
+    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=["FLAG_GROUP_2B", "FLAG_GROUP3C"])
+    flag_group = "FLAG_GROUP_1A"
+    result = delete_flag_group(flag_group_name=flag_group, existing_flag_groups=existing_flag_groups, flagging_mongo=mock_flagging_mongo)
+    print("hello")
+    assert result.valid == False
+    assert result.message == "could not identify flag group " + flag_group + " in database"
 
 #test, add flag to flag_group
+
 #test, add flag to flag_group, flag group_name/id not passed
 #test, add flag to flag_gropu, flag_group_name/id does not exist
 #test, add flag to flag_group, new flag in flag group results in cyclical flagging
