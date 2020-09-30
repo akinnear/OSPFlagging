@@ -105,13 +105,12 @@ def delete_flag(flag_id, existing_flags, flagging_mongo: FlaggingMongo):
     #check if primary_key exists in db
     elif flag_id not in existing_flags:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag id specified does not exist",
-                                                       uuid=flag_id)
+                                                       message="flag id specified does not exist")
     else:
         removed_flag = flagging_mongo.remove_flag(flag=flag_id)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message=flag_id + " has been deleted",
-                                                       uuid=flag_id)
+                                                       uuid=removed_flag)
     return flag_schema_object
 
 
