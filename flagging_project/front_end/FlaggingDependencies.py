@@ -5,6 +5,8 @@ from flagging.FlagLogicInformation import FlagLogicInformation
 from flagging.FlaggingNodeVisitor import CodeLocation
 from flagging.FlagErrorInformation import FlagErrorInformation
 
+dependent_flag_column = "DEPENDENT_FLAGS"
+
 #A call to get flag dependencies
 def get_flag_dependencies(*args, **kwargs):
     #api endpoint of db endpoint
@@ -26,7 +28,7 @@ def get_flag_dependencies(*args, **kwargs):
     return flag_dependencies
 
 #function to add depedency to flag
-def add_flag_dependencies(flag, new_deps: [], existing_flags: [], current_flag_dependencies, flagging_mongo: FlaggingMongo):
+def add_flag_dependencies(flag, new_deps: [], existing_flags: [], all_flag_dependencies, flagging_mongo: FlaggingMongo):
     flag_schema_object = None
     #remove any possible duplicates from new_deps
     new_deps = list(dict.fromkeys(new_deps))
@@ -98,7 +100,7 @@ def add_flag_dependencies(flag, new_deps: [], existing_flags: [], current_flag_d
             all_deps_dict[dep] = {CodeLocation(0, 0)}
         cyclical_check = validate_flag_logic_information(flag_name=flag,
                                                          flag_feeders=None,
-                                                         flag_dependencies=current_flag_dependencies,
+                                                         flag_dependencies=all_flag_dependencies,
                                                          flag_logic_info=FlagLogicInformation(referenced_flags=all_deps_dict))
 
         cyclical_errors = []
@@ -115,9 +117,54 @@ def add_flag_dependencies(flag, new_deps: [], existing_flags: [], current_flag_d
 
     if flag_schema_object is None:
         #no errors, update flag dependenceis
-        flag_with_updated_deps = flagging_mongo.add_specific_flag_dependencies(flag, new_deps=new_deps, dependent_flag_column="DEPENDENT_FLAGS")
+        flag_with_updated_deps = flagging_mongo.add_specific_flag_dependencies(flag, new_deps=new_deps, dependent_flag_column=dependent_flag_column)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="the following flag has been updated with new dependencies: " + flag,
                                                        uuid=flag_with_updated_deps)
+
+    return flag_schema_object
+
+
+def remove_flag_dependencies(flag, deps_2_remove: [], existing_flags: [], flagging_mongo: FlaggingMongo):
+    flag_schema_object = None
+    # remove any possible duplicates from new_deps
+    deps_2_remove = list(dict.fromkeys(deps_2_remove))
+
+    # make sure flag is not None
+    if flag is None:
+        flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                       message="flag name not specified")
+    if flag_schema_object is None:
+        #make sure deps_2_remove is not empty
+        if len(deps_2_remove) == 0:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="no dependencies to remove were identified")
+    # make sure flag exists
+    if flag_schema_object is None:
+        if flag not in existing_flags:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="flag " + flag + " does not exist")
+    #make sure flag is dependent on each deps_2_remove
+    if flag_schema_object is None:
+        #get current depdenencies of flag
+        current_flag_deps = flagging_mongo.get_specific_flag_dependencies(flag)
+        missing_flags = []
+        for dep_2_remove in deps_2_remove:
+            if dep_2_remove not in current_flag_deps:
+                missing_flags.append(dep_2_remove)
+        if len(missing_flags) > 0:
+            if len(missing_flags) == 1:
+                flag_message = "the following flag is not part of the flag dependency set: " + missing_flags[0]
+            else:
+                flag_message = "the following flags are not part of the flag dependency set: " + (", ".join(missing_flags))
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message=flag_message)
+    #remove dep
+    if flag_schema_object is None:
+        flag_with_deps_removed = flagging_mongo.remove_specific_flag_dependencies(flag=flag, rm_deps=deps_2_remove, dependent_flag_column=dependent_flag_column)
+        flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                       message="the following dependencies were removed from flag " + flag + ": " +(", ".join(deps_2_remove)),
+                                                       uuid=flag_with_deps_removed)
+
 
     return flag_schema_object
