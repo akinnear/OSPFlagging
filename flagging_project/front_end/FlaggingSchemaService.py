@@ -8,6 +8,7 @@ from flagging.FlaggingValidation import FlaggingValidationResults
 from flagging.FlaggingNodeVisitor import CodeLocation
 from flag_data.FlaggingMongo import FlaggingMongo
 from front_end.FlaggingValidateLogic import validate_logic
+from flagging.FlagErrorInformation import FlagErrorInformation
 
 
 
@@ -172,7 +173,7 @@ def add_flag_to_flag_group(flag_group_name: str, new_flags: [], existing_flags: 
     if flag_schema_object is None:
         if len(new_flags) == 0:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="no new flags were detected")
+                                                           message="no new flags were specified")
         else:
             new_flags = list(dict.fromkeys(new_flags))
 
@@ -201,9 +202,19 @@ def add_flag_to_flag_group(flag_group_name: str, new_flags: [], existing_flags: 
 
 
         if len(validation_results.errors) != 0:
-            #errors in flags, do not update existing flag group
-            flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="cyclical flag detected: " + validation_results.errors)
+            cyclical_errors = []
+            for k, v in validation_results.errors.items():
+                if isinstance(v, FlagErrorInformation):
+                    cyclical_errors.append(k)
+            if len(cyclical_errors) > 0:
+                if len(cyclical_errors) == 1:
+                    flagging_message = "the following flag dependency resulted in cyclical dependencies: " + \
+                                       cyclical_errors[0]
+                else:
+                    flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
+                        ", ".join(cyclical_errors))
+                flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                               message=flagging_message)
 
         elif len(missing_flags) != 0:
             # return error message that flag must be created first before added to flag group
@@ -218,7 +229,7 @@ def add_flag_to_flag_group(flag_group_name: str, new_flags: [], existing_flags: 
             full_flag_set = new_flags + list(dict.fromkeys(existing_flags))
             flag_with_updated_deps_id = flagging_mongo.update_flag_group(flag_group=flag_group_name, update_value=full_flag_set, update_column="FLAGS_IN_GROUP")
             flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                           message="flag group " + flag_group_name + " has been updated with flag(s) " + " ,".join(map(str, new_flags)),
+                                                           message="flag group " + flag_group_name + " has been updated with flag(s) " + (", ".join(map(str, new_flags))),
                                                            uuid=flag_with_updated_deps_id)
     return flag_schema_object
 
@@ -227,19 +238,21 @@ def add_flag_to_flag_group(flag_group_name: str, new_flags: [], existing_flags: 
 
 
 #A call to remove flags from a group provided a UUID for the group and UUIDs for the flags to remove
-def remove_flag_from_flag_group(flag_group_id: str, del_flags: [], existing_flags, existing_flag_groups, flags_in_flag_group):
-
+def remove_flag_from_flag_group(flag_group_name: str, del_flags: [], existing_flags: [], existing_flag_groups: [], flags_in_flag_group:[], flagging_mongo: FlaggingMongo):
+    flag_schema_object = None
+    if flag_schema_object is None:
+        if flag_group_name is None:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="flag group not specified")
     #check that flag_group_name exists
-    if flag_group_id not in existing_flag_groups:
-        flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag_group " + flag_group_id + " does not exist",
-                                                       uuid=flag_group_id + "_primary_key_id")
-    else:
+    if flag_schema_object is None:
+        if flag_group_name not in existing_flag_groups:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="flag group does not exist")
 
-        #flag group name does exist
-        #for ech flag in del_flags, make sure flag exists in passed flag_group_name
-
-        #only attempt to delete flags that exist in flag_group_name
+    if flag_schema_object is None:
+        #for each flag to remove from group,
+        #make sure the flag exists and is part of flag group
         missing_flags = []
         flags_not_in_group = []
         for del_flag in del_flags:
@@ -247,23 +260,31 @@ def remove_flag_from_flag_group(flag_group_id: str, del_flags: [], existing_flag
                 missing_flags.append(del_flag)
             if del_flag not in flags_in_flag_group:
                 flags_not_in_group.append(del_flag)
-        if len(missing_flags) != 0:
+        if len(missing_flags) > 0:
+            if len(missing_flags) == 1:
+                flag_message = "the following flag does not exist: " + missing_flags[0]
+            else:
+                flag_message = "the following flags do not exists: " + (", ".join(missing_flags))
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="Flag(s) " + ", ".join(map(str, missing_flags)) + " do not exist",
-                                                           uuid=flag_group_id + "_primary_key_id")
-
-        elif len(flags_not_in_group) != 0:
+                                                           messge=flag_message)
+        if flag_schema_object is None and len(flags_not_in_group) > 0:
+            if len(flags_not_in_group) == 0:
+                flag_message = "the following flag is not part of flag group " + flag_group_name + ": " + flags_not_in_group[0]
+            else:
+                flag_message = "the following flags are not part of flag group " + flag_group_name + ": " + (", ".join(flags_not_in_group))
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="Flag(s) " + ", ".join(map(str, flags_not_in_group)) + " do not exist in " + flag_group_id,
-                                                           uuid=flag_group_id + "_primary_key_id")
+                                                           message=flag_message)
 
-        else:
-            #TODO
-            # delete flag from flag group
 
-            flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                           message="Flag(s) " + ", ".join(map(str, del_flags)) + " removed from " + flag_group_id,
-                                                           uuid=flag_group_id + "_primary_key_id")
+    if flag_schema_object is None:
+        new_flag_set = (list(list(set(del_flags)-set(flags_in_flag_group)) + list(set(flags_in_flag_group)-set(del_flags))))
+        #method to remove flag(s) from flag group
+        flag_with_updated_deps_id = flagging_mongo.update_flag_group(flag_group=flag_group_name,
+                                                                     update_value=new_flag_set,
+                                                                     update_column="FLAGS_IN_GROUP")
+        flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                       message="Flag(s) " + ", ".join(map(str, del_flags)) + " removed from " + flag_group_name,
+                                                       uuid=flag_with_updated_deps_id)
 
     return flag_schema_object
 
