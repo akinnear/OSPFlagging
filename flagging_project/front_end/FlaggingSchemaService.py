@@ -17,32 +17,31 @@ from flagging.FlagErrorInformation import FlagErrorInformation
 # name cannot be empty if so error
 
 def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, flagging_mongo:FlaggingMongo):
+    flag_schema_object = None
     #store flag name and flag logic in db
 
     #call databse to get id based on name
 
-    if flag_name is None:
-        # return error message, no flag name specified
-        flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag name not specified")
 
-    else:
+    if flag_schema_object is None:
+        if flag_name is None:
+            # return error message, no flag name specified
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="flag name not specified")
 
+
+    if flag_schema_object is None:
+        flag_validation = validate_logic(flag_name, flag_logic_information)
+        if flag_validation.errors != {} or flag_validation.mypy_errors != {}:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="error in flag logic")
+    if flag_schema_object is None:
         add_flag_id = flagging_mongo.add_flag({"flag_name": flag_name,
                                  "flag_logic_information": flag_logic_information})
+        flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                       message="new flag created",
+                                                       uuid=add_flag_id)
 
-        #validate flag logic
-        flag_validation = validate_logic(flag_name, flag_logic_information)
-        if flag_validation.errors == {} and flag_validation.mypy_errors == {}:
-            flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                           message="new flag created",
-                                                           uuid=add_flag_id)
-
-
-        else:
-            flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="error in flag logic",
-                                                           uuid=add_flag_id)
     return flag_schema_object
 
 
