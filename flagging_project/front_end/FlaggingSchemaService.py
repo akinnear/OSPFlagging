@@ -251,6 +251,10 @@ def remove_flag_from_flag_group(flag_group_name: str, del_flags: [], existing_fl
                                                            message="flag group does not exist")
 
     if flag_schema_object is None:
+        if len(del_flags) == 0 or del_flags is None:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="no flags to remove were specified")
+    if flag_schema_object is None:
         #for each flag to remove from group,
         #make sure the flag exists and is part of flag group
         missing_flags = []
