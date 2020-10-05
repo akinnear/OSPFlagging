@@ -100,8 +100,10 @@ def test_pull_flags_in_flag_group():
 
 #test create flag, valid flag
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_create_flag(mvrb):
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_create_flag(flagging_mongo, mvrb):
     flag_name = "Flag1"
+    flagging_mongo.add_flag.return_value = "Flag_1_ID"
     flag_logic_information = FlagLogicInformation(
     used_variables={VariableInformation("FF1"): {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15),
                                                  CodeLocation(9, 5), CodeLocation(17, 15)},
@@ -122,10 +124,10 @@ def test_create_flag(mvrb):
     errors=[],
     flag_logic="""does not matter""",
     validation_results=TypeValidationResults())
-    result = create_flag(flag_name, flag_logic_information)
+    result = create_flag(flag_name, flag_logic_information, flagging_mongo=flagging_mongo)
     assert result.valid == True
     assert result.message == "new flag created"
-    assert result.uuid == "Flag1_primary_key_id"
+    assert result.uuid == "Flag_1_ID"
 
 #test create new flag, missing flag id
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
