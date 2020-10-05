@@ -145,7 +145,7 @@ def test_create_flag_error(flagging_mongo, mvrb, mvl):
     result = create_flag(flag_name, flag_logic_information, mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "error in flag logic"
-    assert result.uuid == 1
+
 
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(mypy_errors={"mypyerror": "does not matter"}), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
@@ -177,7 +177,7 @@ def test_create_flag_myerror(flagging_mongo, mvrb, mvl):
     result = create_flag(flag_name, flag_logic_information, mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "error in flag logic"
-    assert result.uuid == 1
+
 
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
