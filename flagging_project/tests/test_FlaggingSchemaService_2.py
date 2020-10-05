@@ -334,7 +334,7 @@ def test_update_flag_logic_missing_flag(flagging_mongo, mvrb, mvl):
                                existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "could not identify existing flag " + og_flag_id
-    assert result.uuid == og_flag_id
+
 
 #update flag logic, error in result
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(errors={"some_error": {"some_code_location"}}), autospec=True)
@@ -368,7 +368,7 @@ def test_update_flag_logic_errors(flagging_mongo, mvrb, mvl):
     result = update_flag_logic(flag_id=og_flag_id, new_flag_logic_information=nw_flag_logic_information, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "error in flag logic"
-    assert result.uuid == og_flag_id
+
 
 #update flag lgoic, mypy_error in result
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(mypy_errors={"some_mypy_error": {"some_code_location"}}), autospec=True)
@@ -402,7 +402,7 @@ def test_update_flag_logic_mypy_errors(flagging_mongo, mvrb, mvl):
     result = update_flag_logic(flag_id=og_flag_id, new_flag_logic_information=nw_flag_logic_information, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "error in flag logic"
-    assert result.uuid == og_flag_id
+
 
 
 #test to delete flag, valid
