@@ -131,7 +131,8 @@ def test_create_flag(flagging_mongo, mvrb):
 
 #test create new flag, missing flag id
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_create_flag_no_flag_name(mvrb):
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_create_flag_no_flag_name(flagging_mongo, mvrb):
     flag_name = None
     flag_logic_information = FlagLogicInformation(
     used_variables={VariableInformation("FF1"): {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15),
@@ -153,16 +154,17 @@ def test_create_flag_no_flag_name(mvrb):
     errors=[],
     flag_logic="""does not matter""",
     validation_results=TypeValidationResults())
-    result = create_flag(flag_name, flag_logic_information)
+    result = create_flag(flag_name, flag_logic_information, flagging_mongo=flagging_mongo)
     assert result.valid == False
-    assert result.message == "flag id not specified"
+    assert result.message == "flag name not specified"
     assert result.uuid == None
 
 
 
 #test create new flag, invalid logic
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-def test_create_flag_with_errors(mvrb):
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_create_flag_with_errors(flagging_mongo, mvrb):
     flag_name = "Flag1"
     flag_logic_information = FlagLogicInformation(
     used_variables={VariableInformation("FF1"): {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15),
@@ -184,32 +186,35 @@ def test_create_flag_with_errors(mvrb):
     errors=[],
     flag_logic="""does not matter""",
     validation_results=TypeValidationResults())
-    result = create_flag(flag_name, flag_logic_information)
+    result = create_flag(flag_name, flag_logic_information, flagging_mongo=flagging_mongo)
     assert result.valid == False
     assert result.message == "error in flag logic"
-    assert result.uuid == "Flag1_primary_key_id"
 
 
 
 
 #test update flag name, valid update
-def test_update_flag_name_valid():
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_update_flag_name_valid(flagging_mongo):
+    flagging_mongo.update_flag.return_value = "FLAG2_ID"
     original_flag_name = "Flag1"
     new_flag_name = "Flag2"
     existing_flags = pull_flag_names(dummy_flag_names=["Flag1", "Flag2", "Flag3"])
-    result = update_flag_name(original_flag_name, new_flag_name, existing_flags)
+    result = update_flag_name(original_flag_name, new_flag_name, existing_flags, flagging_mongo=flagging_mongo)
     assert result.valid == True
-    assert result.message == "original flag Flag1 updated to Flag2"
-    assert result.uuid == "Flag2_primary_key_id"
+    assert result.message == "original flag Flag1 has been renamed Flag2"
+    assert result.uuid == "FLAG2_ID"
 
-def test_update_flag_name_valid_2():
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_update_flag_name_valid_2(flagging_mongo):
+    flagging_mongo.update_flag.return_value = "FLAG2_ID"
     original_flag_name = "Flag1"
     new_flag_name = "Flag2"
     existing_flags = pull_flag_names(dummy_flag_names=["Flag1", "Flag3"])
-    result = update_flag_name(original_flag_name, new_flag_name, existing_flags)
+    result = update_flag_name(original_flag_name, new_flag_name, existing_flags, flagging_mongo=flagging_mongo)
     assert result.valid == True
-    assert result.message == "original flag Flag1 updated to Flag2"
-    assert result.uuid == "Flag2_primary_key_id"
+    assert result.message == "original flag Flag1 has been renamed Flag2"
+    assert result.uuid == "FLAG2_ID"
 
 
 #test update flag name, missing orginal flag name
