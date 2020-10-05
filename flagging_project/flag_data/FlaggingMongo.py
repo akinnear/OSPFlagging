@@ -55,8 +55,8 @@ class FlaggingMongo:
     def remove_flag(self, flag):
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAGGING_COLLECTION]
-        flagging.remove({flag_id: flag})
-        return flag
+        removed_id = flagging.remove({flag_id: flag})[flag_id]
+        return removed_id
 
     def update_flag(self, flag, update_value, update_column):
         db = self.client[FLAGGING_DATABASE]
@@ -96,8 +96,8 @@ class FlaggingMongo:
     def remove_flag_group(self, flag_group):
         db = self.client[FLAGGING_DATABASE]
         flag_groups = db[FLAG_GROUPS]
-        flag_groups.remove({flag_group_id: flag_group})
-        return flag_group
+        removed_flag_group_id = flag_groups.remove({flag_group_id: flag_group})[flag_id]
+        return removed_flag_group_id
 
     def update_flag_group(self, flag_group, update_value, update_column):
         db = self.client[FLAGGING_DATABASE]
@@ -136,7 +136,8 @@ class FlaggingMongo:
     def remove_flag_dependencies(self, flag):
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        flagging_dependencies.remove({flag_id: flag})
+        modified_flag_id = flagging_dependencies.remove({flag_id: flag})[flag_id]
+        return modified_flag_id
 
     def get_specific_flag_dependencies(self, flag):
         db = self.client[FLAGGING_DATABASE]
