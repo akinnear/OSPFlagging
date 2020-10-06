@@ -46,6 +46,12 @@ class FlaggingMongo:
         flagging = db[FLAGGING_COLLECTION]
         return list(flagging.find())
 
+    def get_specific_flag(self, flag):
+        db = self.client[FLAGGING_DATABASE]
+        flagging = db[FLAGGING_COLLECTION]
+        found_id = flagging.find_one({flag_id: flag})[flag_id]
+        return found_id
+
     def add_flag(self, flag):
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAGGING_COLLECTION]
@@ -113,6 +119,12 @@ class FlaggingMongo:
         flag_group_2_duplicate.pop(flag_group_id, None)
         duplicated_flag_groups = flag_groups.insert_one(flag_group_2_duplicate).inserted_id
         return duplicated_flag_groups
+
+    def get_specific_flag_group(self, flag):
+        db = self.client[FLAGGING_DATABASE]
+        flagging = db[FLAG_GROUPS]
+        found_id = flagging.find_one({flag_id: flag})[flag_id]
+        return found_id
 
     #flag dependencies
     '''
@@ -186,3 +198,9 @@ class FlaggingMongo:
         if matching_flag:
             modified_flag = flagging_dependencies.find_one_and_update({flag_id: flag}, {"$set": {dependent_flag_column: dependent_flag_value}}, upsert=True)[flag_id]
         return modified_flag
+
+    def get_specific_flag_dependency(self, flag):
+        db = self.client[FLAGGING_DATABASE]
+        flagging_dependencies = db[FLAG_DEPENDENCIES]
+        matching_flag = flagging_dependencies.find_one({flag_id: flag})[flag_id]
+        return matching_flag
