@@ -428,11 +428,11 @@ def add_dependencies_to_flag(flag_id, existing_flag_dep_keys: [], new_dependenci
     if flag_schema_object is None:
         if flag_id is None:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag name not specified")
+                                                           message="flag id not specified")
     if flag_schema_object is None:
         if flag_id not in existing_flag_dep_keys:
            flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                          message="flag does not exist in flag dependency databse")
+                                                          message="flag does not exist in flag dependency database")
     if flag_schema_object is None:
         updated_flag_dep_id = flagging_mongo.add_specific_flag_dependencies(flag_id, new_dependencies, "DEPENDENT_FLAGS")
         flag_schema_object = FlaggingSchemaInformation(valid=True,
@@ -446,11 +446,11 @@ def remove_dependencies_from_flag(flag_id, existing_flag_dep_keys: [], rm_depend
     if flag_schema_object is None:
         if flag_id is None:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag name not specified")
+                                                           message="flag id not specified")
     if flag_schema_object is None:
         if flag_id not in existing_flag_dep_keys:
            flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                          message="flag does not exist in flag dependency databse")
+                                                          message="flag does not exist in flag dependency database")
     if flag_schema_object is None:
         updated_flag_dep_id = flagging_mongo.remove_specific_flag_dependencies(flag_id, rm_dependencies, "DEPENDENT_FLAGS")
         flag_schema_object = FlaggingSchemaInformation(valid=True,
