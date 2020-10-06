@@ -15,7 +15,7 @@ from flagging.FlagErrorInformation import FlagErrorInformation
 
 #A call to create a flag given a name and logic, this will return a UUID,
 # name cannot be empty if so error
-def get_flag(flagging_mongo: FlaggingMongo):
+def get_all_flags(flagging_mongo: FlaggingMongo):
     return flagging_mongo.get_flags()
 
 def get_specific_flag(flag_id, existing_flags: [], flagging_mongo: FlaggingMongo):
@@ -391,7 +391,7 @@ def create_flag_dependency(flag_name: str, existing_flag_dep_keys: [], flag_depe
     if flag_schema_object is None:
         if flag_name in existing_flag_dep_keys:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag depedencies for flag " + flag_name + " already exist")
+                                                           message="flag dependencies for flag " + flag_name + " already exist")
     if flag_schema_object is None:
         #creat new flag dependency entry based on passed flag and flag_dependencies
         new_flag_dependency_id = flagging_mongo.add_flag_dependencies(flag_name)
@@ -409,7 +409,7 @@ def delete_flag_dependency(flag_id, existing_flag_dep_set: [], flagging_mongo: F
     if flag_schema_object is None:
         if flag_id is None:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag name not specified")
+                                                           message="flag id not specified")
     if flag_schema_object is None:
         if flag_id not in existing_flag_dep_set:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
