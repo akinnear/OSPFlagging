@@ -35,8 +35,6 @@ def get_specific_flag(flag_id, existing_flags: [], flagging_mongo: FlaggingMongo
                                                        uuid=specific_flag_id)
     return flag_schema_object
 
-
-
 #get flag_groups
 def get_flag_groups(flagging_mongo: FlaggingMongo):
     return flagging_mongo.get_flag_groups
@@ -173,7 +171,6 @@ def delete_flag(flag_id, existing_flags, flagging_mongo: FlaggingMongo):
                                                        message=flag_id + " has been deleted",
                                                        uuid=removed_flag)
     return flag_schema_object
-
 
 #A call to create a named flag group, returns a UUID, name cannot be empty if so error
 def create_flag_group(flag_group_name: str, existing_flag_groups, flagging_mongo: FlaggingMongo):
@@ -401,7 +398,6 @@ def create_flag_dependency(flag_name: str, existing_flag_dep_keys: [], flag_depe
                                                        message="flag dependency data for flag " + flag_name + " has been created",
                                                        uuid=new_flag_dependency_id)
     return flag_schema_object
-
 
 #call to delete flag dependnecy
 def delete_flag_dependency(flag_id, existing_flag_dep_set: [], flagging_mongo: FlaggingMongo):
