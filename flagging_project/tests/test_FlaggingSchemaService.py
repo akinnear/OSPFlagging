@@ -3,16 +3,19 @@ from flagging.TypeValidationResults import TypeValidationResults
 from flagging.FlagLogicInformation import FlagLogicInformation
 from flagging.FlaggingNodeVisitor import CodeLocation
 from flagging.VariableInformation import VariableInformation
-from front_end.FlaggingSchemaService import create_flag, create_flag, \
+from front_end.FlaggingSchemaService import create_flag, \
     update_flag_name, update_flag_logic, \
     delete_flag, create_flag_group, delete_flag_group, add_flag_to_flag_group, \
-    remove_flag_from_flag_group, duplicate_flag, duplicate_flag_group
+    remove_flag_from_flag_group, duplicate_flag, duplicate_flag_group, get_all_flags, \
+    create_flag_dependency, delete_flag_dependency, add_dependencies_to_flag, \
+    remove_dependencies_from_flag
 from flagging.FlaggingValidation import FlaggingValidationResults
 from flagging.FlagErrorInformation import FlagErrorInformation
 from flag_names.FlagService import pull_flag_names, \
     pull_flag_names_in_flag_group
 from flag_names.FlagGroupService import pull_flag_group_names
 from front_end.FlaggingDependencies import add_flag_dependencies, remove_flag_dependencies
+from flag_data.FlaggingMongo import FlaggingMongo
 
 
 
@@ -1341,4 +1344,90 @@ def test_remove_flag_from_flag_group_flag_group_does_not_exist(flagging_mongo, m
                                          flagging_mongo=flagging_mongo)
     assert result.valid == False
     assert result.message == "the following flags are not part of flag group " + flag_group_name + ": " + ("").join(flags_2_remove)
+
+#test, create flag dependency
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_create_flag_dependency(flagging_mongo, mvrb):
+    flagging_mongo.add_flag_dependencies.return_value = "flag_dep_key_1A"
+    existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
+    flag_name = "FLAG4D"
+    new_flag_deps = ["FLAG2B", "FLAG5E"],
+    result = create_flag_dependency(flag_name=flag_name, existing_flag_dep_keys=existing_flag_dep_keys, flag_dependencies=new_flag_deps, flagging_mongo=flagging_mongo)
+    assert result.valid == True
+    assert result.message == "flag dependency data for flag " + flag_name + " has been created"
+    assert result.uuid == "flag_dep_key_1A"
+
+#test, create flag dependency, flag name not passed
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_create_flag_dependency_no_flag_name(flagging_mongo, mvrb):
+    flagging_mongo.add_flag_dependencies.return_value = "flag_dep_key_1A"
+    existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
+    flag_name = None
+    new_flag_deps = ["FLAG2B", "FLAG5E"],
+    result = create_flag_dependency(flag_name=flag_name, existing_flag_dep_keys=existing_flag_dep_keys,
+                                    flag_dependencies=new_flag_deps, flagging_mongo=flagging_mongo)
+    assert result.valid == False
+    assert result.message == "flag name not specified"
+    assert result.uuid == None
+
+#test, create flag dependency, flag name already in existing flag set
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_create_flag_dependency_flag_already_exists(flagging_mongo, mvrb):
+    flagging_mongo.add_flag_dependencies.return_value = "flag_dep_key_1A"
+    existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
+    flag_name = "FLAG3C"
+    new_flag_deps = ["FLAG2B", "FLAG5E"],
+    result = create_flag_dependency(flag_name=flag_name, existing_flag_dep_keys=existing_flag_dep_keys,
+                                    flag_dependencies=new_flag_deps, flagging_mongo=flagging_mongo)
+    assert result.valid == False
+    assert result.message == "flag dependencies for flag " + flag_name + " already exist"
+    assert result.uuid == None
+
+#test, delete flag dependnecy
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_delete_flag_dependency(flagging_mongo, mvrb):
+    flagging_mongo.remove_flag_dependencies.return_value = "Flag_ID_XX_RM"
+    existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
+    flag_id = "FLAG1A"
+    result = delete_flag_dependency(flag_id, existing_flag_dep_keys, flagging_mongo)
+    assert result.valid == True
+    assert result.message == "flag " + flag_id + "has been removed from flag dependency database"
+    assert result.uuid == "Flag_ID_XX_RM"
+
+#test, delete flag dependency, flag id not passed
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_delete_flag_dependency_flag_id_not_passed(flagging_mongo, mvrb):
+    flagging_mongo.remove_flag_dependencies.return_value = "Flag_ID_XX_RM"
+    existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
+    flag_id = None
+    result = delete_flag_dependency(flag_id, existing_flag_dep_keys, flagging_mongo)
+    assert result.valid == False
+    assert result.message == "flag id not specified"
+    assert result.uuid == None
+
+#test, delete flag dependnecy, flag id not in existing flag dependency database
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_delete_flag_dependency_flag_id_does_not_exist(flagging_mongo, mvrb):
+    flagging_mongo.remove_flag_dependencies.return_value = "Flag_ID_XX_RM"
+    existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
+    flag_id = "FLAG4D"
+    result = delete_flag_dependency(flag_id, existing_flag_dep_keys, flagging_mongo)
+    assert result.valid == False
+    assert result.message == "flag dependencies for flag " + flag_id + " do not exist"
+    assert result.uuid == None
+
+#test, add_dependencies_to_flag
+#test, add_dependencies_to_flag, flag id not passed
+#tests, add deps to flag, flag_id does not exist as an existing flag dep key
+
+#test, remove deps from flag
+#test, remove deps from flag, flag id not passed
+#test, remove deps from flag, flag_id does not exist as an existing flag dep key
+
 
