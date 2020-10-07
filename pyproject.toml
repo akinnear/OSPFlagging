@@ -17,6 +17,7 @@ datetime = "^4.3"
 mongomock = "^3.20.0"
 flask = "^1.1.2"
 flask_pymongo = "^2.3.0"
+requests = "^2.24.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.6"
