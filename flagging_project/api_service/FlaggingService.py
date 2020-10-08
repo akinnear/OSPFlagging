@@ -25,47 +25,72 @@ container = MongoDbContainer(MONGO_DOCKER_IMAGE)
 app.config["MONGO_URI"] = _create_flagging_mongo(container)
 mongo = PyMongo(app)
 
-#test simple add flag
-@app.route("/create_flag/<string:flag_name>/", methods=["POST", "GET"])
-def create_flag_service(flag_name):
-    flag_schema_object_created = create_flag(flag_name, FlagLogicInformation(), mongo)
-    return jsonify(
-        valid=flag_schema_object_created.valid,
-        message=flag_schema_object_created.message,
-        uuid=flag_schema_object_created.uuid)
+#flags
+@app.route("/flag/<string:function>/", methods=["GET", "POST", "PUT"])
+def flag_action(function=None):
+    if function is None:
+        #route to flag home pag
+        return "flag_home_page"
+    else:
+        if function == "get_all_flags":
+            get_all_flags
+        if function == "get_specific_flag":
+            get_specific_flag
+        if function == "create_flag":
+            create_flag
+        if function == "update_flag_name":
+            update_flag_name
+        if function == "update_flag_logic":
+            update_flag_logic
+        if function == "delete_flag":
+            delete_flag
+        if function == "duplicate_flag":
+            duplicate_flag
+        else:
+             return "flag_home_page"
 
-@app.route("/get_all_flags/", methods=["GET"])
-def get_all_flags_service():
-        flags = get_all_flags(mongo)
-        return flags
+#flag groups
+@app.route("/flag_group/<string:function>/", methods=["GET", "POST", "PUT"])
+def flag_group_action(function=None):
+    if function is None:
+        #route to flag home pag
+        return "flag_group_home_page"
+    else:
+        if function == "get_flag_groups":
+            get_flag_groups
+        if function == "get_specific_flag_group":
+            get_specific_flag_group
+        if function == "create_flag_group":
+            create_flag_group
+        if function == "delete_flag_group":
+            delete_flag_group
+        if function == "add_flag_to_flag_group":
+            add_flag_to_flag_group
+        if function == "remove_flag_from_flag_group":
+            remove_flag_from_flag_group
+        if function == "duplicate_flag_group":
+            duplicate_flag_group
+        else:
+             return "flag_group_home_page"
 
-@app.route("/get_specific_flag/<string:flag_id>/", methods=["GET"])
-def get_specific_flag_service(flag_id):
-    existing_flags = get_all_flags(mongo)
-    flag_schema_object = get_specific_flag(flag_id, existing_flags, mongo)
-    print("flag_schema_object.valid: " + flag_schema_object.valid)
-    print("\n")
-    print("flag_schema_objet.message: " + flag_schema_object.message)
-    print("\n")
-    print("flag_schema_object.uuid: " + flag_schema_object.uuid)
-    return flag_schema_object
+#flag_dependency
+@app.route("/flag_dependency/<string:function>/", methods=["GET", "POST", "PUT"])
+def flag_dependency_action(function=None):
+    if function is None:
+        return "flag_dependency_home_page"
+    else:
+        if function == "get_flag_dependencies":
+            get_flag_dependencies
+        if function == "get_specif_flag_dependnecy":
+            get_specif_flag_dependnecy
+        if function == "create_flag_dependency":
+            create_flag_dependency
+        if function == "delete_flag_dependency":
+            delete_flag_dependency
+        if function == "add_dependencies_to_flag":
+            add_dependencies_to_flag
+        if function == "remove_dependencies_from_flag":
+            remove_dependencies_from_flag
+        else:
+            return "flag_dependency_home_page"
 
-# @app.route("/create_flag/<string: flag_name>/", methods=["POST", "GET"])
-# def create_flag_service(flag_name):
-#     existing_flags = get_all_flags(mongo)
-#     #TODO
-#     # need actual flag logic information object based off of data from front end
-#     flag_schema_object_created = create_flag(flag_name, FlagLogicInformation(), mongo)
-#     print("flag_schema_object.valid: " + flag_schema_object_created.valid)
-#     print("\n")
-#     print("flag_schema_object.message: " + flag_schema_object_created.message)
-#     print("\n")
-#     print("flag_schema_object.uuid: " + flag_schema_object_created.uuid)
-#
-#     flag_schema_object_pulled = get_specific_flag(flag_schema_object_created.uuid, existing_flags, mongo)
-#     print("flag_schema_object.valid: " + flag_schema_object_pulled.valid)
-#     print("\n")
-#     print("flag_schema_object.message: " + flag_schema_object_pulled.message)
-#     print("\n")
-#     print("flag_schema_object.uuid: " + flag_schema_object_pulled.uuid)
-#     return flag_schema_object_pulled
