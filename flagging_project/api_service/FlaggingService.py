@@ -12,7 +12,7 @@ from pymongo import MongoClient
 from testcontainers.mongodb import MongoDbContainer
 from flagging_project.flag_data.FlaggingMongo import FlaggingMongo, FLAGGING_DATABASE, FLAGGING_COLLECTION, FLAG_DEPENDENCIES, FLAG_GROUPS
 from api_service import MONGO_DOCKER_IMAGE
-from flag_names.FlagService import pull_flag_names_in_flag_group
+from flag_names.FlagService import pull_flag_names_in_flag_group, pull_flag_names
 
 
 #configure pymongo to integrate with flask
@@ -131,29 +131,59 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None):
         if function == "duplicate_flag_group":
             existing_flag_groups = get_flag_groups(flagging_mongo)
             return(duplicate_flag_group(flag_group_id, existing_flag_groups, flagging_mongo))
-        
+
         else:
              return "flag_group_home_page"
 
 #flag_dependency
 @app.route("/flag_dependency/", methods=["GET"])
 @app.route("/flag_dependency/<string:function>/", methods=["GET", "POST", "PUT"])
-def flag_dependency_action(function=None):
+@app.route("/flag_dependency/<string:function>/<string:flag_id>/", methods=["GET", "POST", "PUT"])
+@app.route("/flag_dependency/<string:function>/<string:flag_name>/", methods=["GET", "POST", "PUT"])
+def flag_dependency_action(function=None, flag_id=None, flag_name=None):
     if function is None:
         return "flag_dependency_home_page"
     else:
         if function == "get_flag_dependencies":
-            get_flag_dependencies
+            return(get_flag_dependencies(flagging_mongo))
+
         if function == "get_specif_flag_dependnecy":
-            get_specif_flag_dependnecy
+            existing_flag_deps = get_flag_dependencies(flagging_mongo)
+            return(get_specif_flag_dependnecy(flag_id, existing_flag_deps, flagging_mongo))
+
         if function == "create_flag_dependency":
-            create_flag_dependency
+            #TODO
+            # need to get dependent flags
+            # flag_dependencies
+
+            existing_flag_deps = get_flag_dependencies(flagging_mongo)
+            flag_dependencies = pull_flag_names(dummy_flag_names=["FLAG1A"])
+            return(create_flag_dependency(flag_name, existing_flag_deps, flag_dependencies, flagging_mongo))
+
         if function == "delete_flag_dependency":
-            delete_flag_dependency
+            existing_flag_deps = get_flag_dependencies(flagging_mongo)
+            return(delete_flag_dependency(flag_id, existing_flag_deps, flagging_mongo))
+
         if function == "add_dependencies_to_flag":
-            add_dependencies_to_flag
+            #TODO
+            # need to get dependent flags
+            # new_dependencies
+
+            new_dependencies = pull_flag_names(dummy_flag_names=["FLAG1A"])
+            existing_flag_dep_keys = get_flag_dependencies(flagging_mongo)
+            return(add_dependencies_to_flag(flag_id, existing_flag_dep_keys,
+                                            new_dependencies, flagging_mongo))
+
         if function == "remove_dependencies_from_flag":
-            remove_dependencies_from_flag
+            #TODO
+            # need to get dependent flags
+            # rm_dependencies
+
+            rm_dependencies = pull_flag_names(dummy_flag_names=["FLAG1A"])
+            existing_flag_dep_keys = get_flag_dependencies(flagging_mongo)
+            return(remove_dependencies_from_flag(flag_id, existing_flag_dep_keys,
+                                                 rm_dependencies, flagging_mongo))
+     
         else:
             return "flag_dependency_home_page"
 
