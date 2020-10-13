@@ -270,8 +270,13 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                 else:
                     flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
                         ", ".join(cyclical_errors))
+                full_flag_set = new_flags + list(dict.fromkeys(existing_flags))
+                flag_with_updated_deps_id = flagging_mongo.update_flag_group(flag_group=flag_group_id,
+                                                                             update_value=full_flag_set,
+                                                                             update_column="FLAGS_IN_GROUP")
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                               message=flagging_message)
+                                                               message=flagging_message,
+                                                               uuid=flag_with_updated_deps_id)
 
         elif len(missing_flags) != 0:
             # return error message that flag must be created first before added to flag group
