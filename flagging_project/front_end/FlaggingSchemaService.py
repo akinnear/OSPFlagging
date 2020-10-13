@@ -52,8 +52,11 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
     if flag_schema_object is None:
         flag_validation = validate_logic(flag_name, flag_logic_information)
         if flag_validation.errors != {} or flag_validation.mypy_errors != {}:
+            add_flag_id = flagging_mongo.add_flag({"flag_name": flag_name,
+                                                   "flag_logic_information": flag_logic_information})
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="error in flag logic")
+                                                           message="error in flag logic",
+                                                           uuid=add_flag_id)
     if flag_schema_object is None:
         add_flag_id = flagging_mongo.add_flag({"flag_name": flag_name,
                                  "flag_logic_information": flag_logic_information})
