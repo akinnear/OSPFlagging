@@ -1,10 +1,36 @@
 version: '3.8'
+
+volumes:
+  mongo-data:
+    name: mongo-data-flagging
+    external: true
+  mongo-config:
+    name: mongo-config
+    external: true
+  mongoclient:
+    name: mongoclient
+    external: true
+
 services:
   mongo:
     image: mongo:4.4.1
     container_name: mongo
     volumes:
-      - ./.docker/mongo/data/:/data/db
+      - mongo-data:/data/db
+      - mongo-config:/data/configdb
     ports:
       - "27017:27017"
+    restart: always
+
+  mongoclient:
+    image: mongoclient/mongoclient:4.0.0
+    container_name: mongoclient
+    ports:
+      - "3001:3000"
+    volumes:
+      - mongoclient:/data/db
+    depends_on:
+      - mongo
+    environment:
+      - MONGOCLIENT_DEFAULT_CONNECTION_URL=mongodb://mongo:27017
     restart: always
