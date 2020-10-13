@@ -15,6 +15,8 @@ from flagging.FlagErrorInformation import FlagErrorInformation
 
 #FLAG
 def get_all_flags(flagging_mongo: FlaggingMongo):
+    print("in FlaggingSchemaService")
+    print("in get_all_flags")
     return flagging_mongo.get_flags()
 
 def get_specific_flag(flag_id, existing_flags: [], flagging_mongo: FlaggingMongo):
