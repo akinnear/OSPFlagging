@@ -120,8 +120,12 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
     if flag_schema_object is None:
         validation_results = validate_logic(flag_id, new_flag_logic_information)
         if validation_results.errors != {} or validation_results.mypy_errors != {}:
+            updated_flag_id = flagging_mongo.update_flag(flag=flag_id, update_value=new_flag_logic_information,
+                                                         update_column="FLAG_LOGIC_INFORMATION")
+
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="error in flag logic")
+                                                           message="error in flag logic",
+                                                           uuid=updated_flag_id)
     if flag_schema_object is None:
         updated_flag_id = flagging_mongo.update_flag(flag=flag_id, update_value=new_flag_logic_information,
                                                      update_column="FLAG_LOGIC_INFORMATION")
