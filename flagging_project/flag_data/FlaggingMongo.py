@@ -13,6 +13,7 @@ flag_id = "_id"
 flag_group_id = "_id"
 flag_timestamp = "FLAG_TIMESTAMP"
 flag_group_timestamp = "FLAG_GROUP_TIMESTAMP"
+flag_logic = "FLAG_LOGIC"
 
 
 class FlaggingMongo:
@@ -37,6 +38,7 @@ class FlaggingMongo:
     _id: unique user id
     FLAG_NAME: common flag_name -> str
     FLAG_VALIDATION_RESULTS: results of flag validation (errors.__str__(), mypy errors.__str__())
+    FLAG_LOGIC: jsonify flag logic information
     REFERENCED_FLAGS: flags in flag logic -> [str]
     FLAG_STATUS: is flag in production or in draft status -> bool
     FLAG_TIMESTAMP: datetime flag was last updated -> datetime object
