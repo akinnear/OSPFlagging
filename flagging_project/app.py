@@ -7,17 +7,11 @@ from front_end.FlaggingSchemaService import get_all_flags, get_specific_flag, \
     duplicate_flag_group, create_flag_dependency, delete_flag_dependency, add_dependencies_to_flag, \
     remove_dependencies_from_flag
 from flagging.FlagLogicInformation import FlagLogicInformation
-from flag_names.FlagService import pull_flag_names_in_flag_group, pull_flag_names
+from flag_names.FlagService import pull_flag_names_in_flag_group, pull_flag_names, pull_flag_logic_information
 from flag_data.FlaggingMongo import FlaggingMongo
-
-
-
-
-
 
 #intialize app
 app = Flask(__name__)
-
 
 #configure secret key
 app.secret_key = os.urandom(24).hex()
@@ -33,23 +27,18 @@ def hello_world():
 
 #flags
 @app.route("/flag/", methods=["GET"])
-#@app.route("/flag/<string:function>/", methods=["GET", "POST", "PUT"])
-#@app.route("/flag/<string:function>/<string:flag_id>/", methods=["GET", "POST", "PUT"])
+@app.route("/flag/<string:function>/", methods=["GET", "POST", "PUT"])
+@app.route("/flag/<string:function>/<string:flag_id>/", methods=["GET", "POST", "PUT"])
 @app.route("/flag/<string:function>/<string:flag_name>/", methods=["GET", "POST", "PUT"])
-#@app.route("/flag/<string:function>/<string:flag_id>/<string:flag_name>/", methods=["GET", "POST", "PUT"])
+@app.route("/flag/<string:function>/<string:flag_id>/<string:flag_name>/", methods=["GET", "POST", "PUT"])
 def flag_action(function=None, flag_id=None, flag_name=None):
     if function is None:
-        #route to flag home pag
-        return jsonify
+        #route to flag home page
         return "flag_home_page"
 
     else:
         if function == "get_all_flags":
-            print("in get_all_flags")
-            print("flagging_mongo: " + str(flagging_mongo))
             flags = get_all_flags(flagging_mongo)
-            print("have flags")
-            print(flags)
             return jsonify({'flags': flags})
 
 
@@ -64,8 +53,10 @@ def flag_action(function=None, flag_id=None, flag_name=None):
             # need method and function to return flag logic without direct reference
             # to mongo db in function
             try:
-                flag_schema_object = create_flag(flag_name, FlagLogicInformation(), flagging_mongo)
-                return(jsonify({"new uuid": flag_schema_object.uuid,
+                flag_info = pull_flag_logic_information(dummy_flag=True)
+                flag_schema_object = create_flag(flag_name, flag_info, flagging_mongo)
+                print('hello')
+                return(jsonify({"new uuid": str(flag_schema_object.uuid),
                                 "flagging_mongo_url": flagging_mongo.connection_url}))
             except Exception as e:
                 return("error: " + str(e))
