@@ -9,8 +9,20 @@ from flagging.FlaggingNodeVisitor import CodeLocation
 from flag_data.FlaggingMongo import FlaggingMongo
 from front_end.FlaggingValidateLogic import validate_logic
 from flagging.FlagErrorInformation import FlagErrorInformation
+from flagging.TypeValidationResults import TypeValidationResults
 
 
+def _make_fli_dictionary(fli):
+    fli_dict = {}
+    for attr, value in fli.__dict__.items():
+        if not attr.startswith("__"):
+            if attr == "validation_results":
+                for attr_x, value_x in value.__dict__.items():
+                    if attr_x != "validation_results":
+                        fli_dict[attr_x] = str(value_x)
+            else:
+                fli_dict[attr] = str(value)
+    return fli_dict
 
 
 #FLAG
@@ -53,13 +65,13 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
         flag_validation = validate_logic(flag_name, flag_logic_information)
         if flag_validation.errors != {} or flag_validation.mypy_errors != {}:
             add_flag_id = flagging_mongo.add_flag({"flag_name": flag_name,
-                                                   "flag_logic_information": flag_logic_information})
+                                                   "flag_logic_information": _make_fli_dictionary(flag_logic_information)})
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="error in flag logic",
                                                            uuid=add_flag_id)
     if flag_schema_object is None:
         add_flag_id = flagging_mongo.add_flag({"flag_name": flag_name,
-                                 "flag_logic_information": flag_logic_information})
+                                 "flag_logic_information": _make_fli_dictionary(flag_logic_information)})
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="new flag created",
                                                        uuid=add_flag_id)
