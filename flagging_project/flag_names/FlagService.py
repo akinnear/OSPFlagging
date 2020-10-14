@@ -1,3 +1,6 @@
+from flagging.FlagLogicInformation import FlagLogicInformation
+from flagging.FlaggingNodeVisitor import CodeLocation
+from flagging.VariableInformation import VariableInformation
 
 def pull_flag_names(*args, **kwargs):
     #method to pull flag names from api endpiont or internal db query
@@ -20,3 +23,18 @@ def pull_flag_names_in_flag_group(*args, **kwargs):
 
     if dummy_flag_names:
         return dummy_flag_names
+
+
+def pull_flag_logic_information(*args, **kwargs):
+    dummy_flag = kwargs.get("dummy_flag", False)
+    if dummy_flag:
+        flag_info = FlagLogicInformation(
+            used_variables={VariableInformation('x'): {CodeLocation(1, 1)}},
+            assigned_variables={VariableInformation("x"): {CodeLocation(3, 3)}},
+            referenced_flags={}
+        )
+    else:
+        flag_info = FlagLogicInformation()
+    return flag_info
+
+
