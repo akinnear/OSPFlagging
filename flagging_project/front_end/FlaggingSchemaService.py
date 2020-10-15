@@ -10,6 +10,8 @@ from flag_data.FlaggingMongo import FlaggingMongo
 from front_end.FlaggingValidateLogic import validate_logic
 from flagging.FlagErrorInformation import FlagErrorInformation
 from flagging.TypeValidationResults import TypeValidationResults
+from flag_data.FlaggingColumnNames import flag_name_col_name, flag_logic_col_name, \
+    referenced_flag_col_name, flag_status_col_name
 
 
 def _make_fli_dictionary(fli):
@@ -27,9 +29,10 @@ def _make_fli_dictionary(fli):
 
 #FLAG
 def get_all_flags(flagging_mongo: FlaggingMongo):
-    print("in FlaggingSchemaService")
-    print("in get_all_flags")
     return flagging_mongo.get_flags()
+
+def get_all_flag_ids(flagging_mongo: FlaggingMongo):
+    return flagging_mongo.get_flag_ids()
 
 def get_specific_flag(flag_id, existing_flags: [], flagging_mongo: FlaggingMongo):
     flag_schema_object = None
@@ -64,14 +67,18 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
     if flag_schema_object is None:
         flag_validation = validate_logic(flag_name, flag_logic_information)
         if flag_validation.errors != {} or flag_validation.mypy_errors != {}:
-            add_flag_id = flagging_mongo.add_flag({"flag_name": flag_name,
-                                                   "flag_logic_information": _make_fli_dictionary(flag_logic_information)})
+            add_flag_id = flagging_mongo.add_flag({flag_name_col_name: flag_name,
+                                                   flag_logic_col_name: _make_fli_dictionary(flag_logic_information),
+                                                   referenced_flag_col_name: flag_logic_information.referenced_flags,
+                                                   flag_status_col_name: "DRAFT"})
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="error in flag logic",
                                                            uuid=add_flag_id)
     if flag_schema_object is None:
-        add_flag_id = flagging_mongo.add_flag({"flag_name": flag_name,
-                                 "flag_logic_information": _make_fli_dictionary(flag_logic_information)})
+        add_flag_id = flagging_mongo.add_flag({flag_name_col_name: flag_name,
+                                               flag_logic_col_name: _make_fli_dictionary(flag_logic_information),
+                                               referenced_flag_col_name: flag_logic_information.referenced_flags,
+                                               flag_status_col_name: "PRODUCTION_READY"})
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="new flag created",
                                                        uuid=add_flag_id)
@@ -109,12 +116,12 @@ def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, 
         if original_flag_id not in existing_flags:
             # return error to user that original_flag_name does not exist
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="original flag id " + original_flag_id + " does not exist")
+                                                           message="original flag id " + str(original_flag_id) + " does not exist")
     if flag_schema_object is None:
         new_flag_id = flagging_mongo.update_flag(flag=original_flag_id, update_value=new_flag_name,
                                                  update_column="FLAG_NAME")
         flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message="original flag " + original_flag_id + " has been renamed " + new_flag_name,
+                                                       message="original flag " + str(original_flag_id) + " has been renamed " + new_flag_name,
                                                        uuid=new_flag_id)
     return flag_schema_object
 
