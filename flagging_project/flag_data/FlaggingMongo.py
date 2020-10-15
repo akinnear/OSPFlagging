@@ -20,6 +20,7 @@ class FlaggingMongo:
 
     def __init__(self, connection_url: str):
         self.connection_url = connection_url
+        self.client = MongoClient(self.connection_url)
 
     def __enter__(self):
         self.client = MongoClient(self.connection_url)
@@ -37,16 +38,22 @@ class FlaggingMongo:
     FLAGS
     _id: unique user id
     FLAG_NAME: common flag_name -> str
-    FLAG_VALIDATION_RESULTS: results of flag validation (errors.__str__(), mypy errors.__str__())
     FLAG_LOGIC: jsonify flag logic information
     REFERENCED_FLAGS: flags in flag logic -> [str]
     FLAG_STATUS: is flag in production or in draft status -> bool
-    FLAG_TIMESTAMP: datetime flag was last updated -> datetime object
     '''
     def get_flags(self):
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAGGING_COLLECTION]
+        print(list(flagging.find()))
         return list(flagging.find())
+
+    def get_flag_ids(self):
+        db = self.client[FLAGGING_DATABASE]
+        flagging = db[FLAGGING_COLLECTION]
+        flags = list(flagging.find())
+        flag_ids = [x["_id"] for x in flags]
+        return flag_ids
 
     def get_specific_flag(self, flag):
         db = self.client[FLAGGING_DATABASE]
