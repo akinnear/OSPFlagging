@@ -48,9 +48,26 @@ def get_specific_flag(flag_id, existing_flags: [], flagging_mongo: FlaggingMongo
         specific_flag_id = flagging_mongo.get_specific_flag(flag_id)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message='found flag id',
-                                                       uuid=specific_flag_id)
+                                                       uuid=str(specific_flag_id))
     return flag_schema_object
 
+def get_specific_flag_logic(flag_id, existing_flags: [], flagging_mongo: FlaggingMongo):
+    flag_schema_object = None
+    if flag_schema_object is None:
+        if flag_id is None:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="flag_id not specified")
+    if flag_schema_object is None:
+        if flag_id not in existing_flags:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="flag does not exist")
+    if flag_schema_object is None:
+        specific_flag_logic = flagging_mongo.get_flag_logic_information(flag_id)
+        flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                       message='found flag id',
+                                                       uuid=str(flag_id),
+                                                       data=specific_flag_logic)
+    return flag_schema_object
 
 def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, flagging_mongo:FlaggingMongo):
     flag_schema_object = None
@@ -92,11 +109,11 @@ def duplicate_flag(original_flag_id, existing_flags, flagging_mongo: FlaggingMon
                                                        message="flag id must be specified")
     elif original_flag_id not in existing_flags:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag " + original_flag_id + " does not exist")
+                                                       message="flag " + str(original_flag_id) + " does not exist")
     else:
         duplicated_flag_new_id = flagging_mongo.duplicate_flag(original_flag_id)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message=original_flag_id + " has be duplicated",
+                                                       message=str(original_flag_id) + " has be duplicated",
                                                        uuid=duplicated_flag_new_id)
     return flag_schema_object
 
@@ -139,15 +156,21 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
     if flag_schema_object is None:
         validation_results = validate_logic(flag_id, new_flag_logic_information)
         if validation_results.errors != {} or validation_results.mypy_errors != {}:
-            updated_flag_id = flagging_mongo.update_flag(flag=flag_id, update_value=new_flag_logic_information,
-                                                         update_column="FLAG_LOGIC_INFORMATION")
-
+            updated_flag_id = flagging_mongo.update_flag(flag=flag_id, update_value=_make_fli_dictionary(new_flag_logic_information),
+                                                         update_column=flag_logic_col_name)
+            updated_flag_id = flagging_mongo.update_flag(flag=flag_id,
+                                                         update_value="DRAFT",
+                                                         update_column=flag_status_col_name)
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="error in flag logic",
                                                            uuid=updated_flag_id)
     if flag_schema_object is None:
-        updated_flag_id = flagging_mongo.update_flag(flag=flag_id, update_value=new_flag_logic_information,
-                                                     update_column="FLAG_LOGIC_INFORMATION")
+        updated_flag_id = flagging_mongo.update_flag(flag=flag_id,
+                                                     update_value=_make_fli_dictionary(new_flag_logic_information),
+                                                     update_column=flag_logic_col_name)
+        updated_flag_id = flagging_mongo.update_flag(flag=flag_id,
+                                                     update_value="PRODUCTION_READY",
+                                                     update_column=flag_status_col_name)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="logic for flag " + str(
                                                            updated_flag_id) + " has been updated",
@@ -168,7 +191,7 @@ def delete_flag(flag_id, existing_flags, flagging_mongo: FlaggingMongo):
     if flag_schema_object is None:
         removed_flag = flagging_mongo.remove_flag(flag=flag_id)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message=flag_id + " has been deleted",
+                                                       message=str(flag_id) + " has been deleted",
                                                        uuid=removed_flag)
     return flag_schema_object
 

@@ -5,7 +5,7 @@ from front_end.FlaggingSchemaService import get_all_flags, get_specific_flag, \
     create_flag, update_flag_name, update_flag_logic, delete_flag, create_flag_group, \
     delete_flag_group, add_flag_to_flag_group, remove_flag_from_flag_group, duplicate_flag, \
     duplicate_flag_group, create_flag_dependency, delete_flag_dependency, add_dependencies_to_flag, \
-    remove_dependencies_from_flag, get_all_flag_ids
+    remove_dependencies_from_flag, get_all_flag_ids, get_specific_flag_logic
 from flagging.FlagLogicInformation import FlagLogicInformation
 from flag_names.FlagService import pull_flag_names_in_flag_group, pull_flag_names, pull_flag_logic_information
 from flag_data.FlaggingMongo import FlaggingMongo
@@ -24,27 +24,22 @@ app.secret_key = os.urandom(24).hex()
 def _create_flagging_mongo():
     return FlaggingMongo("mongodb://localhost:27017/flagging")
 
-def _make_json_pretty(json_data):
-    json_data = jsonify(json_data)
-    json_object = json.loads(json_data)
 
-    json_formatted_str = json.dumps(json_object, indent=2)
-    return json_formatted_str
 
 #hello world
 @app.route('/')
 def hello_world():
     return "Hello, World!"
 
-@app.route("/FLAG")
+@app.route("/flag")
 def flag_home_page():
     return "flag home page to go here"
 
-@app.route("/FLAG_GROUP")
+@app.route("/flag_group")
 def flag_group_home_page():
     return "flag group home page to go here"
 
-@app.route("/FLAG_DEPENDENCIES")
+@app.route("/flag_dependencies")
 def flag_dependencies_home_page():
     return "flag dependencies home page to go here"
 
@@ -65,8 +60,6 @@ def flag_action(function=None, flag_id=None, flag_name=None):
             flags = [str(x) for x in flags]
             return jsonify({'flags': flags})
 
-
-
         if function == "get_specific_flag":
             existing_flag_ids = get_all_flag_ids(flagging_mongo)
             flag_id_object = ObjectId(flag_id)
@@ -74,6 +67,16 @@ def flag_action(function=None, flag_id=None, flag_name=None):
             return jsonify(({"valid": flag_schema_object.valid,
                              "message": flag_schema_object.message,
                              "uuid": str(flag_schema_object.uuid)}))
+
+        if function == "get_specific_flag_logic":
+            existing_flag_ids = get_all_flag_ids(flagging_mongo)
+            flag_id_object = ObjectId(flag_id)
+            flag_schema_object = get_specific_flag_logic(flag_id_object, existing_flag_ids, flagging_mongo)
+            return jsonify(({"valid": flag_schema_object.valid,
+                             "message": flag_schema_object.message,
+                             "uuid": str(flag_schema_object.uuid),
+                             "data": flag_schema_object.data}))
+
 
         if function == "create_flag":
             #TODO
@@ -103,7 +106,7 @@ def flag_action(function=None, flag_id=None, flag_name=None):
             # to mongo db in function
 
             existing_flag_ids = get_all_flag_ids(flagging_mongo)
-            flag_info = pull_flag_logic_information(dummy_flag=True)
+            flag_info = pull_flag_logic_information(dummy_flag_2=True)
             flag_id_object = ObjectId(flag_id)
             flag_schema_object = update_flag_logic(flag_id_object, flag_info, existing_flag_ids, flagging_mongo)
             return jsonify({"valid": flag_schema_object.valid,

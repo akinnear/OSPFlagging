@@ -3,6 +3,9 @@ from typing import Callable
 from pymongo import MongoClient
 import datetime
 import pandas as pd
+from flag_data.FlaggingColumnNames import flag_name_col_name, flag_logic_col_name, \
+    referenced_flag_col_name, flag_status_col_name
+
 
 FLAGGING_DATABASE = 'flagging_test'
 FLAGGING_COLLECTION = 'flagging'
@@ -11,7 +14,6 @@ FLAG_GROUPS = "flag_groups"
 
 flag_id = "_id"
 flag_group_id = "_id"
-flag_timestamp = "FLAG_TIMESTAMP"
 flag_group_timestamp = "FLAG_GROUP_TIMESTAMP"
 flag_logic = "FLAG_LOGIC"
 
@@ -61,6 +63,12 @@ class FlaggingMongo:
         found_id = flagging.find_one({flag_id: flag})[flag_id]
         return found_id
 
+    def get_flag_logic_information(self, flag):
+        db = self.client[FLAGGING_DATABASE]
+        flagging = db[FLAGGING_COLLECTION]
+        flag_logic = flagging.find_one({flag_id: flag})[flag_logic_col_name]
+        return flag_logic
+
     def add_flag(self, flag):
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAGGING_COLLECTION]
@@ -70,8 +78,8 @@ class FlaggingMongo:
     def remove_flag(self, flag):
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAGGING_COLLECTION]
-        removed_id = flagging.remove({flag_id: flag})[flag_id]
-        return removed_id
+        flagging.remove({flag_id: flag})
+        return flag
 
     def update_flag(self, flag, update_value, update_column):
         db = self.client[FLAGGING_DATABASE]
@@ -83,7 +91,6 @@ class FlaggingMongo:
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAGGING_COLLECTION]
         flag_2_duplicate = flagging.find_one({flag_id: flag})
-        flag_2_duplicate.update({flag_timestamp: datetime.datetime.now()})
         flag_2_duplicate.pop(flag_id, None)
         duplicated_flag = flagging.insert_one(flag_2_duplicate).inserted_id
         return duplicated_flag
@@ -95,7 +102,6 @@ class FlaggingMongo:
     FLAG_GROUP_NAME: flag group name -> str
     FLAGS_IN_GROUP: flags in flag group -> [str]
     FLAG_GROUP_STATUS: is flag_group ready for production or in development -> bool
-    FLAG_TIMESTAMP: datetime flag group was last updated -> datetime object
     '''
     def get_flag_groups(self):
         db = self.client[FLAGGING_DATABASE]
@@ -141,7 +147,6 @@ class FlaggingMongo:
     _id: unique user id 
     FLAG_NAME: flag_name -> str
     DEPENDENT_FLAGS: flags that flag_name is dependent on -> [str]
-    FLAG_TIMESTAMP: datetime flag dependency was last updated -> datetime object
     '''
     def get_flag_dependencies(self):
         db = self.client[FLAGGING_DATABASE]

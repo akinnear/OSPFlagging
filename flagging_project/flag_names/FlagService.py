@@ -27,12 +27,20 @@ def pull_flag_names_in_flag_group(*args, **kwargs):
 
 def pull_flag_logic_information(*args, **kwargs):
     dummy_flag = kwargs.get("dummy_flag", False)
+    dummy_flag_2 = kwargs.get("dummy_flag_2", False)
     unique_dummy_flag = kwargs.get("unique_dummy_flag", False)
     if dummy_flag:
         flag_info = FlagLogicInformation(
             used_variables={VariableInformation('x'): {CodeLocation(1, 1)}},
             assigned_variables={VariableInformation("x"): {CodeLocation(3, 3)}},
             referenced_flags={}
+        )
+    elif dummy_flag_2:
+        flag_info = FlagLogicInformation(
+            used_variables={VariableInformation('x'): {CodeLocation(1, 1)}},
+            assigned_variables={VariableInformation("x"): {CodeLocation(3, 3)}},
+            referenced_flags={"Flag1A": {CodeLocation(0, 0)}},
+            flag_logic="Flag1A > x + 10"
         )
     elif unique_dummy_flag:
         flag_info = unique_dummy_flag
