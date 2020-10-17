@@ -108,6 +108,13 @@ class FlaggingMongo:
         flag_groups = db[FLAG_GROUPS]
         return list(flag_groups.find())
 
+    def get_flag_group_ids(self):
+        db = self.client[FLAGGING_DATABASE]
+        flag_group = db[FLAG_GROUPS]
+        flag_groups = list(flag_group.find())
+        flag_group_ids = [x["_id"] for x in flag_groups]
+        return flag_group_ids
+
     def add_flag_group(self, flag_group):
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAG_GROUPS]
