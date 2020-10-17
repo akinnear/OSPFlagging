@@ -60,6 +60,11 @@ def flag_action(function=None, flag_id=None, flag_name=None):
             flags = [str(x) for x in flags]
             return jsonify({'flags': flags})
 
+        if function == "get_all_flag_ids":
+            flag_ids = get_all_flag_ids(flagging_mongo)
+            flag_ids = [str(x) for x in flag_ids]
+            return jsonify({"_ids": flag_ids})
+
         if function == "get_specific_flag":
             existing_flag_ids = get_all_flag_ids(flagging_mongo)
             flag_id_object = ObjectId(flag_id)
@@ -129,7 +134,7 @@ def flag_action(function=None, flag_id=None, flag_name=None):
                              "message": flag_schema_object.message,
                              "uuid": str(flag_schema_object.uuid)})
         else:
-             return redirect("/FLAG")
+             return redirect("/flag")
 
 #flag groups
 @app.route("/flag_group/", methods=["GET"])
