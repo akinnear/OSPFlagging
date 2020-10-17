@@ -5,7 +5,7 @@ from front_end.FlaggingSchemaService import get_all_flags, get_specific_flag, \
     create_flag, update_flag_name, update_flag_logic, delete_flag, create_flag_group, \
     delete_flag_group, add_flag_to_flag_group, remove_flag_from_flag_group, duplicate_flag, \
     duplicate_flag_group, create_flag_dependency, delete_flag_dependency, add_dependencies_to_flag, \
-    remove_dependencies_from_flag, get_all_flag_ids, get_specific_flag_logic
+    remove_dependencies_from_flag, get_all_flag_ids, get_specific_flag_logic, get_flag_group_ids
 from flagging.FlagLogicInformation import FlagLogicInformation
 from flag_names.FlagService import pull_flag_names_in_flag_group, pull_flag_names, pull_flag_logic_information
 from flag_data.FlaggingMongo import FlaggingMongo
@@ -71,16 +71,8 @@ def flag_action(function=None, flag_id=None, flag_name=None):
             flag_schema_object = get_specific_flag(flag_id_object, existing_flag_ids, flagging_mongo)
             return jsonify(({"valid": flag_schema_object.valid,
                              "message": flag_schema_object.message,
-                             "uuid": str(flag_schema_object.uuid)}))
-
-        if function == "get_specific_flag_logic":
-            existing_flag_ids = get_all_flag_ids(flagging_mongo)
-            flag_id_object = ObjectId(flag_id)
-            flag_schema_object = get_specific_flag_logic(flag_id_object, existing_flag_ids, flagging_mongo)
-            return jsonify(({"valid": flag_schema_object.valid,
-                             "message": flag_schema_object.message,
                              "uuid": str(flag_schema_object.uuid),
-                             "data": flag_schema_object.data}))
+                             "flag_logic_information": flag_schema_object.flag_logic_information}))
 
 
         if function == "create_flag":
@@ -137,26 +129,27 @@ def flag_action(function=None, flag_id=None, flag_name=None):
              return redirect("/flag")
 
 #flag groups
-@app.route("/flag_group/", methods=["GET"])
-@app.route("/flag_group/<string:function>/", methods=["GET", "POST", "PUT"])
-@app.route("/flag_group/<string:function>/<string:flag_group_id>/", methods=["GET", "POST", "PUT"])
-@app.route("/flag_group/<string:function>/<string:flag_group_name>/", methods=["GET", "POST", "PUT"])
-@app.route("/flag_group/<string:function>/<string:flag_group_id>/<string:flag_group_name>/", methods=["GET", "POST", "PUT"])
+@app.route("/flag_group", methods=["GET"])
+@app.route("/flag_group/<string:function>", methods=["GET", "POST", "PUT"])
+@app.route("/flag_group/<string:function>/<string:flag_group_id>", methods=["GET"])
+@app.route("/flag_group/<string:function>/<string:flag_group_id>/<string:flag_group_name>", methods=["GET", "POST", "PUT"])
 def flag_group_action(function=None, flag_group_id=None, flag_group_name=None):
     if function is None:
         #route to flag home pag
-        return "flag_group_home_page"
+        return redirect(flag_group_home_page)
 
     else:
         if function == "get_flag_groups":
-            return(get_flag_groups(flagging_mongo))
+            flag_groups = get_flag_groups(flagging_mongo)
+            flag_groups = [str(x) for x in flag_groups]
+            return jsonify({'flags groups': flag_groups})
 
         if function == "get_specific_flag_group":
-            existing_flag_groups=get_flag_groups(flagging_mongo)
+            existing_flag_groups = get_flag_group_ids(flagging_mongo)
             return(get_specific_flag_group(flag_group_id, existing_flag_groups, flagging_mongo))
 
         if function == "create_flag_group":
-            existing_flag_groups=get_flag_groups(flagging_mongo)
+            existing_flag_groups = get_flag_group_ids(flagging_mongo)
             return(create_flag_group(flag_group_name, existing_flag_groups, flagging_mongo))
 
         if function == "delete_flag_group":
