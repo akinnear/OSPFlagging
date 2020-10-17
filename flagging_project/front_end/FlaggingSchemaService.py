@@ -200,6 +200,9 @@ def delete_flag(flag_id, existing_flags, flagging_mongo: FlaggingMongo):
 def get_flag_groups(flagging_mongo: FlaggingMongo):
     return flagging_mongo.get_flag_groups
 
+def get_flag_group_ids(flagging_mongo: FlaggingMongo):
+    return flagging_mongo.get_flag_group_ids
+
 #get specific flag_group
 def get_specific_flag_group(flag_group_id: str, existing_flag_groups: [], flagging_mongo: FlaggingMongo):
     flag_schema_object = None
