@@ -1,18 +1,18 @@
 class FlaggingSchemaInformation:
 
 
-    def __init__(self, valid, message, name=None, uuid=None, flag_logic_information=None):
+    def __init__(self, valid, message, name=None, uuid=None, flag_logic=None):
         self.valid = valid
         self.message = message
         self.name = name
         self.uuid = uuid
-        self.flag_logic_information = flag_logic_information
+        self.flag_logic = flag_logic
 
 
 
     # object representation
     def __repr__(self):
-        return f"FlaggingSchemaInformation({self.valid}, {self.message}, {self.name}, {self.uuid}, {self.flag_logic_information})"
+        return f"FlaggingSchemaInformation({self.valid}, {self.message}, {self.name}, {self.uuid}, {self.flag_logic})"
 
     def __str__(self):
         return f"{self.valid}, {self.message}, {self.name}, {self.uuid}", {self.flag_logic_information}
@@ -23,10 +23,10 @@ class FlaggingSchemaInformation:
                and self.message == other.message \
                and self.name == other.name \
                and self.uuid == other.uuid \
-               and self.flag_logic_information == other.flag_logic_information
+               and self.flag_logic == other.flag_logic
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
     def __hash__(self):
-        return hash((self.valid, self.message, self.name, self.uuid, self.flag_logic_information))
+        return hash((self.valid, self.message, self.name, self.uuid, self.flag_logic))

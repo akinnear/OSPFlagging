@@ -47,12 +47,13 @@ def get_specific_flag(flag_id, existing_flags: [], flagging_mongo: FlaggingMongo
     if flag_schema_object is None:
         specific_flag_id = flagging_mongo.get_specific_flag(flag_id)
         specific_flag_logic = flagging_mongo.get_flag_logic_information(flag_id)
+        specific_flag_name = flagging_mongo.get_flag_name(flag_id)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message='found flag id',
                                                        uuid=str(specific_flag_id),
-                                                       flag_logic_information=specific_flag_logic)
+                                                       name=specific_flag_name,
+                                                       flag_logic=specific_flag_logic)
     return flag_schema_object
-
 
 def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, flagging_mongo:FlaggingMongo):
     flag_schema_object = None
@@ -74,20 +75,24 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
                                                    referenced_flag_col_name: flag_logic_information.referenced_flags,
                                                    flag_status_col_name: "DRAFT"})
             specific_flag_logic = flagging_mongo.get_flag_logic_information(add_flag_id)
+            specific_flag_name = flagging_mongo.get_flag_name(add_flag_id)
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="error in flag logic",
                                                            uuid=add_flag_id,
-                                                           flag_logic_information=specific_flag_logic)
+                                                           name=specific_flag_name,
+                                                           flag_logic=specific_flag_logic)
     if flag_schema_object is None:
         add_flag_id = flagging_mongo.add_flag({flag_name_col_name: flag_name,
                                                flag_logic_col_name: _make_fli_dictionary(flag_logic_information),
                                                referenced_flag_col_name: flag_logic_information.referenced_flags,
                                                flag_status_col_name: "PRODUCTION_READY"})
         specific_flag_logic = flagging_mongo.get_flag_logic_information(add_flag_id)
+        specific_flag_name = flagging_mongo.get_flag_name(add_flag_id)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="new flag created",
                                                        uuid=add_flag_id,
-                                                       flag_logic_information=specific_flag_logic)
+                                                       name=specific_flag_name,
+                                                       flag_logic=specific_flag_logic)
     return flag_schema_object
 
 #A call to duplicate a flag provided a new name and UUID
@@ -102,10 +107,12 @@ def duplicate_flag(original_flag_id, existing_flags, flagging_mongo: FlaggingMon
     else:
         duplicated_flag_new_id = flagging_mongo.duplicate_flag(original_flag_id)
         specific_flag_logic = flagging_mongo.get_flag_logic_information(duplicated_flag_new_id)
+        specific_flag_name = flagging_mongo.get_flag_name(duplicated_flag_new_id)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message=str(original_flag_id) + " has be duplicated",
                                                        uuid=duplicated_flag_new_id,
-                                                       flag_logic_information=specific_flag_logic)
+                                                       name=specific_flag_name,
+                                                       flag_logic=specific_flag_logic)
     return flag_schema_object
 
 #One call for flag name
@@ -129,10 +136,12 @@ def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, 
         new_flag_id = flagging_mongo.update_flag(flag=original_flag_id, update_value=new_flag_name,
                                                  update_column="FLAG_NAME")
         specific_flag_logic = flagging_mongo.get_flag_logic_information(new_flag_id)
+        specific_flag_name = flagging_mongo.get_flag_name(new_flag_id)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="original flag " + str(original_flag_id) + " has been renamed " + new_flag_name,
                                                        uuid=new_flag_id,
-                                                       flag_logic_information=specific_flag_logic)
+                                                       name=specific_flag_name,
+                                                       flag_logic=specific_flag_logic)
     return flag_schema_object
 
 #Another call for flag logic
@@ -154,9 +163,13 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
             updated_flag_id = flagging_mongo.update_flag(flag=flag_id,
                                                          update_value="DRAFT",
                                                          update_column=flag_status_col_name)
+            specific_flag_name = flagging_mongo.get_flag_name(updated_flag_id)
+            specific_flag_logic = flagging_mongo.get_flag_logic_information(updated_flag_id)
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="error in flag logic",
-                                                           uuid=updated_flag_id)
+                                                           uuid=updated_flag_id,
+                                                           name=specific_flag_name,
+                                                           flag_logic=specific_flag_logic)
     if flag_schema_object is None:
         updated_flag_id = flagging_mongo.update_flag(flag=flag_id,
                                                      update_value=_make_fli_dictionary(new_flag_logic_information),
@@ -165,11 +178,13 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                                                      update_value="PRODUCTION_READY",
                                                      update_column=flag_status_col_name)
         specific_flag_logic = flagging_mongo.get_flag_logic_information(updated_flag_id)
+        specific_flag_name = flagging_mongo.get_flag_name(updated_flag_id)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="logic for flag " + str(
                                                            updated_flag_id) + " has been updated",
                                                        uuid=updated_flag_id,
-                                                       flag_logic_information=specific_flag_logic)
+                                                       name=specific_flag_name,
+                                                       flag_logic=specific_flag_logic)
     return flag_schema_object
 
 #A call to delete a flag provided a UUID, return true/false
@@ -184,10 +199,12 @@ def delete_flag(flag_id, existing_flags, flagging_mongo: FlaggingMongo):
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="flag id specified does not exist")
     if flag_schema_object is None:
+        specific_flag_name = flagging_mongo.get_flag_name(flag_id)
         removed_flag = flagging_mongo.remove_flag(flag=flag_id)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message=str(flag_id) + " has been deleted",
-                                                       uuid=removed_flag)
+                                                       uuid=removed_flag,
+                                                       name=specific_flag_name)
     return flag_schema_object
 
 #FLAG_GROUP
