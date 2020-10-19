@@ -228,9 +228,11 @@ def get_specific_flag_group(flag_group_id: str, existing_flag_groups: [], flaggi
                                                            message="flag group does not exist")
     if flag_schema_object is None:
         found_flag_group_id = flagging_mongo.get_specific_flag_group(flag_group_id)
+        found_flag_group_name = flagging_mongo.get_flag_group_name(flag_group_id)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="found flag group id",
-                                                       uuid=found_flag_group_id)
+                                                       uuid=found_flag_group_id,
+                                                       name=found_flag_group_name)
     return flag_schema_object
 
 #A call to create a named flag group, returns a UUID, name cannot be empty if so error
