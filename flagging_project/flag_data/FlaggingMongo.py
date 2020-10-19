@@ -122,10 +122,22 @@ class FlaggingMongo:
         flag_group_ids = [x["_id"] for x in flag_groups]
         return flag_group_ids
 
+    def get_specific_flag_group(self, flag):
+        db = self.client[FLAGGING_DATABASE]
+        flag_groups = db[FLAG_GROUPS]
+        found_id = flag_groups.find_one({flag_id: flag})[flag_id]
+        return found_id
+
+    def get_flag_group_name(self, flag_group):
+        db = self.client[FLAGGING_DATABASE]
+        flag_groups = db[FLAG_GROUPS]
+        found_name = flag_groups.find_one({flag_group_id: flag_group})[flag_group_name_col_name]
+        return found_name
+
     def add_flag_group(self, flag_group):
         db = self.client[FLAGGING_DATABASE]
-        flagging = db[FLAG_GROUPS]
-        new_flag_group = flagging.insert_one(flag_group).inserted_id
+        flag_groups = db[FLAG_GROUPS]
+        new_flag_group = flag_groups.insert_one(flag_group).inserted_id
         return new_flag_group
 
     def remove_flag_group(self, flag_group):
@@ -151,8 +163,8 @@ class FlaggingMongo:
 
     def get_specific_flag_group(self, flag):
         db = self.client[FLAGGING_DATABASE]
-        flagging = db[FLAG_GROUPS]
-        found_id = flagging.find_one({flag_id: flag})[flag_id]
+        flag_groups = db[FLAG_GROUPS]
+        found_id = flag_groups.find_one({flag_id: flag})[flag_id]
         return found_id
 
     #flag dependencies
