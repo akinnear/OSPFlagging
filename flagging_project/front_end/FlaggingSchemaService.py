@@ -11,7 +11,8 @@ from front_end.FlaggingValidateLogic import validate_logic
 from flagging.FlagErrorInformation import FlagErrorInformation
 from flagging.TypeValidationResults import TypeValidationResults
 from flag_data.FlaggingColumnNames import flag_name_col_name, flag_logic_col_name, \
-    referenced_flag_col_name, flag_status_col_name
+    referenced_flag_col_name, flag_status_col_name, flag_group_name_col_name, \
+    flag_group_flags_col_name, flag_group_status_col_name
 
 
 def _make_fli_dictionary(fli):
@@ -52,7 +53,7 @@ def get_specific_flag(flag_id, existing_flags: [], flagging_mongo: FlaggingMongo
                                                        message='found flag id',
                                                        uuid=str(specific_flag_id),
                                                        name=specific_flag_name,
-                                                       flag_logic=specific_flag_logic)
+                                                       logic=specific_flag_logic)
     return flag_schema_object
 
 def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, flagging_mongo:FlaggingMongo):
@@ -80,7 +81,7 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
                                                            message="error in flag logic",
                                                            uuid=add_flag_id,
                                                            name=specific_flag_name,
-                                                           flag_logic=specific_flag_logic)
+                                                           logic=specific_flag_logic)
     if flag_schema_object is None:
         add_flag_id = flagging_mongo.add_flag({flag_name_col_name: flag_name,
                                                flag_logic_col_name: _make_fli_dictionary(flag_logic_information),
@@ -92,7 +93,7 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
                                                        message="new flag created",
                                                        uuid=add_flag_id,
                                                        name=specific_flag_name,
-                                                       flag_logic=specific_flag_logic)
+                                                       logic=specific_flag_logic)
     return flag_schema_object
 
 #A call to duplicate a flag provided a new name and UUID
@@ -112,7 +113,7 @@ def duplicate_flag(original_flag_id, existing_flags, flagging_mongo: FlaggingMon
                                                        message=str(original_flag_id) + " has be duplicated",
                                                        uuid=duplicated_flag_new_id,
                                                        name=specific_flag_name,
-                                                       flag_logic=specific_flag_logic)
+                                                       logic=specific_flag_logic)
     return flag_schema_object
 
 #One call for flag name
@@ -141,7 +142,7 @@ def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, 
                                                        message="original flag " + str(original_flag_id) + " has been renamed " + new_flag_name,
                                                        uuid=new_flag_id,
                                                        name=specific_flag_name,
-                                                       flag_logic=specific_flag_logic)
+                                                       logic=specific_flag_logic)
     return flag_schema_object
 
 #Another call for flag logic
@@ -169,7 +170,7 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                                                            message="error in flag logic",
                                                            uuid=updated_flag_id,
                                                            name=specific_flag_name,
-                                                           flag_logic=specific_flag_logic)
+                                                           logic=specific_flag_logic)
     if flag_schema_object is None:
         updated_flag_id = flagging_mongo.update_flag(flag=flag_id,
                                                      update_value=_make_fli_dictionary(new_flag_logic_information),
@@ -184,7 +185,7 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                                                            updated_flag_id) + " has been updated",
                                                        uuid=updated_flag_id,
                                                        name=specific_flag_name,
-                                                       flag_logic=specific_flag_logic)
+                                                       logic=specific_flag_logic)
     return flag_schema_object
 
 #A call to delete a flag provided a UUID, return true/false
@@ -241,10 +242,13 @@ def create_flag_group(flag_group_name: str, existing_flag_groups, flagging_mongo
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="new flag group name must be unique")
     else:
-        new_flag_group_id = flagging_mongo.add_flag_group(flag_group_name)
+        new_flag_group_id = flagging_mongo.add_flag_group({flag_group_name_col_name: flag_group_name,
+                                               flag_group_flags_col_name: dict(),
+                                               flag_status_col_name: "PRODUCTION_READY"})
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="unique flag group " + flag_group_name + " created",
-                                                       uuid=new_flag_group_id)
+                                                       uuid=new_flag_group_id,
+                                                       name=flag_group_name)
     return flag_schema_object
 
 #A call to delete a flag group provided a UUID, return true/false

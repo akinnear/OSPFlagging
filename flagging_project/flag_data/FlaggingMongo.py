@@ -4,7 +4,8 @@ from pymongo import MongoClient
 import datetime
 import pandas as pd
 from flag_data.FlaggingColumnNames import flag_name_col_name, flag_logic_col_name, \
-    referenced_flag_col_name, flag_status_col_name
+    referenced_flag_col_name, flag_status_col_name, flag_group_name_col_name, \
+    flag_group_flags_col_name, flag_group_status_col_name
 
 
 FLAGGING_DATABASE = 'flagging_test'

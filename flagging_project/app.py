@@ -55,12 +55,12 @@ def flag_action(function=None, flag_id=None, flag_name=None):
         return redirect(flag_home_page)
 
     else:
-        if function == "get_all_flags":
+        if function == "get_flags":
             flags = get_all_flags(flagging_mongo)
             flags = [str(x) for x in flags]
             return jsonify({'flags': flags})
 
-        if function == "get_all_flag_ids":
+        if function == "get_flag_ids":
             flag_ids = get_all_flag_ids(flagging_mongo)
             flag_ids = [str(x) for x in flag_ids]
             return jsonify({"_ids": flag_ids})
@@ -158,8 +158,19 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None):
             return(get_specific_flag_group(flag_group_id, existing_flag_groups, flagging_mongo))
 
         if function == "create_flag_group":
+            #TODO
+            # need to pull flag logic,
+            # need method and function to return flag logic without direct reference
+            # to mongo db in function
             existing_flag_groups = get_flag_group_ids(flagging_mongo)
-            return(create_flag_group(flag_group_name, existing_flag_groups, flagging_mongo))
+
+            flag_schema_object = create_flag_group(flag_group_name, existing_flag_groups, flagging_mongo)
+            return jsonify({"valid": flag_schema_object.valid,
+                            "message": flag_schema_object.message,
+                            "uuid": str(flag_schema_object.uuid),
+                            "flag_group_name": flag_schema_object.name})
+
+
 
         if function == "delete_flag_group":
             existing_flag_groups=get_flag_groups(flagging_mongo)
