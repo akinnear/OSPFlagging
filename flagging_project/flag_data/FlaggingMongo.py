@@ -118,14 +118,27 @@ class FlaggingMongo:
     def get_flag_group_ids(self):
         db = self.client[FLAGGING_DATABASE]
         flag_group = db[FLAG_GROUPS]
-        flag_groups = list(flag_group.find())
-        flag_group_ids = [x["_id"] for x in flag_groups]
+        flag_group_list = list(flag_group.find())
+        flag_group_ids = [x["_id"] for x in flag_group_list]
         return flag_group_ids
 
-    def get_specific_flag_group(self, flag):
+    def get_flag_group_names(self):
         db = self.client[FLAGGING_DATABASE]
         flag_groups = db[FLAG_GROUPS]
-        found_id = flag_groups.find_one({flag_id: flag})[flag_id]
+        flag_group_list = list(flag_groups.find())
+        flag_group_names = [x[flag_group_name_col_name] for x in flag_group_list]
+        return flag_group_names
+
+    def get_flag_group_flag(self, flag_group):
+        db = self.client[FLAGGING_DATABASE]
+        flag_groups = db[FLAG_GROUPS]
+        found_flags = flag_groups.find_one({flag_group_id: flag_group})[flag_group_flags_col_name]
+        return list(found_flags)
+
+    def get_specific_flag_group(self, flag_group):
+        db = self.client[FLAGGING_DATABASE]
+        flag_groups = db[FLAG_GROUPS]
+        found_id = flag_groups.find_one({flag_id: flag_group})[flag_group_id]
         return found_id
 
     def get_flag_group_name(self, flag_group):
@@ -143,13 +156,15 @@ class FlaggingMongo:
     def remove_flag_group(self, flag_group):
         db = self.client[FLAGGING_DATABASE]
         flag_groups = db[FLAG_GROUPS]
-        removed_flag_group_id = flag_groups.remove({flag_group_id: flag_group})[flag_id]
-        return removed_flag_group_id
+        flag_groups.remove({flag_group_id: flag_group})[flag_id]
+        return flag_group
 
     def update_flag_group(self, flag_group, update_value, update_column):
         db = self.client[FLAGGING_DATABASE]
         flag_groups = db[FLAG_GROUPS]
-        updated_flag_group = flag_groups.find_one_and_update({flag_group_id: flag_group}, {"$set": {update_column: update_value}}, upsert=True)[flag_group_id]
+        #TODO
+        # bug in line below, None type object in not subscriptable
+        updated_flag_group = flag_groups.find_one_and_update({flag_group_id: flag_group}, {"$set": {update_column: update_value}})[flag_group_id]
         return updated_flag_group
 
     def duplicate_flag_group(self, flag_group):
