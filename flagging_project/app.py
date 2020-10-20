@@ -72,7 +72,7 @@ def flag_action(function=None, flag_id=None, flag_name=None):
                              "message": flag_schema_object.message,
                              "uuid": str(flag_schema_object.uuid),
                              "flag_name": flag_schema_object.name,
-                             "flag_logic": flag_schema_object.flag_logic})
+                             "flag_logic": flag_schema_object.logic})
 
         if function == "create_flag":
             #TODO
@@ -86,7 +86,7 @@ def flag_action(function=None, flag_id=None, flag_name=None):
                              "message": flag_schema_object.message,
                              "uuid": str(flag_schema_object.uuid),
                              "flag_name": flag_schema_object.name,
-                             "flag_logic": flag_schema_object.flag_logic})
+                             "flag_logic": flag_schema_object.logic})
 
         if function == "update_flag_name":
             existing_flag_ids = get_all_flag_ids(flagging_mongo)
@@ -95,7 +95,7 @@ def flag_action(function=None, flag_id=None, flag_name=None):
                              "message": flag_schema_object.message,
                              "uuid": str(flag_schema_object.uuid),
                              "flag_name": flag_schema_object.name,
-                             "flag_logic": flag_schema_object.flag_logic})
+                             "flag_logic": flag_schema_object.logic})
 
         if function == "update_flag_logic":
             #TODO
@@ -110,7 +110,7 @@ def flag_action(function=None, flag_id=None, flag_name=None):
                              "message": flag_schema_object.message,
                              "uuid": str(flag_schema_object.uuid),
                              "flag_name": flag_schema_object.name,
-                             "flag_logic": flag_schema_object.flag_logic})
+                             "flag_logic": flag_schema_object.logic})
 
         if function == "delete_flag":
             existing_flag_ids = get_all_flag_ids(flagging_mongo)
@@ -119,7 +119,7 @@ def flag_action(function=None, flag_id=None, flag_name=None):
                              "message": flag_schema_object.message,
                              "uuid": str(flag_schema_object.uuid),
                              "flag_name": flag_schema_object.name,
-                             "flag_logic": flag_schema_object.flag_logic})
+                             "flag_logic": flag_schema_object.logic})
 
         if function == "duplicate_flag":
             existing_flag_ids = get_all_flag_ids(flagging_mongo)
@@ -128,7 +128,7 @@ def flag_action(function=None, flag_id=None, flag_name=None):
                              "message": flag_schema_object.message,
                              "uuid": str(flag_schema_object.uuid),
                              "flag_name": flag_schema_object.name,
-                             "flag_logic": flag_schema_object.flag_logic})
+                             "flag_logic": flag_schema_object.logic})
         else:
              return redirect("/flag")
 
@@ -191,7 +191,8 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
                                                                uuid=flag_group_id)
             return jsonify({"valid": flag_schema_object.valid,
                             "message": flag_schema_object.message,
-                            "uuid": flag_schema_object.uuid})
+                            "uuid": str(flag_schema_object.uuid),
+                            "name": flag_schema_object.name})
 
         if function == "remove_flag_from_flag_group":
             #TODO

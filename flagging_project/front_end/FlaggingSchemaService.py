@@ -384,10 +384,12 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
         else:
             full_flag_set = new_flags + list(dict.fromkeys(flags_in_flag_group))
             full_flag_set = [ObjectId(x) for x in full_flag_set]
-            flag_with_updated_deps_id = flagging_mongo.update_flag_group(flag_group=flag_group_id, update_value=full_flag_set, update_column="FLAGS_IN_GROUP")
+            found_flag_group_name = flagging_mongo.get_flag_group_name(ObjectId(flag_group_id))
+            flag_with_updated_deps_id = flagging_mongo.update_flag_group(flag_group=ObjectId(flag_group_id), update_value=full_flag_set, update_column="FLAGS_IN_GROUP")
             flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                            message="flag group " + flag_group_id + " has been updated with flag(s) " + (", ".join(map(str, new_flags))),
-                                                           uuid=flag_with_updated_deps_id)
+                                                           uuid=flag_with_updated_deps_id,
+                                                           name=found_flag_group_name)
     return flag_schema_object
 
 #A call to remove flags from a group provided a UUID for the group and UUIDs for the flags to remove
