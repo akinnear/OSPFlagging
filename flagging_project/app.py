@@ -197,10 +197,6 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
                             "name": flag_schema_object.name})
 
         if function == "remove_flag_from_flag_group":
-            #TODO
-            # need method and function
-            # to get existing flags in flag groups
-            # and flags to be removed (del_flags)
             del_flags = [flag_id]
             existing_flag_groups = get_flag_group_ids(flagging_mongo)
             flags_in_flag_group_schema = get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_mongo)
@@ -213,11 +209,12 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
                             "message": flag_schema_object.message,
                             "uuid": str(flag_schema_object.uuid)})
 
-
         if function == "duplicate_flag_group":
-            existing_flag_groups = get_flag_groups(flagging_mongo)
-            return(duplicate_flag_group(flag_group_id, existing_flag_groups, flagging_mongo))
-
+            existing_flag_groups = get_flag_group_ids(flagging_mongo)
+            flag_schema_object = duplicate_flag_group(flag_group_id, existing_flag_groups, flagging_mongo)
+            return jsonify({"valid": flag_schema_object.valid,
+                            "message": flag_schema_object.message,
+                            "uuid": str(flag_schema_object.uuid)})
         else:
              return "flag_group_home_page"
 

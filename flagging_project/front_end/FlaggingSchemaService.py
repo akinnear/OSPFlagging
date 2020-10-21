@@ -397,6 +397,9 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                                message="flag: " + str(new_flags[0]) + " with name: " + flag_name_being_added + " already exists in flag group: " + str(flag_group_id),
                                                                uuid=flag_group_id,
                                                                name=found_flag_group_name)
+        #TODO
+        # if error in flag being added, Flag Group must default to DRAFT status
+
         if flag_schema_object is None:
             full_flag_set = new_flags + list(dict.fromkeys(flags_in_flag_group))
             full_flag_set = [ObjectId(x) for x in full_flag_set]
@@ -474,12 +477,12 @@ def duplicate_flag_group(original_flag_group_id: str, existing_flag_groups, flag
     if flag_schema_object is None:
         if ObjectId(original_flag_group_id) not in existing_flag_groups:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag group " + original_flag_group_id + " does not exist")
+                                                           message="flag group " + str(original_flag_group_id) + " does not exist")
     if flag_schema_object is None:
         #get new id
-        new_flag_group_id = flagging_mongo.duplicate_flag_group(original_flag_group_id)
+        new_flag_group_id = flagging_mongo.duplicate_flag_group(ObjectId(original_flag_group_id))
         flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message="new flag group " + new_flag_group_id + " created off of " + original_flag_group_id,
+                                                       message="new flag group " + str(new_flag_group_id)+ " created off of " + str(original_flag_group_id),
                                                        uuid=new_flag_group_id)
     return flag_schema_object
 

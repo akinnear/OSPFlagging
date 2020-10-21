@@ -149,6 +149,7 @@ class FlaggingMongo:
     def get_specific_flag_group(self, flag_group):
         db = self.client[FLAGGING_DATABASE]
         flag_groups = db[FLAG_GROUPS]
+        flag_test = flag_groups.find_one({flag_group_id: flag_group})
         found_id = flag_groups.find_one({flag_id: flag_group})[flag_group_id]
         return found_id
 
@@ -167,14 +168,12 @@ class FlaggingMongo:
     def remove_flag_group(self, flag_group):
         db = self.client[FLAGGING_DATABASE]
         flag_groups = db[FLAG_GROUPS]
-        flag_groups.remove({flag_group_id: flag_group})[flag_id]
+        flag_groups.remove({flag_group_id: flag_group})
         return flag_group
 
     def update_flag_group(self, flag_group, update_value, update_column):
         db = self.client[FLAGGING_DATABASE]
         flag_groups = db[FLAG_GROUPS]
-        #TODO
-        # bug in line below, None type object in not subscriptable
         updated_flag_group = flag_groups.find_one_and_update({flag_group_id: flag_group}, {"$set": {update_column: update_value}}, upsert=True)[flag_group_id]
         return updated_flag_group
 
@@ -186,11 +185,6 @@ class FlaggingMongo:
         duplicated_flag_groups = flag_groups.insert_one(flag_group_2_duplicate).inserted_id
         return duplicated_flag_groups
 
-    def get_specific_flag_group(self, flag):
-        db = self.client[FLAGGING_DATABASE]
-        flag_groups = db[FLAG_GROUPS]
-        found_id = flag_groups.find_one({flag_id: flag})[flag_id]
-        return found_id
 
     #flag dependencies
     '''
