@@ -5,7 +5,8 @@ from front_end.FlaggingSchemaService import get_all_flags, get_specific_flag, \
     create_flag, update_flag_name, update_flag_logic, delete_flag, create_flag_group, \
     delete_flag_group, add_flag_to_flag_group, remove_flag_from_flag_group, duplicate_flag, \
     duplicate_flag_group, create_flag_dependency, delete_flag_dependency, add_dependencies_to_flag, \
-    remove_dependencies_from_flag, get_all_flag_ids, get_flag_group_ids, get_flag_group_names, get_flag_group_flags
+    remove_dependencies_from_flag, get_all_flag_ids, get_flag_group_ids, get_flag_group_names, \
+    get_flag_group_flags, get_flag_names_in_flag_group
 from flagging.FlagLogicInformation import FlagLogicInformation
 from flag_names.FlagService import pull_flag_names_in_flag_group, pull_flag_names, pull_flag_logic_information
 from flag_data.FlaggingMongo import FlaggingMongo
@@ -155,6 +156,7 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
             return jsonify({"valid": flag_schema_object.valid,
                              "message": flag_schema_object.message,
                              "uuid": str(flag_schema_object.uuid),
+                             "flags in flag group": flag_schema_object.logic,
                              "flag_group_name": flag_schema_object.name})
 
         if function == "create_flag_group":
@@ -180,8 +182,8 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
             existing_flags = get_all_flag_ids(flagging_mongo)
             existing_flag_groups = get_flag_group_ids(flagging_mongo)
             flags_in_flag_group_schema = get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_mongo)
+            flags_in_flag_group = flags_in_flag_group_schema.logic
             if flags_in_flag_group_schema.valid:
-                flags_in_flag_group = flags_in_flag_group_schema.logic
                 flag_schema_object = add_flag_to_flag_group(flag_group_id=flag_group_id, new_flags=[flag_id],
                                                             existing_flags=existing_flags, existing_flag_groups=existing_flag_groups,
                                                             flags_in_flag_group=flags_in_flag_group, flagging_mongo=flagging_mongo)

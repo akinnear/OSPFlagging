@@ -135,6 +135,17 @@ class FlaggingMongo:
         found_flags = flag_groups.find_one({flag_group_id: flag_group})[flag_group_flags_col_name]
         return list(found_flags)
 
+    def get_flag_names_from_flag_group(self, flag_group):
+        flag_name_list = []
+        db = self.client[FLAGGING_DATABASE]
+        flag_groups = db[FLAG_GROUPS]
+        flagging = db[FLAGGING_COLLECTION]
+        flags_in_flag_group_ids = flag_groups.find_one({flag_group_id: flag_group})[flag_group_flags_col_name]
+        for flag in flags_in_flag_group_ids:
+            flag_name = flagging.find_one({flag_id: flag})[flag_name_col_name]
+            flag_name_list.append(flag_name)
+        return flag_name_list
+
     def get_specific_flag_group(self, flag_group):
         db = self.client[FLAGGING_DATABASE]
         flag_groups = db[FLAG_GROUPS]

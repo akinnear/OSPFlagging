@@ -226,6 +226,9 @@ def get_flag_group_ids(flagging_mongo: FlaggingMongo):
 def get_flag_group_names(flagging_mongo: FlaggingMongo):
     return flagging_mongo.get_flag_group_names()
 
+def get_flag_names_in_flag_group(flag_group_id, flagging_mongo):
+    return flagging_mongo.get_flag_names_from_flag_group(flag_group_id)
+
 def get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_mongo):
     flag_schema_object = None
     if flag_group_id is None:
@@ -258,10 +261,12 @@ def get_specific_flag_group(flag_group_id: str, existing_flag_groups: [], flaggi
         flag_group_id_object = ObjectId(flag_group_id)
         found_flag_group_id = flagging_mongo.get_specific_flag_group(flag_group_id_object)
         found_flag_group_name = flagging_mongo.get_flag_group_name(flag_group_id_object)
+        flags_in_flag_group = flagging_mongo.get_flag_group_flag(flag_group_id_object)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="found flag group id",
                                                        uuid=found_flag_group_id,
-                                                       name=found_flag_group_name)
+                                                       name=found_flag_group_name,
+                                                       logic=[str(x) for x in flags_in_flag_group])
     return flag_schema_object
 
 #A call to create a named flag group, returns a UUID, name cannot be empty if so error
@@ -381,7 +386,18 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="Flag(s) " + ", ".join(map(str, duplicate_flags)) + " already exist in flag group")
 
-        else:
+        if flag_schema_object is None:
+            #get names of flags in flag group
+            #get name of flag being added
+            flag_names_in_flag_group = flagging_mongo.get_flag_names_from_flag_group(ObjectId(flag_group_id))
+            flag_name_being_added = flagging_mongo.get_flag_name(new_flags[0])
+            found_flag_group_name = flagging_mongo.get_flag_group_name(ObjectId(flag_group_id))
+            if flag_name_being_added in flag_names_in_flag_group:
+                flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                               message="flag: " + str(new_flags[0]) + " with name: " + flag_name_being_added + " already exists in flag group: " + str(flag_group_id),
+                                                               uuid=flag_group_id,
+                                                               name=found_flag_group_name)
+        if flag_schema_object is None:
             full_flag_set = new_flags + list(dict.fromkeys(flags_in_flag_group))
             full_flag_set = [ObjectId(x) for x in full_flag_set]
             found_flag_group_name = flagging_mongo.get_flag_group_name(ObjectId(flag_group_id))
