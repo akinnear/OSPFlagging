@@ -201,13 +201,18 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
             # need method and function
             # to get existing flags in flag groups
             # and flags to be removed (del_flags)
-            del_flags = []
-            flags_in_flag_group = pull_flag_names_in_flag_group(dummy_flag_names=["FLAG1A"])
-            existing_flags = get_all_flags(flagging_mongo)
-            existing_flag_groups = get_flag_groups(flagging_mongo)
-            return(remove_flag_from_flag_group(flag_group_id=flag_group_id, del_flags=del_flags,
+            del_flags = [flag_id]
+            existing_flag_groups = get_flag_group_ids(flagging_mongo)
+            flags_in_flag_group_schema = get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_mongo)
+            flags_in_flag_group = flags_in_flag_group_schema.logic
+            existing_flags = get_all_flag_ids(flagging_mongo)
+            flag_schema_object = remove_flag_from_flag_group(flag_group_id=flag_group_id, del_flags=del_flags,
                                                existing_flags=existing_flags, existing_flag_groups=existing_flag_groups,
-                                               flags_in_flag_group=flags_in_flag_group, flagging_mongo=flagging_mongo))
+                                               flags_in_flag_group=flags_in_flag_group, flagging_mongo=flagging_mongo)
+            return jsonify({"valid": flag_schema_object.valid,
+                            "message": flag_schema_object.message,
+                            "uuid": str(flag_schema_object.uuid)})
+
 
         if function == "duplicate_flag_group":
             existing_flag_groups = get_flag_groups(flagging_mongo)

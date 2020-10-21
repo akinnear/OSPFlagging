@@ -430,6 +430,7 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
         #make sure the flag exists and is part of flag group
         missing_flags = []
         flags_not_in_group = []
+        del_flags = [ObjectId(x) for x in del_flags]
         for del_flag in del_flags:
             if del_flag not in existing_flags:
                 missing_flags.append(del_flag)
@@ -441,7 +442,7 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
             else:
                 flag_message = "the following flags do not exists: " + (", ".join(missing_flags))
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           messge=flag_message)
+                                                           message=flag_message)
         if flag_schema_object is None and len(flags_not_in_group) > 0:
             if len(flags_not_in_group) == 0:
                 flag_message = "the following flag is not part of flag group " + flag_group_id + ": " + flags_not_in_group[0]
@@ -452,8 +453,9 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
 
     if flag_schema_object is None:
         new_flag_set = (list(list(set(del_flags)-set(flags_in_flag_group)) + list(set(flags_in_flag_group)-set(del_flags))))
+        new_flag_set = [ObjectId(x) for x in new_flag_set]
         #method to remove flag(s) from flag group
-        flag_with_updated_deps_id = flagging_mongo.update_flag_group(flag_group=flag_group_id,
+        flag_with_updated_deps_id = flagging_mongo.update_flag_group(flag_group=ObjectId(flag_group_id),
                                                                      update_value=new_flag_set,
                                                                      update_column="FLAGS_IN_GROUP")
         flag_schema_object = FlaggingSchemaInformation(valid=True,
