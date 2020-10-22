@@ -76,6 +76,12 @@ class FlaggingMongo:
         flag_name = flagging.find_one({flag_id: flag})[flag_name_col_name]
         return flag_name
 
+    def get_flag_status(self, flag):
+        db = self.client[FLAGGING_DATABASE]
+        flagging = db[FLAGGING_COLLECTION]
+        flag_status = flagging.find_one({flag_id: flag})[flag_status_col_name]
+        return flag_status
+
     def add_flag(self, flag):
         db = self.client[FLAGGING_DATABASE]
         flagging = db[FLAGGING_COLLECTION]

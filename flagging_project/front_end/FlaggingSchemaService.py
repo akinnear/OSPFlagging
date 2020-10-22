@@ -280,7 +280,7 @@ def create_flag_group(flag_group_name: str, existing_flag_groups, flagging_mongo
     else:
         new_flag_group_id = flagging_mongo.add_flag_group({flag_group_name_col_name: flag_group_name,
                                                flag_group_flags_col_name: dict(),
-                                               flag_status_col_name: "PRODUCTION_READY"})
+                                               flag_group_status_col_name: "PRODUCTION_READY"})
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="unique flag group " + flag_group_name + " created",
                                                        uuid=new_flag_group_id,
@@ -352,39 +352,37 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                 ref_flag_dict[flag] = {CodeLocation(None, None)}
 
             #perform cyclical flag check with flags in group and flags attempted to be added to group
+            flag_logic_cyclical_check = FlagLogicInformation(referenced_flags=ref_flag_dict)
+            validation_results = validate_logic("dummy_flag", flag_logic_cyclical_check)
 
-            flag_logic_information = FlagLogicInformation(referenced_flags=ref_flag_dict)
-            validation_results = validate_logic("dummy_flag", flag_logic_information)
+            if len(validation_results.errors) != 0:
+                cyclical_errors = []
+                for k, v in validation_results.errors.items():
+                    if isinstance(v, FlagErrorInformation):
+                        cyclical_errors.append(k)
+                if len(cyclical_errors) > 0:
+                    if len(cyclical_errors) == 1:
+                        flagging_message = "the following flag dependency resulted in cyclical dependencies: " + \
+                                           cyclical_errors[0]
+                    else:
+                        flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
+                            ", ".join(cyclical_errors))
+                    full_flag_set = new_flags + list(dict.fromkeys(existing_flags))
+                    flag_with_updated_deps_id = flagging_mongo.update_flag_group(flag_group=flag_group_id,
+                                                                                 update_value=full_flag_set,
+                                                                                 update_column="FLAGS_IN_GROUP")
+                    flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                                   message=flagging_message,
+                                                                   uuid=flag_with_updated_deps_id)
 
-
-        if len(validation_results.errors) != 0:
-            cyclical_errors = []
-            for k, v in validation_results.errors.items():
-                if isinstance(v, FlagErrorInformation):
-                    cyclical_errors.append(k)
-            if len(cyclical_errors) > 0:
-                if len(cyclical_errors) == 1:
-                    flagging_message = "the following flag dependency resulted in cyclical dependencies: " + \
-                                       cyclical_errors[0]
-                else:
-                    flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
-                        ", ".join(cyclical_errors))
-                full_flag_set = new_flags + list(dict.fromkeys(existing_flags))
-                flag_with_updated_deps_id = flagging_mongo.update_flag_group(flag_group=flag_group_id,
-                                                                             update_value=full_flag_set,
-                                                                             update_column="FLAGS_IN_GROUP")
+            elif len(missing_flags) != 0:
+                # return error message that flag must be created first before added to flag group
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                               message=flagging_message,
-                                                               uuid=flag_with_updated_deps_id)
+                                                               message="Flag(s) " + ", ".join(map(str, missing_flags)) + " do not exist")
 
-        elif len(missing_flags) != 0:
-            # return error message that flag must be created first before added to flag group
-            flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="Flag(s) " + ", ".join(map(str, missing_flags)) + " do not exist")
-
-        elif len(duplicate_flags) != 0:
-            flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="Flag(s) " + ", ".join(map(str, duplicate_flags)) + " already exist in flag group")
+            elif len(duplicate_flags) != 0:
+                flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                               message="Flag(s) " + ", ".join(map(str, duplicate_flags)) + " already exist in flag group")
 
         if flag_schema_object is None:
             #get names of flags in flag group
@@ -399,6 +397,23 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                                name=found_flag_group_name)
         #TODO
         # if error in flag being added, Flag Group must default to DRAFT status
+        # rely on flag status for now instead of running full flag validation
+        if flag_schema_object is None:
+            #create full valid flag logic information object
+            flag_status = flagging_mongo.get_flag_status(ObjectId(new_flags[0]))
+            if flag_status == "DRAFT":
+                full_flag_set = new_flags + list(dict.fromkeys(flags_in_flag_group))
+                full_flag_set = [ObjectId(x) for x in full_flag_set]
+                found_flag_group_name = flagging_mongo.get_flag_group_name(ObjectId(flag_group_id))
+                flag_with_updated_deps_id = flagging_mongo.update_flag_group(flag_group=ObjectId(flag_group_id),
+                                                                             update_value=full_flag_set,
+                                                                             update_column="FLAGS_IN_GROUP")
+                flag_group_set_to_draft = flagging_mongo.update_flag_group(flag_group=ObjectId(flag_group_id),
+                                                                             update_value="DRAFT",
+                                                                             update_column=flag_group_status_col_name)
+                flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                               message="flag: " + str(new_flags[0]) + " is in DRAFT status but was added to flag group: " + str(flag_group_id),
+                                                               uuid=str(flag_group_id))
 
         if flag_schema_object is None:
             full_flag_set = new_flags + list(dict.fromkeys(flags_in_flag_group))
