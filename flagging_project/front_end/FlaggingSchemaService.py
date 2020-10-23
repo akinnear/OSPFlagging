@@ -43,9 +43,14 @@ def get_specific_flag(flag_id, existing_flags: [], flagging_mongo: FlaggingMongo
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="flag_id not specified")
     if flag_schema_object is None:
-        if ObjectId(flag_id) not in existing_flags:
+        try:
+            if ObjectId(flag_id) not in existing_flags:
+                flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                               message="flag does not exist")
+        except Exception as e:
+            print(e)
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag does not exist")
+                                                           message="error coverting flag id to Object ID type")
     if flag_schema_object is None:
         flag_id_object = ObjectId(flag_id)
         specific_flag_id = flagging_mongo.get_specific_flag(flag_id_object)
@@ -100,14 +105,22 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
 
 #A call to duplicate a flag provided a new name and UUID
 def duplicate_flag(original_flag_id, existing_flags, flagging_mongo: FlaggingMongo):
+    flag_schema_object = None
     #check that original flag already exists
     if original_flag_id is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="flag id must be specified")
-    elif ObjectId(original_flag_id) not in existing_flags:
-        flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag " + str(original_flag_id) + " does not exist")
-    else:
+    if flag_schema_object is None:
+        try:
+            if ObjectId(original_flag_id) not in existing_flags:
+                flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                               message="flag " + str(
+                                                                   original_flag_id) + " does not exist")
+        except Exception as e:
+            print(e)
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="error in duplicating flag: " + str(original_flag_id))
+    if flag_schema_object is None:
         flag_id_object = ObjectId(original_flag_id)
         duplicated_flag_new_id = flagging_mongo.duplicate_flag(flag_id_object)
         specific_flag_logic = flagging_mongo.get_flag_logic_information(duplicated_flag_new_id)
