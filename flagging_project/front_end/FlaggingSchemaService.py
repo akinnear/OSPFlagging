@@ -145,10 +145,15 @@ def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, 
                                                            message="user must specify name of new flag")
     #query to get existing flag names
     if flag_schema_object is None:
-        if ObjectId(original_flag_id) not in existing_flags:
-            # return error to user that original_flag_name does not exist
+        try:
+            if ObjectId(original_flag_id) not in existing_flags:
+                # return error to user that original_flag_name does not exist
+                flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                               message="original flag id " + str(original_flag_id) + " does not exist")
+        except Exception as e:
+            print(e)
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="original flag id " + str(original_flag_id) + " does not exist")
+                                                           message="error converting: " + str(original_flag_id) + " to object Id type")
     if flag_schema_object is None:
         original_flag_id_object = ObjectId(original_flag_id)
         new_flag_id = flagging_mongo.update_flag(flag=original_flag_id_object, update_value=new_flag_name,
