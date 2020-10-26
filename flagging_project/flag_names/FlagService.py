@@ -31,8 +31,10 @@ def pull_flag_logic_information(*args, **kwargs):
     unique_dummy_flag = kwargs.get("unique_dummy_flag", False)
     if dummy_flag:
         flag_info = FlagLogicInformation(
-            used_variables={VariableInformation('x'): {CodeLocation(1, 1)}},
-            assigned_variables={VariableInformation("x"): {CodeLocation(3, 3)}},
+            used_variables={VariableInformation('x'): {CodeLocation(1, 1), CodeLocation(1, 5)},
+                            VariableInformation("y"): {CodeLocation(1, 10)}},
+            assigned_variables={VariableInformation("x"): {CodeLocation(3, 3)},
+                                VariableInformation("y"): {CodeLocation(2, 2)}},
             referenced_flags={}
         )
     elif dummy_flag_2:

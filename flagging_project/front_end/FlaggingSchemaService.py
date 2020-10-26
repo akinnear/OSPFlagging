@@ -13,6 +13,7 @@ from flagging.TypeValidationResults import TypeValidationResults
 from flag_data.FlaggingColumnNames import flag_name_col_name, flag_logic_col_name, \
     referenced_flag_col_name, flag_status_col_name, flag_group_name_col_name, \
     flag_group_flags_col_name, flag_group_status_col_name
+from front_end.TransferFlagLogicInformation import TransferFlagLogicInformation, _convert_FLI_to_TFLI
 from bson.objectid import ObjectId
 
 
@@ -78,6 +79,12 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
     if flag_schema_object is None:
         flag_validation = validate_logic(flag_name, flag_logic_information)
         if flag_validation.errors != {} or flag_validation.mypy_errors != {}:
+            
+            #test for transfer
+            _convert_FLI_to_TFLI(flag_logic_information)
+
+
+            
             add_flag_id = flagging_mongo.add_flag({flag_name_col_name: flag_name,
                                                    flag_logic_col_name: _make_fli_dictionary(flag_logic_information),
                                                    referenced_flag_col_name: flag_logic_information.referenced_flags,

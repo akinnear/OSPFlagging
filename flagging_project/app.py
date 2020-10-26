@@ -13,6 +13,11 @@ from flag_data.FlaggingMongo import FlaggingMongo
 from front_end.FlaggingSchemaInformation import FlaggingSchemaInformation
 # from api_service.FlaggingService import flag_api
 import json
+from flagging.FlaggingNodeVisitor import CodeLocation
+from flagging.VariableInformation import VariableInformation
+from flagging.ModuleInformation import ModuleInformation
+from flagging.TypeValidationResults import TypeValidationResults
+from flagging.ErrorInformation import ErrorInformation
 
 app = Flask(__name__)
 # app.register_blueprint(flag_api)
@@ -80,8 +85,32 @@ def flag_action(function=None, flag_id=None, flag_name=None):
             # need to pull flag logic,
             # need method and function to return flag logic without direct reference
             # to mongo db in function
-
-            flag_info = pull_flag_logic_information(dummy_flag=True)
+            unique_dummy_flag = FlagLogicInformation(
+                used_variables={VariableInformation("ff1"): {CodeLocation(4, 11)},
+                    VariableInformation("ff2"): {CodeLocation(6, 11)},
+                    VariableInformation("a"): {CodeLocation(2, 16), CodeLocation(2, 22)},
+                    VariableInformation("b"): {CodeLocation(2, 26), CodeLocation(2, 34)},
+                    VariableInformation("f"): {CodeLocation(3, 10), CodeLocation(4, 24), CodeLocation(6, 24)}},
+                assigned_variables={VariableInformation("f"): {CodeLocation(2, 0)},
+                    VariableInformation("a"): {CodeLocation(2, 11)},
+                    VariableInformation('b'): {CodeLocation(2, 13)}},
+                referenced_functions={VariableInformation("reduce"): {CodeLocation(3, 3), CodeLocation(4, 17), CodeLocation(6, 17)}},
+                defined_functions={VariableInformation("my_add"): {CodeLocation(2, 4)}},
+                defined_classes={VariableInformation("my_class"): {CodeLocation(1,1)}},
+                referenced_modules={ModuleInformation("wtforms"): {CodeLocation(2, 5)},
+                    ModuleInformation("functools", "my_funky_tools"): {CodeLocation(1, 7)}},
+                referenced_flags={"Flag5": {CodeLocation(5, 10), CodeLocation(6, 10)}},
+                return_points={CodeLocation(4, 4), CodeLocation(6, 4)},
+                used_lambdas={"LAMBDA": {CodeLocation(2, 4)}},
+                errors=[],
+                flag_logic="""
+                f = lambda a,b: a if (a > b) else b
+                if reduce(f, [47,11,42,102,13]) > 100:
+                return ff1 > reduce(f, [47,11,42,102,13])
+                else:
+                return ff2 < reduce(f, [47,11,42,102,13])""",
+                validation_results=TypeValidationResults())
+            flag_info = pull_flag_logic_information(unique_dummy_flag=unique_dummy_flag)
             flag_schema_object = create_flag(flag_name, flag_info, flagging_mongo)
             return jsonify({"valid": flag_schema_object.valid,
                              "message": flag_schema_object.message,
