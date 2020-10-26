@@ -81,13 +81,10 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
         if flag_validation.errors != {} or flag_validation.mypy_errors != {}:
             
             #test for transfer
-            _convert_FLI_to_TFLI(flag_logic_information)
-
-
-            
+            transfer_flag_logic_information = _convert_FLI_to_TFLI(flag_logic_information)
             add_flag_id = flagging_mongo.add_flag({flag_name_col_name: flag_name,
-                                                   flag_logic_col_name: _make_fli_dictionary(flag_logic_information),
-                                                   referenced_flag_col_name: flag_logic_information.referenced_flags,
+                                                   flag_logic_col_name: transfer_flag_logic_information,
+                                                   referenced_flag_col_name: transfer_flag_logic_information["referenced_flags"],
                                                    flag_status_col_name: "DRAFT"})
             specific_flag_logic = flagging_mongo.get_flag_logic_information(add_flag_id)
             specific_flag_name = flagging_mongo.get_flag_name(add_flag_id)
@@ -97,9 +94,10 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
                                                            name=specific_flag_name,
                                                            logic=specific_flag_logic)
     if flag_schema_object is None:
+        transfer_flag_logic_information = _convert_FLI_to_TFLI(flag_logic_information)
         add_flag_id = flagging_mongo.add_flag({flag_name_col_name: flag_name,
-                                               flag_logic_col_name: _make_fli_dictionary(flag_logic_information),
-                                               referenced_flag_col_name: flag_logic_information.referenced_flags,
+                                               flag_logic_col_name: transfer_flag_logic_information,
+                                               referenced_flag_col_name: transfer_flag_logic_information["referenced_flags"],
                                                flag_status_col_name: "PRODUCTION_READY"})
         specific_flag_logic = flagging_mongo.get_flag_logic_information(add_flag_id)
         specific_flag_name = flagging_mongo.get_flag_name(add_flag_id)

@@ -102,7 +102,12 @@ def flag_action(function=None, flag_id=None, flag_name=None):
                 referenced_flags={"Flag5": {CodeLocation(5, 10), CodeLocation(6, 10)}},
                 return_points={CodeLocation(4, 4), CodeLocation(6, 4)},
                 used_lambdas={"LAMBDA": {CodeLocation(2, 4)}},
-                errors=[],
+                errors=[ErrorInformation(cl=CodeLocation(3, 5),
+                                                   msg="invalid syntax",
+                                                   text="x = =  f\n"),
+                                  ErrorInformation(cl=CodeLocation(5, 5),
+                                                   msg="invalid syntax",
+                                                   text="y = = =  q2@\n")],
                 flag_logic="""
                 f = lambda a,b: a if (a > b) else b
                 if reduce(f, [47,11,42,102,13]) > 100:
