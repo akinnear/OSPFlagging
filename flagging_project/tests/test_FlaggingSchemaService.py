@@ -16,6 +16,8 @@ from flag_names.FlagService import pull_flag_names, \
 from flag_names.FlagGroupService import pull_flag_group_names
 from front_end.FlaggingDependencies import add_flag_dependencies, remove_flag_dependencies
 from flag_data.FlaggingMongo import FlaggingMongo
+from random_object_id import generate as generate_object_id
+from bson.objectid import ObjectId
 
 
 
@@ -78,10 +80,11 @@ def test_create_flag(flagging_mongo, mvrb, mvl):
     errors=[],
     flag_logic="""does not matter""",
     validation_results=TypeValidationResults())
-    result = create_flag(flag_name, flag_logic_information, mock_flagging_mongo)
+    result, response_code = create_flag(flag_name, flag_logic_information, mock_flagging_mongo)
     assert result.valid == True
     assert result.message == "new flag created"
     assert result.uuid == 1
+    assert response_code == 200
 
 
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
@@ -111,9 +114,10 @@ def test_create_flag_missing_name(flagging_mongo, mvrb, mvl):
     errors=[],
     flag_logic="""does not matter""",
     validation_results=TypeValidationResults())
-    result = create_flag(flag_name, flag_logic_information, mock_flagging_mongo)
+    result, response_code = create_flag(flag_name, flag_logic_information, mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "flag name not specified"
+    assert response_code >= 400
 
 
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(errors={"Flag1": FlagErrorInformation(flag="Flag1",
@@ -145,9 +149,10 @@ def test_create_flag_error(flagging_mongo, mvrb, mvl):
     errors=[],
     flag_logic="""does not matter""",
     validation_results=TypeValidationResults())
-    result = create_flag(flag_name, flag_logic_information, mock_flagging_mongo)
+    result, response_code = create_flag(flag_name, flag_logic_information, mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "error in flag logic"
+    assert response_code == 200
 
 
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(mypy_errors={"mypyerror": "does not matter"}), autospec=True)
@@ -177,9 +182,10 @@ def test_create_flag_myerror(flagging_mongo, mvrb, mvl):
     errors=[],
     flag_logic="""does not matter""",
     validation_results=TypeValidationResults())
-    result = create_flag(flag_name, flag_logic_information, mock_flagging_mongo)
+    result, response_code = create_flag(flag_name, flag_logic_information, mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "error in flag logic"
+    assert response_code == 200
 
 
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
@@ -188,13 +194,14 @@ def test_create_flag_myerror(flagging_mongo, mvrb, mvl):
 def test_update_flag_name(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 2
     mock_flagging_mongo = flagging_mongo()
-    og_flag_id = "FlagID1"
+    og_flag_id = ObjectId(generate_object_id())
     nw_flag_name = "Flag2"
-    existing_flags = pull_flag_names(dummy_flag_names=["FlagID1", "FlagID3"])
-    result = update_flag_name(original_flag_id=og_flag_id, new_flag_name=nw_flag_name, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+    existing_flags = pull_flag_names(dummy_flag_names=[og_flag_id, ObjectId(generate_object_id())])
+    result, response_code = update_flag_name(original_flag_id=str(og_flag_id), new_flag_name=nw_flag_name, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
-    assert result.message == "original flag " + og_flag_id + " has been renamed " + nw_flag_name
+    assert result.message == "original flag " + str(og_flag_id) + " has been renamed " + nw_flag_name
     assert result.uuid == 2
+    assert response_code == 200
 
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
@@ -204,10 +211,11 @@ def test_update_flag_name_missing_og_flag(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
     og_flag_id = None
     nw_flag_name = "Flag2"
-    existing_flags = pull_flag_names(dummy_flag_names=["FlagID1", "FlagID3"])
-    result = update_flag_name(original_flag_id=og_flag_id, new_flag_name=nw_flag_name, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+    existing_flags = pull_flag_names(dummy_flag_names=[ObjectId(generate_object_id()), ObjectId(generate_object_id())])
+    result, response_code = update_flag_name(original_flag_id=og_flag_id, new_flag_name=nw_flag_name, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "user must specify id of original flag"
+    assert response_code >= 400
 
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
@@ -216,10 +224,11 @@ def test_update_flag_name_missing_new_flag(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 2
     og_flag_id = "FlagID1"
     nw_flag_name = None
-    existing_flags = pull_flag_names(dummy_flag_names=["FlagID1", "FlagID3"])
-    result = update_flag_name(original_flag_id=og_flag_id, new_flag_name=nw_flag_name, existing_flags=existing_flags, flagging_mongo=flagging_mongo)
+    existing_flags = pull_flag_names(dummy_flag_names=[ObjectId(generate_object_id()), ObjectId(generate_object_id())])
+    result, response_code = update_flag_name(original_flag_id=str(og_flag_id), new_flag_name=nw_flag_name, existing_flags=existing_flags, flagging_mongo=flagging_mongo)
     assert result.valid == False
     assert result.message == "user must specify name of new flag"
+    assert response_code >= 400
 
 
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
@@ -228,12 +237,13 @@ def test_update_flag_name_missing_new_flag(flagging_mongo, mvrb, mvl):
 def test_update_flag_name_og_flag_not_found(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 2
     mock_flagging_mongo = flagging_mongo()
-    og_flag_id = "FlagID1"
+    og_flag_id = ObjectId(generate_object_id())
     nw_flag_name = "Flag2"
-    existing_flags = pull_flag_names(dummy_flag_names=["FlagID2", "FlagID3"])
-    result = update_flag_name(original_flag_id=og_flag_id, new_flag_name=nw_flag_name, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+    existing_flags = pull_flag_names(dummy_flag_names=[ObjectId(generate_object_id()), ObjectId(generate_object_id())])
+    result, response_code = update_flag_name(original_flag_id=str(og_flag_id), new_flag_name=nw_flag_name, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
-    assert result.message == "original flag id " + og_flag_id + " does not exist"
+    assert result.message == "original flag id " + str(og_flag_id) + " does not exist"
+    assert response_code >= 400
 
 #test update flag logic informatio
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
@@ -242,8 +252,8 @@ def test_update_flag_name_og_flag_not_found(flagging_mongo, mvrb, mvl):
 def test_update_flag_logic(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 3
     mock_flagging_mongo = flagging_mongo()
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAGID1", "FLAGID2"])
-    og_flag_id = "FLAGID1"
+    og_flag_id = ObjectId(generate_object_id())
+    existing_flags = pull_flag_names(dummy_flag_names=[og_flag_id, ObjectId(generate_object_id())])
     nw_flag_logic_information = FlagLogicInformation(
     used_variables={VariableInformation("FF1"): {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15),
                                                  CodeLocation(9, 5), CodeLocation(17, 15)},
@@ -264,20 +274,21 @@ def test_update_flag_logic(flagging_mongo, mvrb, mvl):
     errors=[],
     flag_logic="""does not matter""",
     validation_results=TypeValidationResults())
-    result = update_flag_logic(flag_id=og_flag_id, new_flag_logic_information=nw_flag_logic_information, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+    result, response_code = update_flag_logic(flag_id=str(og_flag_id), new_flag_logic_information=nw_flag_logic_information, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
     assert result.message == "logic for flag " + str(3) + " has been updated"
     assert result.uuid == 3
+    assert response_code == 200
 
 
 #update flag logic, flag id not specified
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_update_flag_logic_missing_flag(flagging_mongo, mvrb, mvl):
+def test_update_flag_logic_missing_flag_1(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 3
     mock_flagging_mongo = flagging_mongo()
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAGID1", "FLAGID2"])
+    existing_flags = pull_flag_names(dummy_flag_names=[ObjectId(generate_object_id()), ObjectId(generate_object_id())])
     og_flag_id = None
     nw_flag_logic_information = FlagLogicInformation(
         used_variables={VariableInformation("FF1"): {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15),
@@ -299,20 +310,23 @@ def test_update_flag_logic_missing_flag(flagging_mongo, mvrb, mvl):
         errors=[],
         flag_logic="""does not matter""",
         validation_results=TypeValidationResults())
-    result = update_flag_logic(flag_id=og_flag_id, new_flag_logic_information=nw_flag_logic_information,
+    result, response_code = update_flag_logic(flag_id=og_flag_id, new_flag_logic_information=nw_flag_logic_information,
                                existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "user must specify flag id"
+    assert response_code >= 400
 
 #update flag logic, flag id does not exists
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_update_flag_logic_missing_flag(flagging_mongo, mvrb, mvl):
+def test_update_flag_logic_missing_flag_2(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 3
     mock_flagging_mongo = flagging_mongo()
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAGID1", "FLAGID2"])
-    og_flag_id = "FLAGID3"
+    existing_flags = pull_flag_names(dummy_flag_names=[ObjectId(generate_object_id()), ObjectId(generate_object_id())])
+    og_flag_id = ObjectId(generate_object_id())
+    while og_flag_id in existing_flags:
+        og_flag_id = ObjectId(generate_object_id())
     nw_flag_logic_information = FlagLogicInformation(
         used_variables={VariableInformation("FF1"): {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15),
                                                      CodeLocation(9, 5), CodeLocation(17, 15)},
@@ -333,10 +347,12 @@ def test_update_flag_logic_missing_flag(flagging_mongo, mvrb, mvl):
         errors=[],
         flag_logic="""does not matter""",
         validation_results=TypeValidationResults())
-    result = update_flag_logic(flag_id=og_flag_id, new_flag_logic_information=nw_flag_logic_information,
+    result, response_code = update_flag_logic(flag_id=str(og_flag_id), new_flag_logic_information=nw_flag_logic_information,
                                existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
-    assert result.message == "could not identify existing flag " + og_flag_id
+    assert result.message == "could not identify existing flag " + str(og_flag_id)
+    assert response_code >= 400
+
 
 
 #update flag logic, error in result
@@ -346,8 +362,8 @@ def test_update_flag_logic_missing_flag(flagging_mongo, mvrb, mvl):
 def test_update_flag_logic_errors(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 3
     mock_flagging_mongo = flagging_mongo()
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAGID1", "FLAGID2"])
-    og_flag_id = "FLAGID1"
+    og_flag_id = ObjectId(generate_object_id())
+    existing_flags = pull_flag_names(dummy_flag_names=[og_flag_id, ObjectId(generate_object_id())])
     nw_flag_logic_information = FlagLogicInformation(
     used_variables={VariableInformation("FF1"): {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15),
                                                  CodeLocation(9, 5), CodeLocation(17, 15)},
@@ -368,9 +384,11 @@ def test_update_flag_logic_errors(flagging_mongo, mvrb, mvl):
     errors=[],
     flag_logic="""does not matter""",
     validation_results=TypeValidationResults())
-    result = update_flag_logic(flag_id=og_flag_id, new_flag_logic_information=nw_flag_logic_information, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+    result, response_code = update_flag_logic(flag_id=str(og_flag_id), new_flag_logic_information=nw_flag_logic_information, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "error in flag logic"
+    assert result.uuid == og_flag_id
+    response_code == 200
 
 
 #update flag lgoic, mypy_error in result
