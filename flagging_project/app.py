@@ -1,5 +1,5 @@
 import os
-from flask import Flask, jsonify, redirect
+from flask import Flask, jsonify, redirect, request, Response
 from front_end.FlaggingSchemaService import get_all_flags, get_specific_flag, \
     get_flag_groups, get_specific_flag_group, get_flag_dependencies, get_specif_flag_dependnecy, \
     create_flag, update_flag_name, update_flag_logic, delete_flag, create_flag_group, \
@@ -62,23 +62,26 @@ def flag_action(function=None, flag_id=None, flag_name=None):
 
     else:
         if function == "get_flags":
-            flags = get_all_flags(flagging_mongo)
+            flags, response_code = get_all_flags(flagging_mongo)
             flags = [str(x) for x in flags]
-            return jsonify({'flags': flags})
+            data = {'flags': flags}
+            return jsonify(data), response_code
 
         if function == "get_flag_ids":
-            flag_ids = get_all_flag_ids(flagging_mongo)
+            flag_ids, response_code = get_all_flag_ids(flagging_mongo)
             flag_ids = [str(x) for x in flag_ids]
-            return jsonify({"_ids": flag_ids})
+            data = {"_ids": flag_ids}
+            return jsonify(data), response_code
 
         if function == "get_specific_flag":
-            existing_flag_ids = get_all_flag_ids(flagging_mongo)
-            flag_schema_object = get_specific_flag(flag_id, existing_flag_ids, flagging_mongo)
-            return jsonify({"valid": flag_schema_object.valid,
-                             "message": flag_schema_object.message,
-                             "uuid": str(flag_schema_object.uuid),
-                             "flag_name": flag_schema_object.name,
-                             "flag_logic": flag_schema_object.logic})
+            existing_flag_ids, response_code_ids = get_all_flag_ids(flagging_mongo)
+            flag_schema_object, response_code = get_specific_flag(flag_id, existing_flag_ids, flagging_mongo)
+            data = {"valid": flag_schema_object.valid,
+                     "message": flag_schema_object.message,
+                     "uuid": str(flag_schema_object.uuid),
+                     "flag_name": flag_schema_object.name,
+                     "flag_logic": flag_schema_object.logic}
+            return jsonify(data), response_code
 
         if function == "create_flag":
             #TODO
@@ -116,21 +119,24 @@ def flag_action(function=None, flag_id=None, flag_name=None):
                 return ff2 < reduce(f, [47,11,42,102,13])""",
                 validation_results=TypeValidationResults())
             flag_info = pull_flag_logic_information(unique_dummy_flag=unique_dummy_flag)
-            flag_schema_object = create_flag(flag_name, flag_info, flagging_mongo)
-            return jsonify({"valid": flag_schema_object.valid,
-                             "message": flag_schema_object.message,
-                             "uuid": str(flag_schema_object.uuid),
-                             "flag_name": flag_schema_object.name,
-                             "flag_logic": flag_schema_object.logic})
+            flag_schema_object, response_code = create_flag(flag_name, flag_info, flagging_mongo)
+            data = {"valid": flag_schema_object.valid,
+                     "message": flag_schema_object.message,
+                     "uuid": str(flag_schema_object.uuid),
+                     "flag_name": flag_schema_object.name,
+                     "flag_logic": flag_schema_object.logic}
+            return jsonify(data), response_code
 
         if function == "update_flag_name":
-            existing_flag_ids = get_all_flag_ids(flagging_mongo)
-            flag_schema_object = update_flag_name(flag_id, flag_name, existing_flag_ids, flagging_mongo)
-            return jsonify({"valid": flag_schema_object.valid,
-                             "message": flag_schema_object.message,
-                             "uuid": str(flag_schema_object.uuid),
-                             "flag_name": flag_schema_object.name,
-                             "flag_logic": flag_schema_object.logic})
+            existing_flag_ids, response_code_ids = get_all_flag_ids(flagging_mongo)
+            flag_schema_object, response_code = update_flag_name(flag_id, flag_name, existing_flag_ids, flagging_mongo)
+            data = {"valid": flag_schema_object.valid,
+                     "message": flag_schema_object.message,
+                     "uuid": str(flag_schema_object.uuid),
+                     "flag_name": flag_schema_object.name,
+                     "flag_logic": flag_schema_object.logic}
+            return jsonify(data), response_code
+
 
         if function == "update_flag_logic":
             #TODO
@@ -138,32 +144,35 @@ def flag_action(function=None, flag_id=None, flag_name=None):
             # need method and function to return flag logic without direct reference
             # to mongo db in function
 
-            existing_flag_ids = get_all_flag_ids(flagging_mongo)
+            existing_flag_ids, response_code_ids = get_all_flag_ids(flagging_mongo)
             flag_info = pull_flag_logic_information(dummy_flag_2=True)
-            flag_schema_object = update_flag_logic(flag_id, flag_info, existing_flag_ids, flagging_mongo)
-            return jsonify({"valid": flag_schema_object.valid,
-                             "message": flag_schema_object.message,
-                             "uuid": str(flag_schema_object.uuid),
-                             "flag_name": flag_schema_object.name,
-                             "flag_logic": flag_schema_object.logic})
+            flag_schema_object, response_code = update_flag_logic(flag_id, flag_info, existing_flag_ids, flagging_mongo)
+            data = {"valid": flag_schema_object.valid,
+                     "message": flag_schema_object.message,
+                     "uuid": str(flag_schema_object.uuid),
+                     "flag_name": flag_schema_object.name,
+                     "flag_logic": flag_schema_object.logic}
+            return jsonify(data), response_code
 
         if function == "delete_flag":
-            existing_flag_ids = get_all_flag_ids(flagging_mongo)
-            flag_schema_object = delete_flag(flag_id, existing_flag_ids, flagging_mongo)
-            return jsonify({"valid": flag_schema_object.valid,
-                             "message": flag_schema_object.message,
-                             "uuid": str(flag_schema_object.uuid),
-                             "flag_name": flag_schema_object.name,
-                             "flag_logic": flag_schema_object.logic})
+            existing_flag_ids, response_code_ids = get_all_flag_ids(flagging_mongo)
+            flag_schema_object, response_code = delete_flag(flag_id, existing_flag_ids, flagging_mongo)
+            data = {"valid": flag_schema_object.valid,
+                     "message": flag_schema_object.message,
+                     "uuid": str(flag_schema_object.uuid),
+                     "flag_name": flag_schema_object.name,
+                     "flag_logic": flag_schema_object.logic}
+            return jsonify(data), response_code
 
         if function == "duplicate_flag":
-            existing_flag_ids = get_all_flag_ids(flagging_mongo)
-            flag_schema_object = duplicate_flag(flag_id, existing_flag_ids, flagging_mongo)
-            return jsonify({"valid": flag_schema_object.valid,
-                             "message": flag_schema_object.message,
-                             "uuid": str(flag_schema_object.uuid),
-                             "flag_name": flag_schema_object.name,
-                             "flag_logic": flag_schema_object.logic})
+            existing_flag_ids, response_code_ids = get_all_flag_ids(flagging_mongo)
+            flag_schema_object, response_code = duplicate_flag(flag_id, existing_flag_ids, flagging_mongo)
+            data = {"valid": flag_schema_object.valid,
+                     "message": flag_schema_object.message,
+                     "uuid": str(flag_schema_object.uuid),
+                     "flag_name": flag_schema_object.name,
+                     "flag_logic": flag_schema_object.logic}
+            return jsonify(data), response_code
         else:
              return redirect("/flag")
 
@@ -180,77 +189,85 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
 
     else:
         if function == "get_flag_groups":
-            flag_groups = get_flag_groups(flagging_mongo)
+            flag_groups, response_code = get_flag_groups(flagging_mongo)
             flag_groups = [str(x) for x in flag_groups]
-            return jsonify({'flags groups': flag_groups})
+            data = {'flags groups': flag_groups}
+            return jsonify(data), response_code
 
         if function == "get_specific_flag_group":
-            existing_flag_groups = get_flag_group_ids(flagging_mongo)
-            flag_schema_object = get_specific_flag_group(flag_group_id, existing_flag_groups, flagging_mongo)
-            return jsonify({"valid": flag_schema_object.valid,
-                             "message": flag_schema_object.message,
-                             "uuid": str(flag_schema_object.uuid),
-                             "flags in flag group": flag_schema_object.logic,
-                             "flag_group_name": flag_schema_object.name})
+            existing_flag_groups, response_code_id = get_flag_group_ids(flagging_mongo)
+            flag_schema_object, response_code = get_specific_flag_group(flag_group_id, existing_flag_groups, flagging_mongo)
+            data = {"valid": flag_schema_object.valid,
+                     "message": flag_schema_object.message,
+                     "uuid": str(flag_schema_object.uuid),
+                     "flags in flag group": flag_schema_object.logic,
+                     "flag_group_name": flag_schema_object.name}
+            return jsonify(data), response_code
 
         if function == "create_flag_group":
             #TODO
             # need to pull flag logic,
             # need method and function to return flag logic without direct reference
             # to mongo db in function
-            flag_groups_names = get_flag_group_names(flagging_mongo)
-            flag_schema_object = create_flag_group(flag_group_name, flag_groups_names, flagging_mongo)
-            return jsonify({"valid": flag_schema_object.valid,
-                            "message": flag_schema_object.message,
-                            "uuid": str(flag_schema_object.uuid),
-                            "flag_group_name": flag_schema_object.name})
+            flag_groups_names, response_code_name = get_flag_group_names(flagging_mongo)
+            flag_schema_object, response_code = create_flag_group(flag_group_name, flag_groups_names, flagging_mongo)
+            data = {"valid": flag_schema_object.valid,
+                    "message": flag_schema_object.message,
+                    "uuid": str(flag_schema_object.uuid),
+                    "flag_group_name": flag_schema_object.name}
+            return jsonify(data), response_code
 
         if function == "delete_flag_group":
-            existing_flag_groups = get_flag_group_ids(flagging_mongo)
-            flag_schema_object = delete_flag_group(flag_group_id, existing_flag_groups, flagging_mongo)
-            return jsonify({"valid": flag_schema_object.valid,
-                             "message": flag_schema_object.message,
-                             "uuid": str(flag_schema_object.uuid)})
+            existing_flag_groups, response_code_ids = get_flag_group_ids(flagging_mongo)
+            flag_schema_object, response_code = delete_flag_group(flag_group_id, existing_flag_groups, flagging_mongo)
+            data = {"valid": flag_schema_object.valid,
+                     "message": flag_schema_object.message,
+                     "uuid": str(flag_schema_object.uuid)}
+            return jsonify(data), response_code
 
         if function == "add_flag_to_flag_group":
-            existing_flags = get_all_flag_ids(flagging_mongo)
-            existing_flag_groups = get_flag_group_ids(flagging_mongo)
-            flags_in_flag_group_schema = get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_mongo)
+            existing_flags, response_code_flag_ids = get_all_flag_ids(flagging_mongo)
+            existing_flag_groups, response_code_flag_group_ids = get_flag_group_ids(flagging_mongo)
+            flags_in_flag_group_schema, response_code_flags = get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_mongo)
             flags_in_flag_group = flags_in_flag_group_schema.logic
             if flags_in_flag_group_schema.valid:
-                flag_schema_object = add_flag_to_flag_group(flag_group_id=flag_group_id, new_flags=[flag_id],
+                flag_schema_object, response_code = add_flag_to_flag_group(flag_group_id=flag_group_id, new_flags=[flag_id],
                                                             existing_flags=existing_flags, existing_flag_groups=existing_flag_groups,
                                                             flags_in_flag_group=flags_in_flag_group, flagging_mongo=flagging_mongo)
             else:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                                message="error in pulling flags for flag group" + str(flag_group_id),
                                                                uuid=flag_group_id)
-            return jsonify({"valid": flag_schema_object.valid,
-                            "message": flag_schema_object.message,
-                            "uuid": str(flag_schema_object.uuid),
-                            "name": flag_schema_object.name})
+                response_code = 401
+            data = {"valid": flag_schema_object.valid,
+                    "message": flag_schema_object.message,
+                    "uuid": str(flag_schema_object.uuid),
+                    "name": flag_schema_object.name}
+            return jsonify(data), response_code
 
         if function == "remove_flag_from_flag_group":
             del_flags = [flag_id]
-            existing_flag_groups = get_flag_group_ids(flagging_mongo)
-            flags_in_flag_group_schema = get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_mongo)
+            existing_flag_groups, response_code_flag_group_ids = get_flag_group_ids(flagging_mongo)
+            flags_in_flag_group_schema, response_code_flags = get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_mongo)
             flags_in_flag_group = flags_in_flag_group_schema.logic
-            existing_flags = get_all_flag_ids(flagging_mongo)
-            flag_schema_object = remove_flag_from_flag_group(flag_group_id=flag_group_id, del_flags=del_flags,
+            existing_flags, response_code_flag_ids = get_all_flag_ids(flagging_mongo)
+            flag_schema_object, response_code = remove_flag_from_flag_group(flag_group_id=flag_group_id, del_flags=del_flags,
                                                existing_flags=existing_flags, existing_flag_groups=existing_flag_groups,
                                                flags_in_flag_group=flags_in_flag_group, flagging_mongo=flagging_mongo)
-            return jsonify({"valid": flag_schema_object.valid,
-                            "message": flag_schema_object.message,
-                            "uuid": str(flag_schema_object.uuid)})
+            data = {"valid": flag_schema_object.valid,
+                    "message": flag_schema_object.message,
+                    "uuid": str(flag_schema_object.uuid)}
+            return jsonify(data), response_code
 
         if function == "duplicate_flag_group":
-            existing_flag_groups = get_flag_group_ids(flagging_mongo)
-            flag_schema_object = duplicate_flag_group(flag_group_id, existing_flag_groups, flagging_mongo)
-            return jsonify({"valid": flag_schema_object.valid,
-                            "message": flag_schema_object.message,
-                            "uuid": str(flag_schema_object.uuid)})
+            existing_flag_groups, response_code_flag_group_ids = get_flag_group_ids(flagging_mongo)
+            flag_schema_object, response_code = duplicate_flag_group(flag_group_id, existing_flag_groups, flagging_mongo)
+            data = {"valid": flag_schema_object.valid,
+                    "message": flag_schema_object.message,
+                    "uuid": str(flag_schema_object.uuid)}
+            return jsonify(data), response_code
         else:
-             return "flag_group_home_page"
+             return redirect("/flag_group")
 
 #flag_dependency
 @app.route("/flag_dependency/", methods=["GET"])
