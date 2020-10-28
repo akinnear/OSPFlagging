@@ -433,13 +433,15 @@ def test_update_flag_logic_mypy_errors(flagging_mongo, mvrb, mvl):
 @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
 def test_update_delete_flag(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
-    flagging_mongo.return_value.remove_flag.return_value = "FLAGID_R"
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAGID1", "FLAGID2"])
-    og_flag_id = "FLAGID1"
-    result = delete_flag(flag_id=og_flag_id, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+    rfrv = ObjectId(generate_object_id())
+    flagging_mongo.return_value.remove_flag.return_value = rfrv
+    og_flag_id = ObjectId(generate_object_id())
+    existing_flags = pull_flag_names(dummy_flag_names=[og_flag_id, ObjectId(generate_object_id())])
+    result, response_code = delete_flag(flag_id=str(og_flag_id), existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
-    assert result.message == og_flag_id + " has been deleted"
-    assert result.uuid == "FLAGID_R"
+    assert result.message == str(og_flag_id) + " has been deleted"
+    assert result.uuid == rfrv
+    assert response_code == 200
 
 #test to delete flag, missign flag id
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
