@@ -451,10 +451,11 @@ def test_update_delete_flag_missing_flag_id(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
     existing_flags = pull_flag_names(dummy_flag_names=["FLAGID1", "FLAGID2"])
     og_flag_id = None
-    result = delete_flag(flag_id=og_flag_id, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+    result, response_code = delete_flag(flag_id=og_flag_id, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "user must specify flag id"
     assert result.uuid == og_flag_id
+    assert response_code >= 400
 
 #test to delete flag, flag does not exist
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
@@ -462,11 +463,14 @@ def test_update_delete_flag_missing_flag_id(flagging_mongo, mvrb, mvl):
 @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
 def test_update_delete_flag_flag_does_not_exist(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAGID1", "FLAGID2"])
-    og_flag_id = "FLAGID3"
-    result = delete_flag(flag_id=og_flag_id, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+    existing_flags = pull_flag_names(dummy_flag_names=[ObjectId(generate_object_id()), ObjectId(generate_object_id())])
+    og_flag_id = ObjectId(generate_object_id())
+    while og_flag_id in existing_flags:
+        og_flag_id = ObjectId(generate_object_id())
+    result, response_code = delete_flag(flag_id=str(og_flag_id), existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "flag id specified does not exist"
+    assert response_code >= 400
 
 #test, duplicate flag
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
