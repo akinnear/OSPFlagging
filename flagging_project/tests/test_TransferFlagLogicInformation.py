@@ -33,15 +33,14 @@ def test_flag_logic_information_transfer_object_creation():
                                  msg="invalid syntax",
                                  text="y = = =  q2@\n")],
         flag_logic="""
-                    f = lambda a,b: a if (a > b) else b
-                    if reduce(f, [47,11,42,102,13]) > 100:
-                    return ff1 > reduce(f, [47,11,42,102,13])
-                    else:
-                    return ff2 < reduce(f, [47,11,42,102,13])""",
+f = lambda a,b: a if (a > b) else b
+if reduce(f, [47,11,42,102,13]) > 100:
+return ff1 > reduce(f, [47,11,42,102,13])
+else:
+return ff2 < reduce(f, [47,11,42,102,13])""",
         validation_results=TypeValidationResults())
     #convert to transfer object form
     transfer_flag_logic_information = _convert_FLI_to_TFLI(flag_logic_information)
-    assert len(transfer_flag_logic_information['used_variables']) == 5
     assert transfer_flag_logic_information["used_variables"][0]["name"] == "ff1"
     assert transfer_flag_logic_information["used_variables"][0]["locations"][0]["line_number"] == 4
     assert transfer_flag_logic_information["used_variables"][0]["locations"][0]["column_offset"] == 11
@@ -53,6 +52,87 @@ def test_flag_logic_information_transfer_object_creation():
     assert transfer_flag_logic_information["used_variables"][2]["locations"][0]["column_offset"] == 16
     assert transfer_flag_logic_information["used_variables"][2]["locations"][1]["line_number"] == 2
     assert transfer_flag_logic_information["used_variables"][2]["locations"][1]["column_offset"] == 22
+    assert transfer_flag_logic_information["used_variables"][3]["name"] == "b"
+    assert transfer_flag_logic_information["used_variables"][3]["locations"][0]["line_number"] == 2
+    assert transfer_flag_logic_information["used_variables"][3]["locations"][0]["column_offset"] == 34
+    assert transfer_flag_logic_information["used_variables"][3]["locations"][1]["line_number"] == 2
+    assert transfer_flag_logic_information["used_variables"][3]["locations"][1]["column_offset"] == 26
+    assert transfer_flag_logic_information["used_variables"][4]["name"] == "f"
+    assert transfer_flag_logic_information["used_variables"][4]["locations"][0]["line_number"] == 3
+    assert transfer_flag_logic_information["used_variables"][4]["locations"][0]["column_offset"] == 10
+    assert transfer_flag_logic_information["used_variables"][4]["locations"][1]["line_number"] == 6
+    assert transfer_flag_logic_information["used_variables"][4]["locations"][1]["column_offset"] == 24
+    assert transfer_flag_logic_information["used_variables"][4]["locations"][2]["line_number"] == 4
+    assert transfer_flag_logic_information["used_variables"][4]["locations"][2]["column_offset"] == 24
+    #
+    assert transfer_flag_logic_information["assigned_variables"][0]["name"] == "f"
+    assert transfer_flag_logic_information["assigned_variables"][0]["locations"][0]["line_number"] == 2
+    assert transfer_flag_logic_information["assigned_variables"][0]["locations"][0]["column_offset"] == 0
+    assert transfer_flag_logic_information["assigned_variables"][1]["name"] == "a"
+    assert transfer_flag_logic_information["assigned_variables"][1]["locations"][0]["line_number"] == 2
+    assert transfer_flag_logic_information["assigned_variables"][1]["locations"][0]["column_offset"] == 11
+    assert transfer_flag_logic_information["assigned_variables"][2]["name"] == "b"
+    assert transfer_flag_logic_information["assigned_variables"][2]["locations"][0]["line_number"] == 2
+    assert transfer_flag_logic_information["assigned_variables"][2]["locations"][0]["column_offset"] == 13
+    #
+    assert transfer_flag_logic_information["referenced_functions"][0]["name"] == "reduce"
+    assert transfer_flag_logic_information["referenced_functions"][0]["locations"][0]["line_number"] == 6
+    assert transfer_flag_logic_information["referenced_functions"][0]["locations"][0]["column_offset"] == 17
+    assert transfer_flag_logic_information["referenced_functions"][0]["locations"][1]["line_number"] == 4
+    assert transfer_flag_logic_information["referenced_functions"][0]["locations"][1]["column_offset"] == 17
+    assert transfer_flag_logic_information["referenced_functions"][0]["locations"][2]["line_number"] == 3
+    assert transfer_flag_logic_information["referenced_functions"][0]["locations"][2]["column_offset"] == 3
+    #
+    assert transfer_flag_logic_information["defined_functions"][0]["name"] == "my_add"
+    assert transfer_flag_logic_information["defined_functions"][0]["locations"][0]["line_number"] == 2
+    assert transfer_flag_logic_information["defined_functions"][0]["locations"][0]["column_offset"] == 4
+    #
+    assert transfer_flag_logic_information["defined_classes"][0]["name"] == "my_class"
+    assert transfer_flag_logic_information["defined_classes"][0]["locations"][0]["line_number"] == 1
+    assert transfer_flag_logic_information["defined_classes"][0]["locations"][0]["column_offset"] == 1
+    #
+    assert transfer_flag_logic_information["referenced_modules"][0]["name"] == "wtforms"
+    assert transfer_flag_logic_information["referenced_modules"][0]["locations"][0]["line_number"] == 2
+    assert transfer_flag_logic_information["referenced_modules"][0]["locations"][0]["column_offset"] == 5
+    assert transfer_flag_logic_information["referenced_modules"][1]["name"] == "functools"
+    assert transfer_flag_logic_information["referenced_modules"][1]["locations"][0]["line_number"] == 1
+    assert transfer_flag_logic_information["referenced_modules"][1]["locations"][0]["column_offset"] == 7
+    #
+    assert transfer_flag_logic_information["referenced_flags"][0]["name"] == "Flag5"
+    assert transfer_flag_logic_information["referenced_flags"][0]["locations"][0]["line_number"] == 6
+    assert transfer_flag_logic_information["referenced_flags"][0]["locations"][0]["column_offset"] == 10
+    assert transfer_flag_logic_information["referenced_flags"][0]["locations"][1]["line_number"] == 5
+    assert transfer_flag_logic_information["referenced_flags"][0]["locations"][1]["column_offset"] == 10
+    #
+    assert transfer_flag_logic_information["return_points"][0]["name"] == "return_points"
+    assert transfer_flag_logic_information["return_points"][0]["locations"][0]["line_number"] == 6
+    assert transfer_flag_logic_information["return_points"][0]["locations"][0]["column_offset"] == 4
+    assert transfer_flag_logic_information["return_points"][0]["locations"][1]["line_number"] == 4
+    assert transfer_flag_logic_information["return_points"][0]["locations"][1]["column_offset"] == 4
+    #
+    assert transfer_flag_logic_information["used_lambdas"][0]["name"] == "LAMBDA"
+    assert transfer_flag_logic_information["used_lambdas"][0]["locations"][0]["line_number"] == 2
+    assert transfer_flag_logic_information["used_lambdas"][0]["locations"][0]["column_offset"] == 4
+    #
+    assert transfer_flag_logic_information["flag_logic"][0]["name"] == "flag_logic"
+    assert transfer_flag_logic_information["flag_logic"][0]["logic"] == """
+f = lambda a,b: a if (a > b) else b
+if reduce(f, [47,11,42,102,13]) > 100:
+return ff1 > reduce(f, [47,11,42,102,13])
+else:
+return ff2 < reduce(f, [47,11,42,102,13])"""
+    #
+    assert transfer_flag_logic_information["errors"][0]["name"] == "errors"
+    assert transfer_flag_logic_information["errors"][0]["locations"][0]["line_number"] == 3
+    assert transfer_flag_logic_information["errors"][0]["locations"][0]["column_offset"] == 5
+    assert transfer_flag_logic_information["errors"][0]["text"] == "x = =  f\n"
+    assert transfer_flag_logic_information["errors"][0]["msg"] == "invalid syntax"
+    assert transfer_flag_logic_information["errors"][1]["name"] == "errors"
+    assert transfer_flag_logic_information["errors"][1]["locations"][0]["line_number"] == 5
+    assert transfer_flag_logic_information["errors"][1]["locations"][0]["column_offset"] == 5
+    assert transfer_flag_logic_information["errors"][1]["text"] == "y = = =  q2@\n"
+    assert transfer_flag_logic_information["errors"][1]["msg"] == "invalid syntax"
 
-    print("hello")
+
+
 
