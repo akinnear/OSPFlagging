@@ -387,7 +387,7 @@ def test_update_flag_logic_errors(flagging_mongo, mvrb, mvl):
     result, response_code = update_flag_logic(flag_id=str(og_flag_id), new_flag_logic_information=nw_flag_logic_information, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "error in flag logic"
-    assert result.uuid == og_flag_id
+    assert result.uuid == 3
     response_code == 200
 
 
@@ -398,8 +398,8 @@ def test_update_flag_logic_errors(flagging_mongo, mvrb, mvl):
 def test_update_flag_logic_mypy_errors(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 3
     mock_flagging_mongo = flagging_mongo()
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAGID1", "FLAGID2"])
-    og_flag_id = "FLAGID1"
+    og_flag_id = ObjectId(generate_object_id())
+    existing_flags = pull_flag_names(dummy_flag_names=[og_flag_id, ObjectId(generate_object_id())])
     nw_flag_logic_information = FlagLogicInformation(
     used_variables={VariableInformation("FF1"): {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15),
                                                  CodeLocation(9, 5), CodeLocation(17, 15)},
@@ -420,9 +420,10 @@ def test_update_flag_logic_mypy_errors(flagging_mongo, mvrb, mvl):
     errors=[],
     flag_logic="""does not matter""",
     validation_results=TypeValidationResults())
-    result = update_flag_logic(flag_id=og_flag_id, new_flag_logic_information=nw_flag_logic_information, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+    result, response_code = update_flag_logic(flag_id=str(og_flag_id), new_flag_logic_information=nw_flag_logic_information, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "error in flag logic"
+    assert response_code == 200
 
 
 
