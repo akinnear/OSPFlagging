@@ -37,6 +37,7 @@ def _convert_FLI_to_TFLI(FLI):
         elif key == "errors":
             for ei in flag_logic:
                 dictionary_data = dict()
+                dictionary_data["name"] = "errors"
                 dictionary_data["locations"] = []
                 dictionary_data["text"] = ei.text
                 dictionary_data["msg"] = ei.msg
