@@ -175,6 +175,20 @@ def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, 
                                                            message="error converting: " + str(original_flag_id) + " to object Id type")
             response_code = 406
     if flag_schema_object is None:
+        flag_group_ids = flagging_mongo.get_flag_group_ids()
+        flags_in_flag_group = dict()
+        if len(flag_group_ids) > 0:
+            for flag_group_id in flag_group_ids:
+                flags_in_flag_group_schema, response_code_get_flags = get_flag_group_flags(str(flag_group_id), flag_group_ids, flagging_mongo)
+                flags_in_flag_group_x = flags_in_flag_group_schema.logic
+                if ObjectId(original_flag_id) in flags_in_flag_group_x:
+                    flags_in_flag_group[flag_group_id] = flags_in_flag_group_x
+            if len(flags_in_flag_group) > 1:
+                flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                               message="flag id: " + original_flag_id + " can not be modified because it is contained in the following flag groups: " + ", ".join([str(x) for x in flags_in_flag_group.keys()]),
+                                                               uuid=original_flag_id)
+                response_code = 405
+    if flag_schema_object is None:
         original_flag_id_object = ObjectId(original_flag_id)
         new_flag_id = flagging_mongo.update_flag(flag=original_flag_id_object, update_value=new_flag_name,
                                                  update_column="FLAG_NAME")
@@ -207,6 +221,22 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="error converting: " + str(flag_id) + " to object Id type")
             response_code = 401
+    flag_group_ids = flagging_mongo.get_flag_group_ids()
+    flags_in_flag_group = dict()
+    if len(flag_group_ids) > 0:
+        for flag_group_id in flag_group_ids:
+            flags_in_flag_group_schema, response_code_get_flags = get_flag_group_flags(str(flag_group_id),
+                                                                                       flag_group_ids, flagging_mongo)
+            flags_in_flag_group_x = flags_in_flag_group_schema.logic
+            if ObjectId(flag_id) in flags_in_flag_group_x:
+                flags_in_flag_group[flag_group_id] = flags_in_flag_group_x
+        if len(flags_in_flag_group) > 1:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="flag id: " + flag_id + " can not be modified because it is contained in the following flag groups: " + ", ".join(
+                                                               [str(x) for x in flags_in_flag_group.keys()]),
+                                                           uuid=flag_id)
+            response_code = 405
+
     if flag_schema_object is None:
         validation_results = validate_logic(flag_id, new_flag_logic_information)
         if validation_results.errors != {} or validation_results.mypy_errors != {}:
@@ -282,6 +312,9 @@ def get_flag_group_names(flagging_mongo: FlaggingMongo):
 
 def get_flag_names_in_flag_group(flag_group_id, flagging_mongo):
     return flagging_mongo.get_flag_names_from_flag_group(flag_group_id), 200
+
+def get_flag_ids_in_flag_group(flag_group_id, flagging_mongo):
+    return flagging_mongo.get_flag_group_flag(flag_group_id), 200
 
 def get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_mongo):
     flag_schema_object = None
