@@ -477,14 +477,15 @@ def test_update_delete_flag_flag_does_not_exist(flagging_mongo, mvrb, mvl):
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
 def test_duplicate_flag(flagging_mongo, mvrb, mvl):
-    flagging_mongo.duplicate_flag.return_value = 4
     mock_flagging_mongo = flagging_mongo
-    flag_id = "FLAG1A"
-    existing_flag_ids = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B"])
-    result = duplicate_flag(original_flag_id=flag_id, existing_flags=existing_flag_ids, flagging_mongo=mock_flagging_mongo)
+    flagging_mongo.duplicate_flag.return_value = 4
+    flag_id = ObjectId(generate_object_id())
+    existing_flag_ids = pull_flag_names(dummy_flag_names=[flag_id, ObjectId(generate_object_id())])
+    result, response_code = duplicate_flag(original_flag_id=str(flag_id), existing_flags=existing_flag_ids, flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
-    assert result.message == flag_id + " has be duplicated"
+    assert result.message == str(flag_id) + " has be duplicated"
     assert result.uuid == 4
+    assert response_code == 200
 
 #test, duplicate flag, flag name not specified
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
