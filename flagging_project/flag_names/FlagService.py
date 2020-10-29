@@ -1,6 +1,30 @@
 from flagging.FlagLogicInformation import FlagLogicInformation
 from flagging.FlaggingNodeVisitor import CodeLocation
 from flagging.VariableInformation import VariableInformation
+from bson.objectid import ObjectId
+
+def pull_flag_ids(*args, **kwargs):
+    dummy_flag_ids = kwargs.get("dummy_flag_ids", None)
+    if dummy_flag_ids:
+        pass
+    else:
+        flag_1a_object_id = ObjectId("A11111111111111111111101")
+        flag_2b_object_id = ObjectId("A11111111111111111111102")
+        flag_3c_object_id = ObjectId("A11111111111111111111103")
+        flag_4d_object_id = ObjectId("A11111111111111111111104")
+        flag_5e_object_id = ObjectId("A11111111111111111111105")
+        flag_6f_object_id = ObjectId("A11111111111111111111106")
+        flag_7g_object_id = ObjectId("A11111111111111111111107")
+        flag_8h_object_id = ObjectId("A11111111111111111111108")
+        flag_9i_object_id = ObjectId("A11111111111111111111109")
+        flag_10j_object_id = ObjectId("A11111111111111111111110")
+        flag_11k_object_id = ObjectId("A11111111111111111111111")
+        flag_12l_object_id = ObjectId("A11111111111111111111112")
+        dummy_flag_ids = [flag_1a_object_id, flag_2b_object_id, flag_3c_object_id,
+                          flag_4d_object_id, flag_5e_object_id, flag_6f_object_id,
+                          flag_7g_object_id, flag_8h_object_id, flag_9i_object_id,
+                          flag_10j_object_id, flag_11k_object_id, flag_12l_object_id]
+        return dummy_flag_ids
 
 def pull_flag_names(*args, **kwargs):
     #method to pull flag names from api endpiont or internal db query

@@ -191,7 +191,7 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
         if function == "get_flag_groups":
             flag_groups, response_code = get_flag_groups(flagging_mongo)
             flag_groups = [str(x) for x in flag_groups]
-            data = {'flags groups': flag_groups}
+            data = {'flags_groups': flag_groups}
             return jsonify(data), response_code
 
         if function == "get_specific_flag_group":
@@ -200,7 +200,7 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
             data = {"valid": flag_schema_object.valid,
                      "message": flag_schema_object.message,
                      "uuid": str(flag_schema_object.uuid),
-                     "flags in flag group": flag_schema_object.logic,
+                     "flags_in_flag_group": flag_schema_object.logic,
                      "flag_group_name": flag_schema_object.name}
             return jsonify(data), response_code
 
@@ -261,10 +261,11 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
 
         if function == "duplicate_flag_group":
             existing_flag_groups, response_code_flag_group_ids = get_flag_group_ids(flagging_mongo)
-            flag_schema_object, response_code = duplicate_flag_group(flag_group_id, existing_flag_groups, flagging_mongo)
+            flag_schema_object, response_code = duplicate_flag_group(flag_group_id, existing_flag_groups, flag_group_name, flagging_mongo)
             data = {"valid": flag_schema_object.valid,
                     "message": flag_schema_object.message,
-                    "uuid": str(flag_schema_object.uuid)}
+                    "uuid": str(flag_schema_object.uuid),
+                    "name": flag_schema_object.name}
             return jsonify(data), response_code
         else:
              return redirect("/flag_group")

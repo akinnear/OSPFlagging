@@ -465,10 +465,10 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                 if len(cyclical_errors) > 0:
                     if len(cyclical_errors) == 1:
                         flagging_message = "the following flag dependency resulted in cyclical dependencies: " + \
-                                           cyclical_errors[0]
+                                           str(cyclical_errors[0])
                     else:
                         flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
-                            ", ".join(cyclical_errors))
+                            ", ".join(str(x) for x in cyclical_errors))
                     full_flag_set = new_flags + list(dict.fromkeys(existing_flags))
                     flag_with_updated_deps_id = flagging_mongo.update_flag_group(flag_group=flag_group_id,
                                                                                  update_value=full_flag_set,
@@ -478,16 +478,16 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                                    uuid=flag_with_updated_deps_id)
                     response_code = 401
 
-            elif len(missing_flags) != 0:
-                # return error message that flag must be created first before added to flag group
-                flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                               message="Flag(s) " + ", ".join(map(str, missing_flags)) + " do not exist")
-                response_code = 401
+        elif len(missing_flags) != 0:
+            # return error message that flag must be created first before added to flag group
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="Flag(s) " + ", ".join(map(str, missing_flags)) + " do not exist")
+            response_code = 401
 
-            elif len(duplicate_flags) != 0:
-                flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                               message="Flag(s) " + ", ".join(map(str, duplicate_flags)) + " already exist in flag group")
-                response_code = 401
+        elif len(duplicate_flags) != 0:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="Flag(s) " + ", ".join(map(str, duplicate_flags)) + " already exist in flag group")
+            response_code = 401
 
         if flag_schema_object is None:
             #get names of flags in flag group
@@ -575,9 +575,9 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
             response_code = 401
         if flag_schema_object is None and len(flags_not_in_group) > 0:
             if len(flags_not_in_group) == 0:
-                flag_message = "the following flag is not part of flag group " + flag_group_id + ": " + flags_not_in_group[0]
+                flag_message = "the following flag is not part of flag group " + flag_group_id + ": " + str(flags_not_in_group[0])
             else:
-                flag_message = "the following flags are not part of flag group " + flag_group_id + ": " + (", ".join(flags_not_in_group))
+                flag_message = "the following flags are not part of flag group " + flag_group_id + ": " + (", ".join([str(x) for x in flags_not_in_group]))
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message=flag_message)
             response_code = 401
