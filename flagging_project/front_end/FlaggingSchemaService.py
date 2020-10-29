@@ -596,7 +596,7 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
     return flag_schema_object, response_code
 
 #A call to duplicate a flag group provided a new name and UUID
-def duplicate_flag_group(original_flag_group_id: str, existing_flag_groups, flagging_mongo: FlaggingMongo):
+def duplicate_flag_group(original_flag_group_id: str, existing_flag_groups, new_flag_group_name, flagging_mongo: FlaggingMongo):
     flag_schema_object = None
     #make sure ids are past
     if original_flag_group_id is None:
@@ -610,11 +610,23 @@ def duplicate_flag_group(original_flag_group_id: str, existing_flag_groups, flag
                                                            message="flag group " + str(original_flag_group_id) + " does not exist")
             response_code = 404
     if flag_schema_object is None:
+        original_flag_group_name = flagging_mongo.get_flag_group_name(ObjectId(original_flag_group_id))
+        if original_flag_group_name == new_flag_group_name:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="can not duplicate flag group " + original_flag_group_id + " must be given a unique name",
+                                                           uuid=original_flag_group_id,
+                                                           name=original_flag_group_name)
+            response_code = 403
+
+    if flag_schema_object is None:
         #get new id
         new_flag_group_id = flagging_mongo.duplicate_flag_group(ObjectId(original_flag_group_id))
+        #edit new flag group to have new name passed
+        new_flag_group_id = flagging_mongo.update_flag_group(ObjectId(new_flag_group_id), new_flag_group_name, flag_group_name_col_name)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="new flag group " + str(new_flag_group_id)+ " created off of " + str(original_flag_group_id),
-                                                       uuid=new_flag_group_id)
+                                                       uuid=new_flag_group_id,
+                                                       name=new_flag_group_name)
         response_code = 200
     return flag_schema_object, response_code
 
