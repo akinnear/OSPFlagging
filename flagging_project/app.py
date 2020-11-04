@@ -271,9 +271,9 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
              return redirect("/flag_group")
 
 #flag_dependency
-@app.route("/flag_dependency/", methods=["GET"])
-@app.route("/flag_dependency/<string:function>/", methods=["GET", "POST", "PUT"])
-@app.route("/flag_dependency/<string:function>/<string:flag_id>/", methods=["GET", "POST", "PUT"])
+@app.route("/flag_dependency", methods=["GET"])
+@app.route("/flag_dependency/<string:function>", methods=["GET", "POST", "PUT"])
+@app.route("/flag_dependency/<string:function>/<string:flag_id>", methods=["GET", "POST", "PUT"])
 @app.route("/flag_dependency/<string:function>/<string:flag_id>/<string:flag_dep_id>", methods=["GET", "POST", "PUT"])
 def flag_dependency_action(function=None, flag_id=None, flag_dep_id=None):
     if function is None:

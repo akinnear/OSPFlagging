@@ -13,7 +13,7 @@ from flagging.TypeValidationResults import TypeValidationResults
 from flag_data.FlaggingColumnNames import flag_name_col_name, flag_logic_col_name, \
     referenced_flag_col_name, flag_status_col_name, flag_group_name_col_name, \
     flag_group_flags_col_name, flag_group_status_col_name, flag_dep_flag_id_col_name, \
-    flag_dep_dep_flags_col_name
+    flag_dep_dep_flags_col_name, flag_dep_flag_group_id_col_name
 from front_end.TransferFlagLogicInformation import TransferFlagLogicInformation, _convert_FLI_to_TFLI
 from bson.objectid import ObjectId
 from front_end.ReferencedFlag import ReferencedFlag, _convert_RF_to_TRF
@@ -299,6 +299,8 @@ def delete_flag(flag_id, existing_flags, flagging_mongo: FlaggingMongo):
     if flag_schema_object is None:
         #TODO
         # delete flag from flag dependency set
+
+
         flag_id_object = ObjectId(flag_id)
         specific_flag_name = flagging_mongo.get_flag_name(flag_id_object)
         removed_flag = flagging_mongo.remove_flag(flag=flag_id_object)
@@ -533,7 +535,9 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                     flag_ids, firc = get_all_flag_ids(flagging_mongo)
                     existing_flag_dep_keys, efdkrc = get_flag_dep_ids(flagging_mongo)
                     if ObjectId(new_flags[0]) not in existing_flag_dep_keys:
-                        flag_schema_object, fdi_rc = create_flag_dependency(flag_id=new_flags[0], existing_flag_ids=flag_ids,
+                        flag_schema_object, fdi_rc = create_flag_dependency(flag_id=new_flags[0],
+                                                                            flag_group_id=flag_group_id,
+                                                                            existing_flag_ids=flag_ids,
                                                                      existing_flag_dep_keys=existing_flag_dep_keys,
                                                                      flag_dependencies=[], flagging_mongo=flagging_mongo)
                         flag_dep_id = flag_schema_object.uuid
@@ -575,7 +579,8 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
             flag_ids, firc = get_all_flag_ids(flagging_mongo)
             existing_flag_dep_keys, efdkrc = get_flag_dep_ids(flagging_mongo)
             if ObjectId(new_flags[0]) not in existing_flag_dep_keys:
-                flag_dep_id, fdi_rc = create_flag_dependency(flag_id=new_flags[0], existing_flag_ids=flag_ids, existing_flag_dep_keys=existing_flag_dep_keys, flag_dependencies=[], flagging_mongo=flagging_mongo)
+                flag_dep_id, fdi_rc = create_flag_dependency(flag_id=new_flags[0], flag_group_id=flag_group_id,
+                                                             existing_flag_ids=flag_ids, existing_flag_dep_keys=existing_flag_dep_keys, flag_dependencies=[], flagging_mongo=flagging_mongo)
 
             updated_flag_dep_id, ufdirc = add_dependencies_to_flag(flag_dep_id=flag_dep_id, existing_flag_dep_keys=existing_flag_dep_keys, new_dependencies=referenced_flags, flagging_mongo=flagging_mongo)
 
@@ -639,6 +644,17 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
             response_code = 401
 
     if flag_schema_object is None:
+        #TODO
+        # update flag dependency data for flag being removed
+        #get flag_id being removed
+        for flag_id in del_flags:
+            flagging_mongo.remove_specific_flag_dependencies_via_flag_id(flag_id, ObjectId(flag_group_id))
+
+
+
+
+
+
         new_flag_set = (list(list(set(del_flags)-set(flags_in_flag_group)) + list(set(flags_in_flag_group)-set(del_flags))))
         new_flag_set = [ObjectId(x) for x in new_flag_set]
         #method to remove flag(s) from flag group
@@ -717,7 +733,7 @@ def get_flag_dep_ids(flagging_mongo: FlaggingMongo):
     return flagging_mongo.get_flag_dependencies_ids(), 200
 
 #call to create flag dependnecy
-def create_flag_dependency(flag_id: str, existing_flag_ids: [], existing_flag_dep_keys: [], flag_dependencies: [], flagging_mongo: FlaggingMongo):
+def create_flag_dependency(flag_id: str, flag_group_id, existing_flag_ids: [], existing_flag_dep_keys: [], flag_dependencies: [], flagging_mongo: FlaggingMongo):
     flag_schema_object = None
     if flag_schema_object is None:
         if flag_id is None:
@@ -741,6 +757,7 @@ def create_flag_dependency(flag_id: str, existing_flag_ids: [], existing_flag_de
     if flag_schema_object is None:
         #creat new flag dependency entry based on passed flag and flag_dependencies
         new_flag_dependency_id = flagging_mongo.add_flag_dependencies({flag_dep_flag_id_col_name: ObjectId(flag_id),
+                                                                       flag_dep_flag_group_id_col_name: ObjectId(flag_group_id),
                                                                        flag_dep_dep_flags_col_name: []})
         #add specific depdencies to new entry
         updated_flag_dependency_id = flagging_mongo.add_specific_flag_dependencies(new_flag_dependency_id, flag_dependencies, flag_dep_dep_flags_col_name)
@@ -805,30 +822,31 @@ def add_dependencies_to_flag(flag_dep_id, existing_flag_dep_keys: [], new_depend
     return flag_schema_object, response_code
 
 #call to remove dependencies from flag
-def remove_dependencies_from_flag(flag_id, existing_flag_dep_keys: [], rm_dependencies: [], flagging_mongo: FlaggingMongo):
+def remove_dependencies_from_flag(flag_dep_id, existing_flag_dep_keys: [], rm_dependencies: [], flagging_mongo: FlaggingMongo):
     flag_schema_object = None
     if flag_schema_object is None:
-        if flag_id is None:
+        if flag_dep_id is None:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag id not specified")
+                                                           message="flag dep id not specified")
             response_code = 400
     if flag_schema_object is None:
-        if ObjectId(flag_id) not in existing_flag_dep_keys:
+        if ObjectId(flag_dep_id) not in existing_flag_dep_keys:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag does not exist in flag dependency database")
+                                                           message="flag dep does not exist in flag dependency database")
             response_code = 404
+    # if flag_schema_object is None:
+    #     existing_flag_dep_flags = flagging_mongo.get_specific_flag_dependency_flags(ObjectId(flag_dep_id))
+    #     missing_flags = []
+    #     for flag_x in rm_dependencies:
+    #         if flag_x not in existing_flag_dep_flags:
+    #             missing_flags.append(flag_x)
+    #     if len(missing_flags) != 0:
+    #         flag_schema_object = FlaggingSchemaInformation(valid=False,
+    #                                                        message="flag(s): " + ", ".join([str(x) for x in missing_flags]) + " not current flag dependents")
+    #         response_code = 404
     if flag_schema_object is None:
-        existing_flag_dep_flags = flagging_mongo.get_specific_flag_dependency_flags(ObjectId(flag_id))
-        missing_flags = []
-        for flag_x in rm_dependencies:
-            if flag_x not in existing_flag_dep_flags:
-                missing_flags.append(flag_x)
-        if len(missing_flags) != 0:
-            flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag(s): " + ", ".join([str(x) for x in missing_flags]) + " not current flag dependents")
-            response_code = 404
-    if flag_schema_object is None:
-        updated_flag_dep_id = flagging_mongo.remove_specific_flag_dependencies(ObjectId(flag_id), rm_dependencies, "DEPENDENT_FLAGS")
+        rm_dependencies = _convert_RF_to_TRF(rm_dependencies)
+        updated_flag_dep_id = flagging_mongo.remove_specific_flag_dependencies(ObjectId(flag_dep_id), rm_dependencies, "DEPENDENT_FLAGS")
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="dependencies have been updated",
                                                        uuid=updated_flag_dep_id)

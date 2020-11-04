@@ -5,7 +5,8 @@ import datetime
 import pandas as pd
 from flag_data.FlaggingColumnNames import flag_name_col_name, flag_logic_col_name, \
     referenced_flag_col_name, flag_status_col_name, flag_group_name_col_name, \
-    flag_group_flags_col_name, flag_group_status_col_name, flag_dep_dep_flags_col_name
+    flag_group_flags_col_name, flag_group_status_col_name, flag_dep_dep_flags_col_name, \
+    flag_dep_flag_id_col_name, flag_dep_flag_group_id_col_name
 
 
 FLAGGING_DATABASE = 'flagging_test'
@@ -17,6 +18,7 @@ flag_id = "_id"
 flag_group_id = "_id"
 flag_group_timestamp = "FLAG_GROUP_TIMESTAMP"
 flag_logic = "FLAG_LOGIC"
+flag_dep_id = "_id"
 
 
 class FlaggingMongo:
@@ -197,6 +199,7 @@ class FlaggingMongo:
     FLAG_DEPENDENCIES
     _id: unique user id 
     FLAG_ID: unique flag id
+    FLAG_GROUP_ID: unique flag group id
     DEPENDENT_FLAGS: [(flag_name, flag_group_id), (flag_name, flag_group_id)...]
     '''
     def get_flag_dependencies(self):
@@ -273,6 +276,15 @@ class FlaggingMongo:
                 flag_deps_list.remove(rm_dep)
         modified_flag = flagging_dependencies.find_one_and_update({flag_id: flag}, {"$set": {dependent_flag_column: flag_deps_list}}, upsert=True)[flag_id]
         return modified_flag
+
+    def remove_specific_flag_dependencies_via_flag_id(self, flag, flag_group_id):
+        db = self.client[FLAGGING_DATABASE]
+        flagging_dependencies = db[FLAG_DEPENDENCIES]
+        flag_deps_flag_rm_list = list(flagging_dependencies.find({flag_dep_flag_id_col_name: flag,
+                            flag_dep_flag_group_id_col_name: flag_group_id}))
+        for rm_id in [x["_id"] for x in flag_deps_flag_rm_list]:
+            flagging_dependencies.remove({flag_dep_id: rm_id})
+
 
     def update_flag_dependencies(self, flag, dependent_flag_value: [], dependent_flag_column: str):
         db = self.client[FLAGGING_DATABASE]
