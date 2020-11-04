@@ -1,12 +1,12 @@
 import os
 from flask import Flask, jsonify, redirect, request, Response
 from front_end.FlaggingSchemaService import get_all_flags, get_specific_flag, \
-    get_flag_groups, get_specific_flag_group, get_flag_dependencies, get_specif_flag_dependnecy, \
+    get_flag_groups, get_specific_flag_group, get_flag_dependencies, get_specific_flag_dependency, \
     create_flag, update_flag_name, update_flag_logic, delete_flag, create_flag_group, \
     delete_flag_group, add_flag_to_flag_group, remove_flag_from_flag_group, duplicate_flag, \
     duplicate_flag_group, create_flag_dependency, delete_flag_dependency, add_dependencies_to_flag, \
     remove_dependencies_from_flag, get_all_flag_ids, get_flag_group_ids, get_flag_group_names, \
-    get_flag_group_flags, get_flag_names_in_flag_group
+    get_flag_group_flags, get_flag_names_in_flag_group, get_flag_dep_ids
 from flagging.FlagLogicInformation import FlagLogicInformation
 from flag_names.FlagService import pull_flag_names_in_flag_group, pull_flag_names, pull_flag_logic_information
 from flag_data.FlaggingMongo import FlaggingMongo
@@ -274,26 +274,36 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
 @app.route("/flag_dependency/", methods=["GET"])
 @app.route("/flag_dependency/<string:function>/", methods=["GET", "POST", "PUT"])
 @app.route("/flag_dependency/<string:function>/<string:flag_id>/", methods=["GET", "POST", "PUT"])
-@app.route("/flag_dependency/<string:function>/<string:flag_name>/", methods=["GET", "POST", "PUT"])
-def flag_dependency_action(function=None, flag_id=None, flag_name=None):
+@app.route("/flag_dependency/<string:function>/<string:flag_id>/<string:flag_dep_id>", methods=["GET", "POST", "PUT"])
+def flag_dependency_action(function=None, flag_id=None, flag_dep_id=None):
     if function is None:
-        return "flag_dependency_home_page"
+        return redirect(flag_dependencies_home_page)
     else:
         if function == "get_flag_dependencies":
-            return(get_flag_dependencies(flagging_mongo))
+            flag_deps, response_code = get_flag_dependencies(flagging_mongo)
+            flag_deps = [str(x) for x in flag_deps]
+            data = {"flag_deps": flag_deps}
+            return jsonify(data), response_code
 
-        if function == "get_specif_flag_dependnecy":
-            existing_flag_deps = get_flag_dependencies(flagging_mongo)
-            return(get_specif_flag_dependnecy(flag_id, existing_flag_deps, flagging_mongo))
+        if function == "get_specific_flag_dependency":
+            existing_flag_dep_ids, response_code_ids = get_flag_dep_ids(flagging_mongo)
+            flag_schema_object, response_code = get_specific_flag_dependency(flag_id, existing_flag_dep_ids, flagging_mongo)
+            data = {"valid": flag_schema_object.valid,
+                    "message": flag_schema_object.message,
+                    "uuid": str(flag_schema_object.uuid),
+                    "flag_dep_flags": flag_schema_object.logic}
+            return jsonify(data), response_code
 
         if function == "create_flag_dependency":
-            #TODO
-            # need to get dependent flags
-            # flag_dependencies
+            existing_flag_dep_ids, response_code_dep_ids = get_flag_dep_ids(flagging_mongo)
+            existing_flag_ids, response_code_flag_ids = get_all_flag_ids(flagging_mongo)
+            flag_schema_object, response_code = create_flag_dependency(flag_id, existing_flag_ids, existing_flag_dep_ids, [], flagging_mongo)
+            data = {"valid": flag_schema_object.valid,
+                    "message": flag_schema_object.message,
+                    "uuid": str(flag_schema_object.uuid),
+                    "flag_dep_flags": flag_schema_object.logic}
+            return jsonify(data), response_code
 
-            existing_flag_deps = get_flag_dependencies(flagging_mongo)
-            flag_dependencies = pull_flag_names(dummy_flag_names=["FLAG1A"])
-            return(create_flag_dependency(flag_name, existing_flag_deps, flag_dependencies, flagging_mongo))
 
         if function == "delete_flag_dependency":
             existing_flag_deps = get_flag_dependencies(flagging_mongo)
@@ -320,7 +330,7 @@ def flag_dependency_action(function=None, flag_id=None, flag_name=None):
                                                  rm_dependencies, flagging_mongo))
 
         else:
-            return "flag_dependency_home_page"
+            return redirect(flag_dependencies_home_page)
 
 
 #housekeeeping

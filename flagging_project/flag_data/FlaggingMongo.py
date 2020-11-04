@@ -5,7 +5,7 @@ import datetime
 import pandas as pd
 from flag_data.FlaggingColumnNames import flag_name_col_name, flag_logic_col_name, \
     referenced_flag_col_name, flag_status_col_name, flag_group_name_col_name, \
-    flag_group_flags_col_name, flag_group_status_col_name
+    flag_group_flags_col_name, flag_group_status_col_name, flag_dep_dep_flags_col_name
 
 
 FLAGGING_DATABASE = 'flagging_test'
@@ -196,13 +196,27 @@ class FlaggingMongo:
     '''
     FLAG_DEPENDENCIES
     _id: unique user id 
-    FLAG_NAME: flag_name -> str
-    DEPENDENT_FLAGS: flags that flag_name is dependent on -> [str]
+    FLAG_ID: unique flag id
+    DEPENDENT_FLAGS: [(flag_name, flag_group_id), (flag_name, flag_group_id)...]
     '''
     def get_flag_dependencies(self):
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
         return list(flagging_dependencies.find())
+
+    def get_flag_dependencies_ids(self):
+        db = self.client[FLAGGING_DATABASE]
+        flagging_dependencies = db[FLAG_DEPENDENCIES]
+        flagging_dependencies_list = list(flagging_dependencies.find())
+        flagging_dependencies_ids = [x["_id"] for x in flagging_dependencies_list]
+        return flagging_dependencies_ids
+
+    def get_flag_dependencies_names(self):
+        db = self.client[FLAGGING_DATABASE]
+        flagging_dependencies = db[FLAG_DEPENDENCIES]
+        flagging_dependencies_list = list(flagging_dependencies.find())
+        flagging_dependencies_names = [x[flag_name_col_name] for x in flagging_dependencies_list]
+        return flagging_dependencies_names
 
     def add_flag_dependencies(self, flag):
         db = self.client[FLAGGING_DATABASE]
@@ -222,6 +236,11 @@ class FlaggingMongo:
         flagging_dependencies = flagging_dependencies.find_one({flag_id: flag})
         return list(flagging_dependencies)
 
+    def get_specific_flag_dep_id_by_flag_id(self, flag):
+        db = self.client[FLAGGING_DATABASE]
+        flagging_dependencies = db[FLAG_DEPENDENCIES]
+        flag_dep_key = flagging_dependencies.find_one({"FLAG_ID": flag})
+        return flag_dep_key
 
     def add_specific_flag_dependencies(self, flag, new_deps: [], dependent_flag_column):
         db = self.client[FLAGGING_DATABASE]
@@ -264,8 +283,9 @@ class FlaggingMongo:
             modified_flag = flagging_dependencies.find_one_and_update({flag_id: flag}, {"$set": {dependent_flag_column: dependent_flag_value}}, upsert=True)[flag_id]
         return modified_flag
 
-    def get_specific_flag_dependency(self, flag):
+    def get_specific_flag_dependency_flags(self, flag):
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        matching_flag = flagging_dependencies.find_one({flag_id: flag})[flag_id]
-        return matching_flag
+        flag_deps = flagging_dependencies.find_one({flag_id: flag})[flag_dep_dep_flags_col_name]
+        return flag_deps
+
