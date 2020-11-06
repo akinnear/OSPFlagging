@@ -6,7 +6,7 @@ import pandas as pd
 from flag_data.FlaggingColumnNames import flag_name_col_name, flag_logic_col_name, \
     referenced_flag_col_name, flag_status_col_name, flag_group_name_col_name, \
     flag_group_flags_col_name, flag_group_status_col_name, flag_dep_dep_flags_col_name, \
-    flag_dep_flag_id_col_name, flag_dep_flag_group_id_col_name
+    flag_dep_flag_id_col_name, flag_dep_flag_group_id_col_name, flag_error_col_name
 
 
 FLAGGING_DATABASE = 'flagging_test'
@@ -65,6 +65,12 @@ class FlaggingMongo:
         flagging = db[FLAGGING_COLLECTION]
         found_id = flagging.find_one({flag_id: flag})[flag_id]
         return found_id
+
+    def get_specific_flag_error(self, flag):
+        db = self.client[FLAGGING_DATABASE]
+        flagging = db[FLAGGING_COLLECTION]
+        flag_error = flagging.find_one({flag_id: flag})[flag_error_col_name]
+        return flag_error
 
     def get_flag_logic_information(self, flag):
         db = self.client[FLAGGING_DATABASE]
@@ -245,6 +251,12 @@ class FlaggingMongo:
         flag_dep_key = flagging_dependencies.find_one({"FLAG_ID": flag})
         return flag_dep_key
 
+    def get_flag_dep_by_flag_group_id(self, flag_group_id):
+        db = self.client[FLAGGING_DATABASE]
+        flagging_dependencies = db[FLAG_DEPENDENCIES]
+        flag_deps = list(flagging_dependencies.find({flag_dep_flag_group_id_col_name: flag_group_id}))
+        return flag_deps
+
     def add_specific_flag_dependencies(self, flag, new_deps: [], dependent_flag_column):
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
@@ -284,6 +296,8 @@ class FlaggingMongo:
                             flag_dep_flag_group_id_col_name: flag_group_id}))
         for rm_id in [x["_id"] for x in flag_deps_flag_rm_list]:
             flagging_dependencies.remove({flag_dep_id: rm_id})
+
+
 
 
     def update_flag_dependencies(self, flag, dependent_flag_value: [], dependent_flag_column: str):

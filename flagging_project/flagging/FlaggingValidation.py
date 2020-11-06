@@ -16,7 +16,8 @@ def validate_flag_logic(flag_name, flag_feeders, flag_dependencies, flag_logic):
                                            flag_dependencies=flag_dependencies,
                                            flag_logic_info=determine_variables(flag_logic))
 
-def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_logic_info: FlagLogicInformation):
+def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_logic_info: FlagLogicInformation, **kwargs):
+    og_flag_included_in_flag_dep = kwargs.get("og_flag_included_in_flag_dep", False)
     results = FlaggingValidationResults()
     #TODO
     # if no flag name provided, use number of entries in flag dependency set via API
@@ -95,14 +96,15 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
                     new_flag_dependencies = []
                     #make sure each depedendent flag exists in flag depdency set
                     #otherwise we do not know if there is cyclical flag
-                    for flag in flag_deps:
-                        try:
-                            for new_flag in list(flag_dependencies[flag]):
-                                new_flag_dependencies.append(new_flag)
-                        except KeyError as ke:
-                            results.add_flag_error(flag, FlagErrorInformation(flag=flag,
-                                                                              err_info="missing_flag",
-                                                                              cl={CodeLocation(None, None)}))
+                    #not necessary, only checking flags in flag group now
+                    # for flag in flag_deps:
+                    #     try:
+                    #         for new_flag in list(flag_dependencies[flag]):
+                    #             new_flag_dependencies.append(new_flag)
+                    #     except KeyError as ke:
+                    #         results.add_flag_error(flag, FlagErrorInformation(flag=flag,
+                    #                                                           err_info="missing_flag",
+                    #                                                           cl={CodeLocation(None, None)}))
                             # results.add_flag_error(str(ke).replace("'", ""), FlagErrorInformation(flag=str(ke).replace("'", "")),
                             #                                                                   err_info="missing_flag",
                             #                                                                   cl=CodeLocation(None, None))
@@ -133,11 +135,14 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
     flag_check = {}
     flag_history = {}
     #add flag_name and passed referenced_flags to flag_dependcies
-    flag_dependencies[flag_name] = flag_logic_info.referenced_flags.keys()
+    if not og_flag_included_in_flag_dep:
+        flag_dependencies[flag_name] = flag_logic_info.referenced_flags.keys()
     if flag_dependencies:
         for flag in flag_dependencies.keys():
             #only check referenced_flags for cyclical flag dependicies
-            (flag_check.update({flag: False}) if flag in flag_logic_info.referenced_flags.keys() else flag_check.update({flag: True}))
+            (flag_check.update({flag: False}))
+            if not og_flag_included_in_flag_dep:
+                (flag_check.update({flag: False}) if flag in flag_logic_info.referenced_flags.keys() else flag_check.update({flag: True}))
             flag_history.update({flag: list()})
 
         check_flag_dependency(cyclical_flags, flag_dependencies, flag_history, flag_check)

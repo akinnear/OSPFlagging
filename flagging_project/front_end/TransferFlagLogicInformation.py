@@ -1,4 +1,4 @@
-from flagging.FlaggingNodeVisitor import CodeLocation
+
 
 class TransferFlagLogicInformation:
     def __init__(self, used_variables=None, assigned_variables=None, referenced_functions=None,
@@ -78,6 +78,12 @@ def _convert_FLI_to_TFLI(FLI):
     tfli_dict = make_dict(TFLI)
 
     return tfli_dict
+
+
+
+
+
+
 
 
 
