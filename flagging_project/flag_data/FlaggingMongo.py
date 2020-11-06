@@ -6,7 +6,8 @@ import pandas as pd
 from flag_data.FlaggingColumnNames import flag_name_col_name, flag_logic_col_name, \
     referenced_flag_col_name, flag_status_col_name, flag_group_name_col_name, \
     flag_group_flags_col_name, flag_group_status_col_name, flag_dep_dep_flags_col_name, \
-    flag_dep_flag_id_col_name, flag_dep_flag_group_id_col_name, flag_error_col_name
+    flag_dep_flag_id_col_name, flag_dep_flag_group_id_col_name, flag_error_col_name, \
+    flag_group_error_col_name
 
 
 FLAGGING_DATABASE = 'flagging_test'
@@ -163,7 +164,6 @@ class FlaggingMongo:
     def get_specific_flag_group(self, flag_group):
         db = self.client[FLAGGING_DATABASE]
         flag_groups = db[FLAG_GROUPS]
-        flag_test = flag_groups.find_one({flag_group_id: flag_group})
         found_id = flag_groups.find_one({flag_id: flag_group})[flag_group_id]
         return found_id
 
@@ -199,6 +199,11 @@ class FlaggingMongo:
         duplicated_flag_groups = flag_groups.insert_one(flag_group_2_duplicate).inserted_id
         return duplicated_flag_groups
 
+    def get_flag_group_errors(self, flag_group):
+        db = self.client[FLAGGING_DATABASE]
+        flag_groups = db[FLAG_GROUPS]
+        flag_group_error = flag_groups.find_one({flag_id: flag_group})[flag_group_error_col_name]
+        return flag_group_error
 
     #flag dependencies
     '''

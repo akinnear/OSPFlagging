@@ -22,8 +22,9 @@ def validate_cyclical_logic(flag_id, flag_group_id, flag_logic_information:FlagL
     #dependenceis via name
     flag_deps_for_flag_group = flagging_mongo.get_flag_dep_by_flag_group_id(flag_group_id)
     flag_dependencies = {}
-    flag_name = flagging_mongo.get_flag_name(flag_id)
-    flag_dependencies[flag_name] = {x for x in flag_logic_information.referenced_flags}
+    if flag_id is not None:
+        flag_name = flagging_mongo.get_flag_name(flag_id)
+        flag_dependencies[flag_name] = {x for x in flag_logic_information.referenced_flags}
     for i in range(len(flag_deps_for_flag_group)):
         rf_key = flag_deps_for_flag_group[i]["FLAG_NAME"]
         rf_value = set()
