@@ -15,8 +15,7 @@ from flag_data.FlaggingColumnNames import flag_name_col_name, flag_logic_col_nam
     flag_group_flags_col_name, flag_group_status_col_name, flag_dep_flag_id_col_name, \
     flag_dep_dep_flags_col_name, flag_dep_flag_group_id_col_name, flag_error_col_name, \
     flag_group_error_col_name
-from front_end.TransferFlagLogicInformation import TransferFlagLogicInformation, _convert_FLI_to_TFLI, \
-    _convert_TFLI_to_FLI
+from front_end.TransferFlagLogicInformation import TransferFlagLogicInformation, _convert_FLI_to_TFLI
 from bson.objectid import ObjectId
 from front_end.ReferencedFlag import ReferencedFlag, _convert_RF_to_TRF
 
@@ -356,6 +355,8 @@ def move_flag_to_production(flag_id, existing_flags, flagging_mongo):
                                                        message="flag has been moved to production",
                                                        uuid=ObjectId(flag_id),
                                                        name=flagging_mongo.get_flag_name(ObjectId(flag_id)))
+        response_code = 200
+    return flag_schema_object, response_code
 
 #FLAG_GROUP
 #get flag_groups
@@ -886,6 +887,7 @@ def move_flag_group_to_production(flag_group_id, existing_flag_groups, flagging_
                                                        name=flagging_mongo.get_flag_group_name(ObjectId(flag_group_id)))
 
         response_code = 200
+    return flag_schema_object, response_code
 
 
 
