@@ -6,7 +6,8 @@ from front_end.FlaggingSchemaService import get_all_flags, get_specific_flag, \
     delete_flag_group, add_flag_to_flag_group, remove_flag_from_flag_group, duplicate_flag, \
     duplicate_flag_group, create_flag_dependency, delete_flag_dependency, add_dependencies_to_flag, \
     remove_dependencies_from_flag, get_all_flag_ids, get_flag_group_ids, get_flag_group_names, \
-    get_flag_group_flags, get_flag_names_in_flag_group, get_flag_dep_ids
+    get_flag_group_flags, get_flag_names_in_flag_group, get_flag_dep_ids, move_flag_group_to_production, \
+    move_flag_to_production
 from flagging.FlagLogicInformation import FlagLogicInformation
 from flag_names.FlagService import pull_flag_names_in_flag_group, pull_flag_names, pull_flag_logic_information
 from flag_data.FlaggingMongo import FlaggingMongo
@@ -174,6 +175,17 @@ def flag_action(function=None, flag_id=None, flag_name=None):
                      "flag_name": flag_schema_object.name,
                      "flag_logic": flag_schema_object.logic}
             return jsonify(data), response_code
+
+        if function == "move_flag_to_production":
+            existing_flag_ids, repsonse_code_ids = get_all_flag_ids(flagging_mongo)
+            flag_schema_object, response_code = move_flag_to_production(flag_id, existing_flag_ids, flagging_mongo)
+            data = {"valid": flag_schema_object.valid,
+                    "message": flag_schema_object.message,
+                    "uuid": str(flag_schema_object.uuid),
+                    "name": flag_schema_object.name,
+                    "logic": flag_schema_object.logic}
+            return jsonify(data), response_code
+
         else:
              return redirect("/flag")
 
@@ -263,6 +275,15 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
         if function == "duplicate_flag_group":
             existing_flag_groups, response_code_flag_group_ids = get_flag_group_ids(flagging_mongo)
             flag_schema_object, response_code = duplicate_flag_group(flag_group_id, existing_flag_groups, flag_group_name, flagging_mongo)
+            data = {"valid": flag_schema_object.valid,
+                    "message": flag_schema_object.message,
+                    "uuid": str(flag_schema_object.uuid),
+                    "name": flag_schema_object.name}
+            return jsonify(data), response_code
+
+        if function == "move_flag_group_to_production":
+            existing_flag_groups, response_code_flag_group_ids = get_flag_group_ids(flagging_mongo)
+            flag_schema_object, response_code = move_flag_group_to_production(flag_group_id, existing_flag_groups, flagging_mongo)
             data = {"valid": flag_schema_object.valid,
                     "message": flag_schema_object.message,
                     "uuid": str(flag_schema_object.uuid),
