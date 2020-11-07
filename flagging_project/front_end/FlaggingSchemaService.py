@@ -90,7 +90,6 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
             
             #test for transfer
             transfer_flag_logic_information = _convert_FLI_to_TFLI(flag_logic_information)
-            test_flag = _convert_TFLI_to_FLI(transfer_flag_logic_information)
             add_flag_id = flagging_mongo.add_flag({flag_name_col_name: flag_name,
                                                    flag_logic_col_name: transfer_flag_logic_information,
                                                    referenced_flag_col_name: transfer_flag_logic_information["referenced_flags"],
@@ -631,7 +630,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                                             existing_flag_ids=flag_ids,
                                                                      existing_flag_dep_keys=existing_flag_dep_keys,
                                                                      flag_dependencies=[], flagging_mongo=flagging_mongo)
-                        flag_dep_id = flag_schema_object.uuid
+                        flag_dep_id = flag_schema_object_flag_dep.uuid
                         existing_flag_dep_keys, efdkrc = get_flag_dep_ids(flagging_mongo)
 
 
