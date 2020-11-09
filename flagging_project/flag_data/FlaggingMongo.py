@@ -256,6 +256,13 @@ class FlaggingMongo:
         flag_dep_key = flagging_dependencies.find_one({"FLAG_ID": flag})
         return flag_dep_key
 
+    def get_specific_flag_dep_id_by_flag_id_and_flag_group_id(self, flag, flag_group_id):
+        db = self.client[FLAGGING_DATABASE]
+        flagging_dependencies = db[FLAG_DEPENDENCIES]
+        flag_dep_key = flagging_dependencies.find_one({"FLAG_ID": flag,
+                                                       flag_dep_flag_group_id_col_name: flag_group_id})
+        return flag_dep_key
+
     def get_flag_dep_by_flag_group_id(self, flag_group_id):
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
@@ -275,7 +282,7 @@ class FlaggingMongo:
         for new_dep in new_deps:
             if new_dep not in flag_deps_list:
                 flag_deps_list.append(new_dep)
-        updated_id = flagging_dependencies.find_one_and_update({flag_id: flag}, {"$set": {dependent_flag_column: flag_deps_list}}, upsert=True)[flag_group_id]
+        updated_id = flagging_dependencies.find_one_and_update({flag_id: flag}, {"$set": {dependent_flag_column: flag_deps_list}}, upsert=True)["_id"]
         return updated_id
 
     def remove_specific_flag_dependencies(self, flag, rm_deps: [], dependent_flag_column):
@@ -307,6 +314,13 @@ class FlaggingMongo:
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
         flag_deps_flag_rm_list = list(flagging_dependencies.find({flag_dep_flag_id_col_name: flag}))
+        for rm_id in [x["_id"] for x in flag_deps_flag_rm_list]:
+            flagging_dependencies.remove({flag_dep_id: rm_id})
+
+    def remove_specific_flag_dependencies_via_flag_group_id(self, flag_group):
+        db = self.client[FLAGGING_DATABASE]
+        flagging_dependencies = db[FLAG_DEPENDENCIES]
+        flag_deps_flag_rm_list = list(flagging_dependencies.find({flag_dep_flag_group_id_col_name: flag_group_id}))
         for rm_id in [x["_id"] for x in flag_deps_flag_rm_list]:
             flagging_dependencies.remove({flag_dep_id: rm_id})
 
