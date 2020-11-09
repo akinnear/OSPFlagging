@@ -294,11 +294,19 @@ class FlaggingMongo:
         modified_flag = flagging_dependencies.find_one_and_update({flag_id: flag}, {"$set": {dependent_flag_column: flag_deps_list}}, upsert=True)[flag_id]
         return modified_flag
 
-    def remove_specific_flag_dependencies_via_flag_id(self, flag, flag_group_id):
+
+    def remove_specific_flag_dependencies_via_flag_id_and_flag_group_id(self, flag, flag_group_id):
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
         flag_deps_flag_rm_list = list(flagging_dependencies.find({flag_dep_flag_id_col_name: flag,
                             flag_dep_flag_group_id_col_name: flag_group_id}))
+        for rm_id in [x["_id"] for x in flag_deps_flag_rm_list]:
+            flagging_dependencies.remove({flag_dep_id: rm_id})
+
+    def remove_specific_flag_dependencies_via_flag_id(self, flag):
+        db = self.client[FLAGGING_DATABASE]
+        flagging_dependencies = db[FLAG_DEPENDENCIES]
+        flag_deps_flag_rm_list = list(flagging_dependencies.find({flag_dep_flag_id_col_name: flag}))
         for rm_id in [x["_id"] for x in flag_deps_flag_rm_list]:
             flagging_dependencies.remove({flag_dep_id: rm_id})
 
