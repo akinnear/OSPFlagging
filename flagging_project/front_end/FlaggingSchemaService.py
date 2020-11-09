@@ -249,13 +249,7 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
     if flag_schema_object is None:
         validation_results = validate_logic(flag_id, None, new_flag_logic_information, flagging_mongo)
         if validation_results.errors != {} or validation_results.mypy_errors != {}:
-            #TODO
-            # update flag dependency set
-            # remember, flag can only be in one flag group, so only have to update one entry
-            # delete previous entry via flag id, create new one
-            # delete previous entry via flag id
-
-            #delete previous entry
+            #delete previous dep entry
             flagging_mongo.remove_specific_flag_dependencies_via_flag_id_and_flag_group_id(ObjectId(flag_id), ObjectId(flag_group_id))
 
             #check if flag is part of flag group
@@ -281,6 +275,7 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                                                                              flagging_mongo=flagging_mongo)
 
                 #add new referenced flags to flag dependeny entry
+                #check for cyclical errors
                 flag_set = flagging_mongo.get_flag_group_flag()
                 ref_flag_dict = {}
                 for flag in flag_set:
@@ -304,137 +299,136 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                         else:
                             flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
                                 ", ".join(str(x) for x in cyclical_errors))
+                        #update flag group that flag is part of with cyclcial error
+                        flagging_mongo.update_flag_group(ObjectId(flag_group_id), "CYCLICAL ERROR", flag_group_error_col_name)
 
 
-            # create full valid flag logic information object
+            # get referenced flags from flag logic information
+            if len(new_flag_logic_information.referenced_flags) > 0:
+                referenced_flags_names_in_flag_id = [x for x in new_flag_logic_information.referenced_flags]
+                referenced_flags = []
+                for x in referenced_flags_names_in_flag_id:
+                    referenced_flags.append(ReferencedFlag(flag_name=x, flag_group_id=flag_group_id))
 
-    #         flag_status = flagging_mongo.get_flag_status(ObjectId(new_flags[0]))
-    #
-    #             # flag dependency check here
-    #             ref_flag_dict = {}
-    #             for flag in flag_set:
-    #                 ref_flag_dict[flag] = {CodeLocation(None, None)}
-    #
-    #             referenced_flags_names = [x["name"] for x in
-    #                                       flagging_mongo.get_flag_logic_information(new_flag)["referenced_flags"]]
-    #             ref_flag_dict = {}
-    #             for rf_name in referenced_flags_names:
-    #                 ref_flag_dict[rf_name] = {CodeLocation(None, None)}
-    #             flag_logic_cyclical_check = FlagLogicInformation(referenced_flags=ref_flag_dict)
-    #             validation_results = validate_cyclical_logic(ObjectId(new_flags[0]),
-    #                                                          ObjectId(flag_group_id), flag_logic_cyclical_check,
-    #                                                          flagging_mongo)
-    #             flagging_message = ""
-    #             if len(validation_results.errors) != 0:
-    #                 cyclical_errors = []
-    #                 for k, v in validation_results.errors.items():
-    #                     if isinstance(v, FlagErrorInformation):
-    #                         cyclical_errors.append(k)
-    #                 if len(cyclical_errors) > 0:
-    #                     if len(cyclical_errors) == 1:
-    #                         flagging_message = "the following flag dependency resulted in cyclical dependencies: " + \
-    #                                            str(cyclical_errors[0])
-    #                     else:
-    #                         flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
-    #                             ", ".join(str(x) for x in cyclical_errors))
-    #                     # full_flag_set = new_flags + list(dict.fromkeys(existing_flags))
-    #                     # flag_with_updated_deps_id = flagging_mongo.update_flag_group(flag_group=ObjectId(flag_group_id),
-    #                     #                                                              update_value=full_flag_set,
-    #                     #                                                              update_column="FLAGS_IN_GROUP")
-    #                     # flag_schema_object = FlaggingSchemaInformation(valid=False,
-    #                     #                                                message=flagging_message,
-    #                     #                                                uuid=flag_with_updated_deps_id)
-    #                     # response_code = 401
-    #
-    #             #
-    #
-    #             # create flag dependency data based on flag_names + flag group id
-    #             existing_flag_ids, rc = get_all_flag_ids(flagging_mongo)
-    #             flag_schema_object, fli_rc = get_specific_flag(flag_id=new_flags[0],
-    #                                                            existing_flags=existing_flag_ids,
-    #                                                            flagging_mongo=flagging_mongo)
-    #             if len(flag_schema_object.logic["referenced_flags"]) > 0:
-    #                 referenced_flag_names_in_flag_id = [x["name"] for x in flag_schema_object.logic["referenced_flags"]]
-    #                 referenced_flags = []
-    #                 for x in referenced_flag_names_in_flag_id:
-    #                     referenced_flags.append(ReferencedFlag(flag_name=x, flag_group_id=ObjectId(flag_group_id)))
-    #
-    #                 flag_ids, firc = get_all_flag_ids(flagging_mongo)
-    #                 existing_flag_dep_keys, efdkrc = get_flag_dep_ids(flagging_mongo)
-    #                 flag_name = flagging_mongo.get_flag_name(ObjectId(new_flags[0]))
-    #                 if ObjectId(new_flags[0]) not in existing_flag_dep_keys:
-    #                     flag_schema_object_flag_dep, fdi_rc = create_flag_dependency(flag_id=new_flags[0],
-    #                                                                                  flag_name=flag_name,
-    #                                                                                  flag_group_id=flag_group_id,
-    #                                                                                  existing_flag_ids=flag_ids,
-    #                                                                                  existing_flag_dep_keys=existing_flag_dep_keys,
-    #                                                                                  flag_dependencies=[],
-    #                                                                                  flagging_mongo=flagging_mongo)
-    #                     flag_dep_id = flag_schema_object_flag_dep.uuid
-    #                     existing_flag_dep_keys, efdkrc = get_flag_dep_ids(flagging_mongo)
-    #
-    #
-    #                 else:
-    #                     flag_dep_id = FlaggingMongo.get_specific_flag_dep_id_by_flag_id(ObjectId(new_flags[0]))
-    #
-    #                 updated_flag_dep_id, ufdirc = add_dependencies_to_flag(flag_dep_id=str(flag_dep_id),
-    #                                                                        existing_flag_dep_keys=existing_flag_dep_keys,
-    #                                                                        new_dependencies=referenced_flags,
-    #                                                                        flagging_mongo=flagging_mongo)
-    #
-    #
-    #         #add deps to new flag dep entry
-    #
-    #
-    #
-    #         new_transfer_flag_logic_information = _convert_FLI_to_TFLI(new_flag_logic_information)
-    #         updated_flag_id = flagging_mongo.update_flag(flag=flag_id, update_value=new_transfer_flag_logic_information,
-    #                                                      update_column=flag_logic_col_name)
-    #         flag_id_object = ObjectId(flag_id)
-    #         updated_flag_id = flagging_mongo.update_flag(flag=flag_id_object,
-    #                                                      update_value="DRAFT",
-    #                                                      update_column=flag_status_col_name)
-    #         updated_flag_id = flagging_mongo.update_flag(flag=flag_id_object,
-    #                                                      update_value="ERROR",
-    #                                                      update_column=flag_group_error_col_name)
-    #         specific_flag_name = flagging_mongo.get_flag_name(updated_flag_id)
-    #         specific_flag_logic = flagging_mongo.get_flag_logic_information(updated_flag_id)
-    #         flag_schema_object = FlaggingSchemaInformation(valid=False,
-    #                                                        message="error in flag logic",
-    #                                                        uuid=updated_flag_id,
-    #                                                        name=specific_flag_name,
-    #                                                        logic=specific_flag_logic)
-    #         response_code = 200
-    # if flag_schema_object is None:
-    #     #TODO
-    #     # update flag dependency set
-    #     # remember, flag can only be in one flag group, so only have to update one entry
-    #     # delete previous entry via flag id, create new one
-    #     # delete previous entry via flag id
-    #
-    #
-    #     # create new flag dep entry
-    #
-    #     flag_id_object = ObjectId(flag_id)
-    #     new_transfer_flag_logic_information = _convert_FLI_to_TFLI(new_flag_logic_information)
-    #     updated_flag_id = flagging_mongo.update_flag(flag=flag_id,
-    #                                                  update_value=new_transfer_flag_logic_information,
-    #                                                  update_column=flag_logic_col_name)
-    #     updated_flag_id = flagging_mongo.update_flag(flag=flag_id,
-    #                                                  update_value="PRODUCTION_READY",
-    #                                                  update_column=flag_status_col_name)
-    #     updated_flag_id = flagging_mongo.update_flag(flag=flag_id,
-    #                                                  update_value="",
-    #                                                  update_column=flag_group_error_col_name)
-    #     specific_flag_logic = flagging_mongo.get_flag_logic_information(updated_flag_id)
-    #     specific_flag_name = flagging_mongo.get_flag_name(updated_flag_id)
-    #     flag_schema_object = FlaggingSchemaInformation(valid=True,
-    #                                                    message="logic for flag " + str(
-    #                                                        updated_flag_id) + " has been updated",
-    #                                                    uuid=updated_flag_id,
-    #                                                    name=specific_flag_name,
-    #                                                    logic=specific_flag_logic)
-    #     response_code = 200
+                #update existing flag dep keys
+                existing_flag_dep_keys = flagging_mongo.get_flag_dependencies_ids()
+                updated_flag_dep_id, ufdi_rc = add_dependencies_to_flag(flag_dep_id=str(flag_schema_object_flag_dep.uuid),
+                                                                           existing_flag_dep_keys=existing_flag_dep_keys,
+                                                                           new_dependencies=referenced_flags,
+                                                                           flagging_mongo=flagging_mongo)
+
+            #update flag
+            new_transfer_flag_logic_information = _convert_FLI_to_TFLI(new_flag_logic_information)
+            updated_flag_id = flagging_mongo.update_flag(flag=flag_id, update_value=new_transfer_flag_logic_information,
+                                                         update_column=flag_logic_col_name)
+            flag_id_object = ObjectId(flag_id)
+            updated_flag_id = flagging_mongo.update_flag(flag=flag_id_object,
+                                                         update_value="DRAFT",
+                                                         update_column=flag_status_col_name)
+            updated_flag_id = flagging_mongo.update_flag(flag=flag_id_object,
+                                                         update_value="ERROR",
+                                                         update_column=flag_error_col_name)
+            specific_flag_name = flagging_mongo.get_flag_name(updated_flag_id)
+            specific_flag_logic = flagging_mongo.get_flag_logic_information(updated_flag_id)
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="error in flag logic",
+                                                           uuid=updated_flag_id,
+                                                           name=specific_flag_name,
+                                                           logic=specific_flag_logic)
+            response_code = 200
+        else:
+            # delete previous dep entry
+            flagging_mongo.remove_specific_flag_dependencies_via_flag_id_and_flag_group_id(ObjectId(flag_id),
+                                                                                           ObjectId(flag_group_id))
+
+            # check if flag is part of flag group
+            flag_group_ids = flagging_mongo.get_flag_group_ids()
+            flag_in_flag_group_bool = False
+            if len(flag_group_ids) > 0:
+                for flag_group_idx in flag_group_ids:
+                    flags_in_flag_group_idx = flagging_mongo.get_flag_group_flag(flag_group_idx)
+                    if ObjectId(flag_id) in flags_in_flag_group_x:
+                        flag_in_flag_group_bool = True
+                        flag_group_id = flag_group_idx
+            if flag_in_flag_group_bool:
+                # create new entry flag dep entry for flag_id in flag_group_id
+                flag_name = flagging_mongo.get_flag_name(ObjectId(flag_group_id))
+                flag_ids = flagging_mongo.get_flag_ids()
+                existing_flag_dep_keys = flagging_mongo.get_flag_dependencies_ids()
+                flag_schema_object_flag_dep, fdi_rc = create_flag_dependency(flag_id=flag_id,
+                                                                             flag_name=flag_name,
+                                                                             flag_group_id=flag_group_id,
+                                                                             existing_flag_ids=flag_ids,
+                                                                             existing_flag_dep_keys=existing_flag_dep_keys,
+                                                                             flag_dependencies=[],
+                                                                             flagging_mongo=flagging_mongo)
+
+                # add new referenced flags to flag dependeny entry
+                # check for cyclical errors
+                flag_set = flagging_mongo.get_flag_group_flag()
+                ref_flag_dict = {}
+                for flag in flag_set:
+                    ref_flag_dict[flag] = {CodeLocation(None, None)}
+                referenced_flags_names = [x["name"] for x in
+                                          flagging_mongo.get_flag_logic_information(ObjectId(flag_id))]
+                ref_flag_dict = {}
+                for rf_name in referenced_flags_names:
+                    ref_flag_dict[rf_name] = {CodeLocation(None, None)}
+                flag_logic_cyclical_check = FlagLogicInformation(referenced_flags=ref_flag_dict)
+                validation_results = validate_cyclical_logic(ObjectId(flag_id), flag_group_id,
+                                                             flag_logic_cyclical_check, flagging_mongo)
+                flagging_message = ""
+                if len(validation_results.errors) != 0:
+                    cyclical_errors = []
+                    for k, v in validation_results.errors.items():
+                        if isinstance(v, FlagErrorInformation):
+                            cyclical_errors.append(k)
+                    if len(cyclical_errors) > 0:
+                        if len(cyclical_errors) == 1:
+                            flagging_message = "the following flag dependency resulted in cyclical dependencies: " + \
+                                               str(cyclical_errors[0])
+                        else:
+                            flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
+                                ", ".join(str(x) for x in cyclical_errors))
+                        # update flag group that flag is part of with cyclcial error
+                        flagging_mongo.update_flag_group(ObjectId(flag_group_id), "CYCLICAL ERROR",
+                                                         flag_group_error_col_name)
+
+            # get referenced flags from flag logic information
+            if len(new_flag_logic_information.referenced_flags) > 0:
+                referenced_flags_names_in_flag_id = [x for x in new_flag_logic_information.referenced_flags]
+                referenced_flags = []
+                for x in referenced_flags_names_in_flag_id:
+                    referenced_flags.append(ReferencedFlag(flag_name=x, flag_group_id=flag_group_id))
+
+                # update existing flag dep keys
+                existing_flag_dep_keys = flagging_mongo.get_flag_dependencies_ids()
+                updated_flag_dep_id, ufdi_rc = add_dependencies_to_flag(
+                    flag_dep_id=str(flag_schema_object_flag_dep.uuid),
+                    existing_flag_dep_keys=existing_flag_dep_keys,
+                    new_dependencies=referenced_flags,
+                    flagging_mongo=flagging_mongo)
+
+            # update flag
+            new_transfer_flag_logic_information = _convert_FLI_to_TFLI(new_flag_logic_information)
+            updated_flag_id = flagging_mongo.update_flag(flag=flag_id, update_value=new_transfer_flag_logic_information,
+                                                         update_column=flag_logic_col_name)
+            flag_id_object = ObjectId(flag_id)
+            updated_flag_id = flagging_mongo.update_flag(flag=flag_id_object,
+                                                         update_value="PRODUCTION READY",
+                                                         update_column=flag_status_col_name)
+            updated_flag_id = flagging_mongo.update_flag(flag=flag_id_object,
+                                                         update_value="",
+                                                         update_column=flag_error_col_name)
+            specific_flag_logic = flagging_mongo.get_flag_logic_information(updated_flag_id)
+            specific_flag_name = flagging_mongo.get_flag_name(updated_flag_id)
+            flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                           message="logic for flag " + str(
+                                                               updated_flag_id) + " has been updated",
+                                                           uuid=updated_flag_id,
+                                                           name=specific_flag_name,
+                                                           logic=specific_flag_logic)
+            response_code = 200
     return flag_schema_object, response_code
 
 #A call to delete a flag provided a UUID, return true/false
