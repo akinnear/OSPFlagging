@@ -296,8 +296,8 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
 @app.route("/flag_dependency", methods=["GET"])
 @app.route("/flag_dependency/<string:function>", methods=["GET", "POST", "PUT"])
 @app.route("/flag_dependency/<string:function>/<string:flag_id>", methods=["GET", "POST", "PUT"])
-@app.route("/flag_dependency/<string:function>/<string:flag_id>/<string:flag_dep_id>", methods=["GET", "POST", "PUT"])
-def flag_dependency_action(function=None, flag_id=None, flag_dep_id=None):
+@app.route("/flag_dependency/<string:function>/<string:flag_id>/<string:flag_group_id/<string:flag_dep_id>", methods=["GET", "POST", "PUT"])
+def flag_dependency_action(function=None, flag_id=None, flag_group_id=None, flag_dep_id=None):
     if function is None:
         return redirect(flag_dependencies_home_page)
     else:
@@ -309,48 +309,12 @@ def flag_dependency_action(function=None, flag_id=None, flag_dep_id=None):
 
         if function == "get_specific_flag_dependency":
             existing_flag_dep_ids, response_code_ids = get_flag_dep_ids(flagging_mongo)
-            flag_schema_object, response_code = get_specific_flag_dependency(flag_id, existing_flag_dep_ids, flagging_mongo)
+            flag_schema_object, response_code = get_specific_flag_dependency(flag_dep_id, existing_flag_dep_ids, flagging_mongo)
             data = {"valid": flag_schema_object.valid,
                     "message": flag_schema_object.message,
                     "uuid": str(flag_schema_object.uuid),
                     "flag_dep_flags": flag_schema_object.logic}
             return jsonify(data), response_code
-
-        if function == "create_flag_dependency":
-            existing_flag_dep_ids, response_code_dep_ids = get_flag_dep_ids(flagging_mongo)
-            existing_flag_ids, response_code_flag_ids = get_all_flag_ids(flagging_mongo)
-            flag_schema_object, response_code = create_flag_dependency(flag_id, existing_flag_ids, existing_flag_dep_ids, [], flagging_mongo)
-            data = {"valid": flag_schema_object.valid,
-                    "message": flag_schema_object.message,
-                    "uuid": str(flag_schema_object.uuid),
-                    "flag_dep_flags": flag_schema_object.logic}
-            return jsonify(data), response_code
-
-
-        if function == "delete_flag_dependency":
-            existing_flag_deps = get_flag_dependencies(flagging_mongo)
-            return(delete_flag_dependency(flag_id, existing_flag_deps, flagging_mongo))
-
-        if function == "add_dependencies_to_flag":
-            #TODO
-            # need to get dependent flags
-            # new_dependencies
-
-            new_dependencies = pull_flag_names(dummy_flag_names=["FLAG1A"])
-            existing_flag_dep_keys = get_flag_dependencies(flagging_mongo)
-            return(add_dependencies_to_flag(flag_id, existing_flag_dep_keys,
-                                            new_dependencies, flagging_mongo))
-
-        if function == "remove_dependencies_from_flag":
-            #TODO
-            # need to get dependent flags
-            # rm_dependencies
-
-            rm_dependencies = pull_flag_names(dummy_flag_names=["FLAG1A"])
-            existing_flag_dep_keys = get_flag_dependencies(flagging_mongo)
-            return(remove_dependencies_from_flag(flag_id, existing_flag_dep_keys,
-                                                 rm_dependencies, flagging_mongo))
-
         else:
             return redirect(flag_dependencies_home_page)
 
