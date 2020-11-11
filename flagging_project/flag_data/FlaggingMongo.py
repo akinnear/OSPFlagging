@@ -238,11 +238,11 @@ class FlaggingMongo:
         new_flag_dep = flagging.insert_one(flag).inserted_id
         return new_flag_dep
 
-    def remove_flag_dependencies(self, flag):
+    def remove_flag_dependencies(self, flag_dep_id):
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        modified_flag_id = flagging_dependencies.remove({flag_id: flag})[flag_id]
-        return modified_flag_id
+        flagging_dependencies.remove({"_id": flag_dep_id})
+        return flag_dep_id
 
     def get_specific_flag_dependencies(self, flag):
         db = self.client[FLAGGING_DATABASE]
@@ -256,10 +256,10 @@ class FlaggingMongo:
         flag_dep_key = flagging_dependencies.find_one({"FLAG_ID": flag})
         return flag_dep_key
 
-    def get_specific_flag_dep_id_by_flag_id_and_flag_group_id(self, flag, flag_group_id):
+    def get_specific_flag_dep_id_by_flag_id_and_flag_group_id(self, flag_id, flag_group_id):
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        flag_dep_key = flagging_dependencies.find_one({"FLAG_ID": flag,
+        flag_dep_key = flagging_dependencies.find_one({flag_dep_flag_id_col_name: flag_id,
                                                        flag_dep_flag_group_id_col_name: flag_group_id})
         return flag_dep_key
 
@@ -267,6 +267,12 @@ class FlaggingMongo:
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
         flag_deps = list(flagging_dependencies.find({flag_dep_flag_group_id_col_name: flag_group_id}))
+        return flag_deps
+
+    def get_flag_dep_by_flag_id(self, flag_id):
+        db = self.client[FLAGGING_DATABASE]
+        flagging_dependencies = db[FLAG_DEPENDENCIES]
+        flag_deps = list(flagging_dependencies.find({flag_dep_flag_id_col_name: flag_id}))
         return flag_deps
 
     def add_specific_flag_dependencies(self, flag, new_deps: [], dependent_flag_column):
@@ -309,6 +315,7 @@ class FlaggingMongo:
                             flag_dep_flag_group_id_col_name: flag_group_id}))
         for rm_id in [x["_id"] for x in flag_deps_flag_rm_list]:
             flagging_dependencies.remove({flag_dep_id: rm_id})
+        return [x["_id"] for x in flag_deps_flag_rm_list]
 
     def remove_specific_flag_dependencies_via_flag_id(self, flag):
         db = self.client[FLAGGING_DATABASE]
@@ -316,13 +323,15 @@ class FlaggingMongo:
         flag_deps_flag_rm_list = list(flagging_dependencies.find({flag_dep_flag_id_col_name: flag}))
         for rm_id in [x["_id"] for x in flag_deps_flag_rm_list]:
             flagging_dependencies.remove({flag_dep_id: rm_id})
+        return [x["_id"] for x in flag_deps_flag_rm_list]
 
-    def remove_specific_flag_dependencies_via_flag_group_id(self, flag_group):
+    def remove_specific_flag_dependencies_via_flag_group_id(self, flag_group_id):
         db = self.client[FLAGGING_DATABASE]
         flagging_dependencies = db[FLAG_DEPENDENCIES]
         flag_deps_flag_rm_list = list(flagging_dependencies.find({flag_dep_flag_group_id_col_name: flag_group_id}))
         for rm_id in [x["_id"] for x in flag_deps_flag_rm_list]:
             flagging_dependencies.remove({flag_dep_id: rm_id})
+        return [x["_id"] for x in flag_deps_flag_rm_list]
 
 
 
