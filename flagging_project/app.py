@@ -79,6 +79,7 @@ def flag_action(function=None, flag_id=None, flag_name=None):
             flag_schema_object, response_code = get_specific_flag(flag_id, existing_flag_ids, flagging_mongo)
             data = {"valid": flag_schema_object.valid,
                      "message": flag_schema_object.message,
+                     "simple_message": flag_schema_object.simple_message,
                      "uuid": str(flag_schema_object.uuid),
                      "flag_name": flag_schema_object.name,
                      "flag_logic": flag_schema_object.logic}
@@ -124,6 +125,7 @@ def flag_action(function=None, flag_id=None, flag_name=None):
             flag_schema_object, response_code = create_flag(flag_name, flag_info, flagging_mongo)
             data = {"valid": flag_schema_object.valid,
                      "message": flag_schema_object.message,
+                     "simple_message": flag_schema_object.simple_message,
                      "uuid": str(flag_schema_object.uuid),
                      "flag_name": flag_schema_object.name,
                      "flag_logic": flag_schema_object.logic}
@@ -134,6 +136,7 @@ def flag_action(function=None, flag_id=None, flag_name=None):
             flag_schema_object, response_code = update_flag_name(flag_id, flag_name, existing_flag_ids, flagging_mongo)
             data = {"valid": flag_schema_object.valid,
                      "message": flag_schema_object.message,
+                     "simple_message": flag_schema_object.simple_message,
                      "uuid": str(flag_schema_object.uuid),
                      "flag_name": flag_schema_object.name,
                      "flag_logic": flag_schema_object.logic}
@@ -151,6 +154,7 @@ def flag_action(function=None, flag_id=None, flag_name=None):
             flag_schema_object, response_code = update_flag_logic(flag_id, flag_info, existing_flag_ids, flagging_mongo)
             data = {"valid": flag_schema_object.valid,
                      "message": flag_schema_object.message,
+                     "simple_message": flag_schema_object.simple_message,
                      "uuid": str(flag_schema_object.uuid),
                      "flag_name": flag_schema_object.name,
                      "flag_logic": flag_schema_object.logic}
@@ -161,6 +165,7 @@ def flag_action(function=None, flag_id=None, flag_name=None):
             flag_schema_object, response_code = delete_flag(flag_id, existing_flag_ids, flagging_mongo)
             data = {"valid": flag_schema_object.valid,
                      "message": flag_schema_object.message,
+                     "simple_message": flag_schema_object.simple_message,
                      "uuid": str(flag_schema_object.uuid),
                      "flag_name": flag_schema_object.name,
                      "flag_logic": flag_schema_object.logic}
@@ -171,6 +176,7 @@ def flag_action(function=None, flag_id=None, flag_name=None):
             flag_schema_object, response_code = duplicate_flag(flag_id, existing_flag_ids, flagging_mongo)
             data = {"valid": flag_schema_object.valid,
                      "message": flag_schema_object.message,
+                     "simple_message": flag_schema_object.simple_message,
                      "uuid": str(flag_schema_object.uuid),
                      "flag_name": flag_schema_object.name,
                      "flag_logic": flag_schema_object.logic}
@@ -181,6 +187,7 @@ def flag_action(function=None, flag_id=None, flag_name=None):
             flag_schema_object, response_code = move_flag_to_production(flag_id, existing_flag_ids, flagging_mongo)
             data = {"valid": flag_schema_object.valid,
                     "message": flag_schema_object.message,
+                    "simple_message": flag_schema_object.simple_message,
                     "uuid": str(flag_schema_object.uuid),
                     "name": flag_schema_object.name,
                     "logic": flag_schema_object.logic}
@@ -212,6 +219,7 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
             flag_schema_object, response_code = get_specific_flag_group(flag_group_id, existing_flag_groups, flagging_mongo)
             data = {"valid": flag_schema_object.valid,
                      "message": flag_schema_object.message,
+                     "simple_message": flag_schema_object.simple_message,
                      "uuid": str(flag_schema_object.uuid),
                      "flags_in_flag_group": flag_schema_object.logic,
                      "flag_group_name": flag_schema_object.name}
@@ -226,8 +234,10 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
             flag_schema_object, response_code = create_flag_group(flag_group_name, flag_groups_names, flagging_mongo)
             data = {"valid": flag_schema_object.valid,
                     "message": flag_schema_object.message,
+                    "simple_message": flag_schema_object.simple_message,
                     "uuid": str(flag_schema_object.uuid),
-                    "flag_group_name": flag_schema_object.name}
+                    "flag_group_name": flag_schema_object.name,
+                    "fso_logic": flag_schema_object.logic}
             return jsonify(data), response_code
 
         if function == "delete_flag_group":
@@ -235,7 +245,10 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
             flag_schema_object, response_code = delete_flag_group(flag_group_id, existing_flag_groups, flagging_mongo)
             data = {"valid": flag_schema_object.valid,
                      "message": flag_schema_object.message,
-                     "uuid": str(flag_schema_object.uuid)}
+                     "simple_message": flag_schema_object.simple_message,
+                     "fso_name": flag_schema_object.name,
+                     "uuid": str(flag_schema_object.uuid),
+                     "fso_logic": flag_schema_object.logic}
             return jsonify(data), response_code
 
         if function == "add_flag_to_flag_group":
@@ -254,8 +267,10 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
                 response_code = 401
             data = {"valid": flag_schema_object.valid,
                     "message": flag_schema_object.message,
+                    "simple_message": flag_schema_object.simple_message,
                     "uuid": str(flag_schema_object.uuid),
-                    "name": flag_schema_object.name}
+                    "name": flag_schema_object.name,
+                    "fso_logic": flag_schema_object.logic}
             return jsonify(data), response_code
 
         if function == "remove_flag_from_flag_group":
@@ -269,7 +284,10 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
                                                flags_in_flag_group=flags_in_flag_group, flagging_mongo=flagging_mongo)
             data = {"valid": flag_schema_object.valid,
                     "message": flag_schema_object.message,
-                    "uuid": str(flag_schema_object.uuid)}
+                    "simple_message": flag_schema_object.simple_message,
+                    "uuid": str(flag_schema_object.uuid),
+                    "fso_name": flag_schema_object.name,
+                    "fso_logic": flag_schema_object.logic}
             return jsonify(data), response_code
 
         if function == "duplicate_flag_group":
@@ -277,8 +295,10 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
             flag_schema_object, response_code = duplicate_flag_group(flag_group_id, existing_flag_groups, flag_group_name, flagging_mongo)
             data = {"valid": flag_schema_object.valid,
                     "message": flag_schema_object.message,
+                    "simple_message": flag_schema_object.simple_message,
                     "uuid": str(flag_schema_object.uuid),
-                    "name": flag_schema_object.name}
+                    "name": flag_schema_object.name,
+                    "fso_logic": flag_schema_object.logic}
             return jsonify(data), response_code
 
         if function == "move_flag_group_to_production":
@@ -286,8 +306,10 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
             flag_schema_object, response_code = move_flag_group_to_production(flag_group_id, existing_flag_groups, flagging_mongo)
             data = {"valid": flag_schema_object.valid,
                     "message": flag_schema_object.message,
+                    "simple_message": flag_schema_object.simple_message,
                     "uuid": str(flag_schema_object.uuid),
-                    "name": flag_schema_object.name}
+                    "name": flag_schema_object.name,
+                    "fso_logic": flag_schema_object.logic}
             return jsonify(data), response_code
         else:
              return redirect("/flag_group")
@@ -311,7 +333,9 @@ def flag_dependency_action(function=None, flag_dep_id=None):
             flag_schema_object, response_code = get_specific_flag_dependency(flag_dep_id, existing_flag_dep_ids, flagging_mongo)
             data = {"valid": flag_schema_object.valid,
                     "message": flag_schema_object.message,
+                    "simple_message": flag_schema_object.simple_message,
                     "uuid": str(flag_schema_object.uuid),
+                    "fso_name": flag_schema_object.name,
                     "flag_dep_flags": flag_schema_object.logic}
             return jsonify(data), response_code
         else:
