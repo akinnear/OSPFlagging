@@ -23,10 +23,9 @@ from flagging.ErrorInformation import ErrorInformation
 app = Flask(__name__)
 # app.register_blueprint(flag_api)
 
-
-
 #configure secret key
 app.secret_key = os.urandom(24).hex()
+
 
 def _create_flagging_mongo():
     return FlaggingMongo("mongodb://localhost:27017/flagging")
@@ -46,9 +45,9 @@ def flag_home_page():
 def flag_group_home_page():
     return "flag group home page to go here"
 
-@app.route("/flag_dependencies")
+@app.route("/flag_dependency")
 def flag_dependencies_home_page():
-    return "flag dependencies home page to go here"
+    return "flag dependency home page to go here"
 
 
 #flags
@@ -57,6 +56,7 @@ def flag_dependencies_home_page():
 @app.route("/flag/<string:function>/<string:flag_id>", methods=["GET"])
 @app.route("/flag/<string:function>/<string:flag_id>/<string:flag_name>", methods=["GET", "POST", "PUT"])
 def flag_action(function=None, flag_id=None, flag_name=None):
+    flagging_mongo = _create_flagging_mongo()
     if function is None:
         #route to flag home page
         return redirect(flag_home_page)
@@ -203,6 +203,7 @@ def flag_action(function=None, flag_id=None, flag_name=None):
 @app.route("/flag_group/<string:function>/<string:flag_group_id>/<string:flag_group_name>", methods=["GET", "POST", "PUT"])
 @app.route("/flag_group/<string:function>/<string:flag_group_id>/<string:flag_group_name>/<string:flag_id>", methods=["GET", "POST", "PUT"])
 def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, flag_id=None):
+    flagging_mongo = _create_flagging_mongo()
     if function is None:
         #route to flag home pag
         return redirect(flag_group_home_page)
@@ -319,6 +320,7 @@ def flag_group_action(function=None, flag_group_id=None, flag_group_name=None, f
 @app.route("/flag_dependency/<string:function>", methods=["GET", "POST", "PUT"])
 @app.route("/flag_dependency/<string:function>/<string:flag_dep_id>", methods=["GET", "POST", "PUT"])
 def flag_dependency_action(function=None, flag_dep_id=None):
+    flagging_mongo = _create_flagging_mongo()
     if function is None:
         return redirect(flag_dependencies_home_page)
     else:
@@ -344,5 +346,7 @@ def flag_dependency_action(function=None, flag_dep_id=None):
 
 #housekeeeping
 if __name__ == "__main__":
-    flagging_mongo = _create_flagging_mongo()
     app.run(debug=True)
+
+
+
