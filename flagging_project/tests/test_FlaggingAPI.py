@@ -65,29 +65,28 @@ def test_get_flag_ids_no_flag_ids(client):
     assert str_data == '{"_ids":[]}'
     assert response.status_code == 200
 
-#get specific flag
-#id does not exist
+#get specific flag, id does not exist
 def test_get_specific_flag_does_not_exist(client):
     url = '/flag/get_specific_flag/111111111111111111111111'
 
     response = client.get(url)
     assert response.status_code == 404
 
-#no id
+#get specific flag, no id
 def test_get_specific_flag_missing_id(client):
     url = "/flag/get_specific_flag"
 
     response = client.get(url)
     assert response.status_code == 401
 
-#id not valid
+#get specifif flag, id not valid
 def test_get_specific_flag_invalid_id(client):
     url = "flag/get_specific_flag/123"
 
     response = client.get(url)
     assert response.status_code == 406
 
-#valid id, have to create flag first
+#get specific flag, valid id, have to create flag first
 def test_get_specific_flag_id_valid(client):
     #delete all flags first
     flag_deletion_url = "flag/delete_all_flags"
