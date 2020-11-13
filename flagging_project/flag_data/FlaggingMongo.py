@@ -123,7 +123,7 @@ class FlaggingMongo:
     def delete_all_flags(self):
         db = get_db(self)
         flagging = db[FLAGGING_COLLECTION]
-        flagging.delete({})
+        flagging.delete_many({})
 
 
     #flag groups
@@ -217,7 +217,7 @@ class FlaggingMongo:
     def delete_all_flag_groups(self):
         db = get_db(self)
         flag_groups = db[FLAG_GROUPS]
-        flag_groups.delete({})
+        flag_groups.delete_many({})
 
     #flag dependencies
     '''
@@ -368,7 +368,7 @@ class FlaggingMongo:
     def delete_all_flag_dependencies(self):
         db = get_db(self)
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        flagging_dependencies.delete({})
+        flagging_dependencies.delete_many({})
 
 def get_db(flagging_mongo):
     print('in get_db')
