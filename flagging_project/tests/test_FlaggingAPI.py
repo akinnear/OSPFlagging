@@ -57,7 +57,6 @@ def test_get_flag_ids_no_flag_ids(client):
     assert response.status_code == 200
 
 #get specific flag
-
 #id does not exist
 def test_get_specific_flag_does_not_exist(client):
     url = '/flag/get_specific_flag/111111111111111111111111'
@@ -81,9 +80,13 @@ def test_get_specific_flag_invalid_id(client):
 
 #valid id, have to create flag first
 def test_get_specific_flag_id_valid(client):
+    #delete all flags first
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
+
     #create valid flag first
     flag_creation_url = "flag/create_flag/XX/Flag1A"
-
     response = client.post(flag_creation_url)
     assert response.status_code == 200
 
@@ -95,7 +98,11 @@ def test_get_specific_flag_id_valid(client):
     #unpack flag id
     x = response.get_data().decode("utf-8")
     id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
-    print("hello")
+    #call valid get specific flag
+    specific_flag_url = "flag/get_specific_flag/" + id
+    response = client.get(specific_flag_url)
+    assert response.status_code == 200
+
 
 
 
