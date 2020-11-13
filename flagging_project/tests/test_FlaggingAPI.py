@@ -8,16 +8,16 @@ from app import _create_flagging_mongo
 import json
 import re
 
-def make_flag_data_pretty(payload):
-    data = payload.split("\\")
-    my_dict = {}
-    keys = ["valid", "message", "simple_message", "uuid", "flag_name", "flag_logic"]
-    for i in range(0, len(data)):
-        if data[i] in keys:
-            my_dict[data[i]] = ""
-            j = i
-        else:
-            my_dict[data[j]] = data[i]
+# def make_flag_data_pretty(payload):
+#     data = payload.split("\\")
+#     my_dict = {}
+#     keys = ["valid", "message", "simple_message", "uuid", "flag_name", "flag_logic"]
+#     for i in range(0, len(data)):
+#         if data[i] in keys:
+#             my_dict[data[i]] = ""
+#             j = i
+#         else:
+#             my_dict[data[j]] = data[i]
 
 
 @pytest.fixture
@@ -39,8 +39,12 @@ def test_flag_home(client):
     assert response.status_code == 200
 
 def test_get_flags_no_flags(client):
-    url = '/flag/get_flags'
+    # delete all flags
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
 
+    url = '/flag/get_flags'
     response = client.get(url)
     data = response.get_data()
     str_data = data.decode("utf-8").replace("\n","")
@@ -48,8 +52,12 @@ def test_get_flags_no_flags(client):
     assert response.status_code == 200
 
 def test_get_flag_ids_no_flag_ids(client):
-    url = '/flag/get_flag_ids'
+    # delete all flags
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
 
+    url = '/flag/get_flag_ids'
     response = client.get(url)
     data = response.get_data()
     str_data = data.decode("utf-8").replace("\n", "")
@@ -103,21 +111,52 @@ def test_get_specific_flag_id_valid(client):
     response = client.get(specific_flag_url)
     assert response.status_code == 200
 
+    #delete all flags
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
 
 
 
-#
-# def test_flag_home(client):
-#     res = client.get('/flag')
-#     assert res.status_code == 200
-#     assert str(res.get_data()) == """b'flag home page to go here'"""
-#
-# def test_flag_group_home(client):
-#     res = client.get("/flag_group")
-#     assert res.status_code == 200
-#     assert str(res.get_data()) == """b'flag group home page to go here'"""
-#
-# def test_flag_dependencies_home(client):
-#     res = client.get("/flag_dependency")
-#     assert res.status_code == 200
-#     assert str(res.get_data()) == """b'flag dependency home page to go here'"""
+#create flag, missing flag name
+def create_flag_missing_flag_name_1(client):
+    # delete all flags
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
+
+    #create flag, no name
+    flag_creation_url = "flag/create_flag"
+    response = client.post(flag_creation_url)
+    assert response.status_code == 401
+
+
+def create_flag_missing_flag_name_2(client):
+    # delete all flags
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
+
+    # create flag, no name
+    flag_creation_url = "flag/create_flag/XX"
+    response = client.post(flag_creation_url)
+    assert response.status_code == 401
+
+
+#create flag, valid
+def create_flag_valid(client):
+    # delete all flags
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
+
+    # create flag
+    flag_creation_url = "flag/create_flag/XX/Flag1A"
+    response = client.post(flag_creation_url)
+    assert response.status_code == 200
+
+    # delete all flags
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
+
