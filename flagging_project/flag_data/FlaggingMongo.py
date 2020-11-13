@@ -365,7 +365,7 @@ class FlaggingMongo:
         flag_deps = flagging_dependencies.find_one({flag_id: flag})[flag_dep_dep_flags_col_name]
         return flag_deps
 
-    def delete_all_flag_depdencies(self):
+    def delete_all_flag_dependencies(self):
         db = get_db(self)
         flagging_dependencies = db[FLAG_DEPENDENCIES]
         flagging_dependencies.delete({})

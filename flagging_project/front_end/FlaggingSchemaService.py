@@ -549,6 +549,14 @@ def move_flag_to_production(flag_id, existing_flags, flagging_mongo):
         response_code = 200
     return flag_schema_object, response_code
 
+#A call to delete all
+def delete_all_flags(flagging_mongo):
+    flagging_mongo.delete_all_flags()
+    flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                   message="all flags have been deleted",
+                                                   simple_message="all flags have been deleted")
+    return flag_schema_object, 200
+
 #FLAG_GROUP
 #get flag_groups
 def get_flag_groups(flagging_mongo: FlaggingMongo):
@@ -1134,6 +1142,14 @@ def move_flag_group_to_production(flag_group_id, existing_flag_groups, flagging_
         response_code = 200
     return flag_schema_object, response_code
 
+#A call to delete all flag groups
+def delete_all_flag_groups(flagging_mongo):
+    flagging_mongo.delete_all_flag_groups()
+    flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                   message="all flag groups have been deleted",
+                                                   simple_message="all flag groups have been deleted")
+    return flag_schema_object, 200
+
 
 
 #FLAG DEPENDENCY
@@ -1347,7 +1363,13 @@ def remove_dependencies_from_flag(flag_dep_id, existing_flag_dep_keys: [], rm_de
         response_code = 200
     return flag_schema_object, response_code
 
-
+#A call to delete all flag dependencies
+def delete_all_flag_dependencies(flagging_mongo):
+    flagging_mongo.delete_all_flag_dependencies()
+    flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                   message="all flag dependencies have been deleted",
+                                                   simple_message="all flag dependencies have been deleted")
+    return flag_schema_object, 200
 
 
 

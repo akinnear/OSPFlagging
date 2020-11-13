@@ -6,7 +6,7 @@ from front_end.FlaggingSchemaService import get_all_flags, get_specific_flag, \
     duplicate_flag_group, create_flag_dependency, delete_flag_dependency, add_dependencies_to_flag, \
     remove_dependencies_from_flag, get_all_flag_ids, get_flag_group_ids, get_flag_group_names, \
     get_flag_group_flags, get_flag_names_in_flag_group, get_flag_dep_ids, move_flag_group_to_production, \
-    move_flag_to_production
+    move_flag_to_production, delete_all_flags, delete_all_flag_groups, delete_all_flag_dependencies
 from flagging.FlagLogicInformation import FlagLogicInformation
 from flag_names.FlagService import pull_flag_names_in_flag_group, pull_flag_names, pull_flag_logic_information
 from front_end.FlaggingSchemaInformation import FlaggingSchemaInformation
@@ -177,6 +177,16 @@ def make_routes(app, flagging_mongo):
                         "logic": flag_schema_object.logic}
                 return jsonify(data), response_code
 
+            if function == "delete_all_flags":
+                flag_schema_object, response_code = delete_all_flags(flagging_mongo)
+                data = {"valid": flag_schema_object.valid,
+                        "message": flag_schema_object.message,
+                        "simple_message": flag_schema_object.simple_message,
+                        "uuid": str(flag_schema_object.uuid),
+                        "name": flag_schema_object.name,
+                        "logic": flag_schema_object.logic}
+                return jsonify(data), response_code
+
             else:
                 return redirect("/flag")
 
@@ -314,6 +324,16 @@ def make_routes(app, flagging_mongo):
                         "name": flag_schema_object.name,
                         "fso_logic": flag_schema_object.logic}
                 return jsonify(data), response_code
+
+            if function == "delete_all_flag_groups":
+                flag_schema_object, response_code = delete_all_flag_groups(flagging_mongo)
+                data = {"valid": flag_schema_object.valid,
+                        "message": flag_schema_object.message,
+                        "simple_message": flag_schema_object.simple_message,
+                        "uuid": str(flag_schema_object.uuid),
+                        "name": flag_schema_object.name,
+                        "fso_logic": flag_schema_object.logic}
+                return jsonify(data), response_code
             else:
                 return redirect("/flag_group")
 
@@ -343,5 +363,16 @@ def make_routes(app, flagging_mongo):
                         "fso_name": flag_schema_object.name,
                         "flag_dep_flags": flag_schema_object.logic}
                 return jsonify(data), response_code
+
+            if function == "delete_all_flag_dependencies":
+                flag_schema_object, response_code = delete_all_flag_dependencies(flagging_mongo)
+                data = {"valid": flag_schema_object.valid,
+                        "message": flag_schema_object.message,
+                        "simple_message": flag_schema_object.simple_message,
+                        "uuid": str(flag_schema_object.uuid),
+                        "fso_name": flag_schema_object.name,
+                        "flag_dep_flags": flag_schema_object.logic}
+                return jsonify(data), response_code
+
             else:
                 return redirect(flag_dependencies_home_page)
