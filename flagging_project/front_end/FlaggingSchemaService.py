@@ -75,9 +75,6 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
     flag_schema_object = None
     #store flag name and flag logic in db
 
-    #call databse to get id based on name
-
-
     if flag_schema_object is None:
         if flag_name is None:
             # return error message, no flag name specified
@@ -106,9 +103,6 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
                                                            logic=specific_flag_logic)
             response_code = 200
     if flag_schema_object is None:
-        #TODO
-        # create flag dependency set
-
         transfer_flag_logic_information = _convert_FLI_to_TFLI(flag_logic_information)
         add_flag_id = flagging_mongo.add_flag({flag_name_col_name: flag_name,
                                                flag_logic_col_name: transfer_flag_logic_information,
