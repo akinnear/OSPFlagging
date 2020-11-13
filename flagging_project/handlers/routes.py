@@ -34,7 +34,7 @@ def make_routes(app, flagging_mongo):
     # flags
     @app.route("/flag", methods=["GET"])
     @app.route("/flag/<string:function>", methods=["GET", "POST", "PUT", "DELETE"])
-    @app.route("/flag/<string:function>/<string:flag_id>", methods=["GET"])
+    @app.route("/flag/<string:function>/<string:flag_id>", methods=["GET", "POST"])
     @app.route("/flag/<string:function>/<string:flag_id>/<string:flag_name>", methods=["GET", "POST", "PUT"])
     def flag_action(function=None, flag_id=None, flag_name=None):
         # flagging_mongo = _create_flagging_mongo()
