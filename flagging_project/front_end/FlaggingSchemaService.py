@@ -461,11 +461,20 @@ def delete_flag(flag_id, existing_flags, flagging_mongo: FlaggingMongo):
         response_code = 401
     #check if primary_key exists in db
     if flag_schema_object is None:
-        if ObjectId(flag_id) not in existing_flags:
+        try:
+            if ObjectId(flag_id) not in existing_flags:
+                flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                               message="flag id specified does not exist",
+                                                               simple_message="flag id does not exist")
+                response_code = 404
+        except Exception as e:
+            print(e)
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag id specified does not exist",
-                                                           simple_message="flag id does not exist")
-            response_code = 404
+                                                           message="error converting: " + str(
+                                                               flag_id) + " to object Id type",
+                                                           simple_message="error in deleting flag")
+            response_code = 406
+
 
     if flag_schema_object is None:
         flag_group_ids = flagging_mongo.get_flag_group_ids()
