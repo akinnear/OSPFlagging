@@ -267,7 +267,7 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                 response_code = 405
 
     if flag_schema_object is None:
-        validation_results = validate_logic(flag_id, None, new_flag_logic_information, flagging_mongo)
+        validation_results = validate_logic(flag_id, new_flag_logic_information, flagging_mongo)
         if validation_results.errors != {} or validation_results.mypy_errors != {}:
             #delete previous dep entry
             flagging_mongo.remove_specific_flag_dependencies_via_flag_id_and_flag_group_id(ObjectId(flag_id), ObjectId(flag_group_id))
