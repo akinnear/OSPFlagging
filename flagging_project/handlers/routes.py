@@ -211,6 +211,12 @@ def make_routes(app, flagging_mongo):
                 data = {'flags_groups': flag_groups}
                 return jsonify(data), response_code
 
+            if function == "get_flag_group_ids":
+                flag_group_ids, response_code = get_flag_group_ids(flagging_mongo)
+                flag_group_ids = [str(x) for x in flag_group_ids]
+                data = {'flags_group_ids': flag_group_ids}
+                return jsonify(data), response_code
+
             if function == "get_specific_flag_group":
                 existing_flag_groups, response_code_id = get_flag_group_ids(flagging_mongo)
                 flag_schema_object, response_code = get_specific_flag_group(flag_group_id, existing_flag_groups,
