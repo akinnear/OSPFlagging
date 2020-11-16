@@ -247,7 +247,7 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="error converting: " + str(flag_id) + " to object Id type",
                                                            simple_message="error in updating flag logic")
-            response_code = 401
+            response_code = 406
     if flag_schema_object is None:
         flag_group_ids = flagging_mongo.get_flag_group_ids()
         flags_in_flag_group = dict()
