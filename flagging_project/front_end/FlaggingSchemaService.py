@@ -600,14 +600,13 @@ def get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_mongo):
         except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="error in getting flags for flag group " + flag_group_id,
-                                                           simple_message="error pulling flags for flag group",
-                                                           uuid=ObjectId(flag_group_id))
+                                                           simple_message="error pulling flags for flag group")
             response_code = 406
     if flag_schema_object is None:
         flags_in_flag_group = flagging_mongo.get_flag_group_flag(ObjectId(flag_group_id))
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        logic=flags_in_flag_group,
-                                                       message="return flags for flag group",
+                                                       message="return flags for flag group" + flag_group_id,
                                                        simple_message="return flags for flag group",
                                                        uuid=ObjectId(flag_group_id),
                                                        name=flagging_mongo.get_flag_group_name(ObjectId(flag_group_id)))
