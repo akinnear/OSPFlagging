@@ -167,7 +167,7 @@ def make_routes(app, flagging_mongo):
                 return jsonify(data), response_code
 
             if function == "move_flag_to_production":
-                existing_flag_ids, repsonse_code_ids = get_all_flag_ids(flagging_mongo)
+                existing_flag_ids, response_code_ids = get_all_flag_ids(flagging_mongo)
                 flag_schema_object, response_code = move_flag_to_production(flag_id, existing_flag_ids, flagging_mongo)
                 data = {"valid": flag_schema_object.valid,
                         "message": flag_schema_object.message,

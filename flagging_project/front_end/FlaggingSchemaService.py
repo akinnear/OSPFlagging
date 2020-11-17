@@ -519,13 +519,20 @@ def move_flag_to_production(flag_id, existing_flags, flagging_mongo):
                                                            simple_message="user must specifiy flag id")
             response_code = 401
     if flag_schema_object is None:
-        if ObjectId(flag_id) not in existing_flags:
+        try:
+            if ObjectId(flag_id) not in existing_flags:
+                flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                               message="flag id: " + flag_id + " does not exist",
+                                                               simple_message="flag id does not exist",
+                                                               uuid=ObjectId(flag_id),
+                                                               name=None)
+                response_code = 404
+        except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag id: " + flag_id + " does not exist",
-                                                           simple_message="flag id does not exist",
-                                                           uuid=ObjectId(flag_id),
-                                                           name=flagging_mongo.get_flag_name(ObjectId(flag_id)))
-            response_code = 404
+                                                           message="error converting: " + str(
+                                                               flag_id) + " to object Id type",
+                                                           simple_message="error moving flag to production")
+            response_code = 406
 
     if flag_schema_object is None:
         #only flags with no errors can be moved to production

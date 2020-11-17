@@ -926,6 +926,121 @@ def test_delete_flag_valid(client):
     response = client.delete(flag_deletion_url)
     assert response.status_code == 200
 
+#move flag to production, missing id
+def test_move_flag_to_production_missing_id(client):
+    # delete all flags
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
+
+    # create flag
+    flag_creation_url = "flag/create_flag/XX/Flag1A"
+    response = client.post(flag_creation_url)
+    assert response.status_code == 200
+
+    #move to production
+    flag_production_url = "flag/move_flag_to_production"
+    response = client.put(flag_production_url)
+    assert response.status_code == 401
+
+    # delete all flags
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
+
+#move flag to production, id does not exist
+def test_move_flag_to_production_id_no_exist(client):
+    # delete all flags
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
+
+    # create flag
+    flag_creation_url = "flag/create_flag/XX/Flag1A"
+    response = client.post(flag_creation_url)
+    assert response.status_code == 200
+
+    # get id
+    flag_id_get_url = "flag/get_flag_ids"
+    response = client.get(flag_id_get_url)
+    assert response.status_code == 200
+
+    # unpack flag id
+    x = response.get_data().decode("utf-8")
+    id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+
+    #generate new id
+    new_id = str(generate())
+    while id == new_id:
+        new_id = str(generate())
+
+    #move to production
+    flag_production_url = "flag/move_flag_to_production/" + new_id
+    response = client.put(flag_production_url)
+    assert response.status_code == 404
+
+    # delete all flags
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
+
+
+#move flag to production, invalid id
+def test_move_flag_to_production_invalid_id(client):
+    # delete all flags
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
+
+    # create flag
+    flag_creation_url = "flag/create_flag/XX/Flag1A"
+    response = client.post(flag_creation_url)
+    assert response.status_code == 200
+
+    #flag production
+    flag_production_url = "flag/move_flag_to_production/2A1A"
+    response = client.put(flag_production_url)
+    assert response.status_code == 406
+
+    # delete all flags
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
+
+#move flag to production, error in flag
+def test_move_flag_to_production_error_in_flag(client):
+    # delete all flags
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
+
+    # create flag
+    flag_creation_url = "flag/create_flag/XX/Flag1A"
+    response = client.post(flag_creation_url)
+    assert response.status_code == 200
+
+    # get id
+    flag_id_get_url = "flag/get_flag_ids"
+    response = client.get(flag_id_get_url)
+    assert response.status_code == 200
+
+    # unpack flag id
+    x = response.get_data().decode("utf-8")
+    id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+
+    #production flag
+    flag_production_url = "flag/move_flag_to_production/" + id
+    response = client.put(flag_production_url)
+    assert response.status_code == 405
+
+    # delete all flags
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
+
+#TODO
+# move flag to production, valid
+
 
 
 
