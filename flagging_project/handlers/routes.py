@@ -222,7 +222,18 @@ def make_routes(app, flagging_mongo):
                 flag_group_names = [str(x) for x in flag_group_names]
                 data = {'flag_group_names': flag_group_names}
                 return jsonify(data), response_code
-            
+
+            if function == "get_flag_group_flags":
+                flag_group_ids, response_code_flag_group_ids = get_flag_group_ids(flagging_mongo)
+                flag_schema_object, response_code = get_flag_group_flags(flag_group_id, flag_group_ids, flagging_mongo)
+                data = {"valid": flag_schema_object.valid,
+                        "message": flag_schema_object.message,
+                        "simple_message": flag_schema_object.simple_message,
+                        "uuid": str(flag_schema_object.uuid),
+                        "flags_in_flag_group": flag_schema_object.logic,
+                        "flag_group_name": flag_schema_object.name}
+                return jsonify(data), response_code
+
             if function == "get_specific_flag_group":
                 existing_flag_groups, response_code_id = get_flag_group_ids(flagging_mongo)
                 flag_schema_object, response_code = get_specific_flag_group(flag_group_id, existing_flag_groups,
