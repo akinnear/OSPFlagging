@@ -622,11 +622,17 @@ def get_specific_flag_group(flag_group_id: str, existing_flag_groups: [], flaggi
                                                        simple_message="flag group id must be specified")
         response_code = 401
     if flag_schema_object is None:
-        if ObjectId(flag_group_id) not in existing_flag_groups:
+        try:
+            if ObjectId(flag_group_id) not in existing_flag_groups:
+                flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                               message="flag group does not exist",
+                                                               simple_message="flag group does not exist")
+                response_code = 404
+        except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag group does not exist",
-                                                           simple_message="flag group does not exist")
-            response_code = 404
+                                                           message="error pull flag group " + flag_group_id,
+                                                           simple_messge="invalid flag group id type")
+            response_code = 406
     if flag_schema_object is None:
         flag_group_id_object = ObjectId(flag_group_id)
         found_flag_group_id = flagging_mongo.get_specific_flag_group(flag_group_id_object)
