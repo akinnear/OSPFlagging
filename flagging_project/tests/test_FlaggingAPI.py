@@ -31,6 +31,7 @@ def client():
     client = app.test_client()
     return client
 
+#test flag home page
 def test_flag_home(client):
     url = '/flag'
     response = client.get(url)
@@ -39,6 +40,7 @@ def test_flag_home(client):
     assert str_data == 'flag home page to go here'
     assert response.status_code == 200
 
+#test get flags no flags
 def test_get_flags_no_flags(client):
     # delete all flags
     flag_deletion_url = "flag/delete_all_flags"
@@ -52,6 +54,7 @@ def test_get_flags_no_flags(client):
     assert str_data == '{"flags":[]}'
     assert response.status_code == 200
 
+#test get flag ids no ids
 def test_get_flag_ids_no_flag_ids(client):
     # delete all flags
     flag_deletion_url = "flag/delete_all_flags"
@@ -115,8 +118,6 @@ def test_get_specific_flag_id_valid(client):
     flag_deletion_url = "flag/delete_all_flags"
     response = client.delete(flag_deletion_url)
     assert response.status_code == 200
-
-
 
 #create flag, missing flag name
 def test_create_flag_missing_flag_name_1(client):
@@ -1107,28 +1108,6 @@ def test_get_flag_group_names(client):
     response = client.delete(flag_group_deletion_url)
     assert response.status_code == 200
 
-#get flag group names
-def test_get_flag_group_names(client):
-    #delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
-
-    #create flag group
-    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
-
-    #get flag group
-    flag_group_get_url = "flag_group/get_flag_group_names"
-    response = client.get(flag_group_get_url)
-    assert response.status_code == 200
-
-    #delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
-
 #get flag ids in flag group, missing id
 def test_get_flags_in_flag_group_missing_id(client):
     # delete all flag groups
@@ -1405,6 +1384,94 @@ def test_create_flag_group_valid(client):
     flag_group_deletion_url = "flag_group/delete_all_flag_groups"
     response = client.delete(flag_group_deletion_url)
     assert response.status_code == 200
+
+#delete flag group, no id
+def test_delete_flag_group_no_id(client):
+    # delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+    #delete flag group
+    flag_group_delete_url = "flag_group/delete_flag_group"
+    response = client.delete(flag_group_delete_url)
+    assert response.status_code == 401
+
+    # delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+#delete flag group, id does not exist
+def test_delete_flag_group_id_does_not_exist(client):
+    # delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+    # delete flag group
+    id = str(generate())
+    flag_group_delete_url = "flag_group/delete_flag_group/" + id
+    response = client.delete(flag_group_delete_url)
+    assert response.status_code == 404
+
+    # delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+
+#delete flag group, invalid id
+def test_delete_flag_group_invalid_id(client):
+    # delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+    # delete flag group
+    id = "1A1A"
+    flag_group_delete_url = "flag_group/delete_flag_group/" + id
+    response = client.delete(flag_group_delete_url)
+    assert response.status_code == 406
+
+    # delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+#delete flag group, valid
+def test_delete_flag_group_valid(client):
+    # delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+    # create flag group
+    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
+    response = client.post(flag_group_creation_url)
+    assert response.status_code == 200
+
+    # get id
+    flag_group_id_get_url = "flag_group/get_flag_group_ids"
+    response = client.get(flag_group_id_get_url)
+    assert response.status_code == 200
+
+    # unpack flag id
+    x = response.get_data().decode("utf-8")
+    id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+
+    # delete flag group
+    flag_group_delete_url = "flag_group/delete_flag_group/" + id
+    response = client.delete(flag_group_delete_url)
+    assert response.status_code == 200
+
+    # delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+
+
 
 
 
