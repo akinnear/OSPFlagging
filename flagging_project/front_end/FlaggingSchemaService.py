@@ -590,19 +590,27 @@ def get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_mongo):
                                                        simple_message="flag group id must be specified")
         response_code = 401
     if flag_schema_object is None:
-        if ObjectId(flag_group_id) not in existing_flag_groups:
+        try:
+            if ObjectId(flag_group_id) not in existing_flag_groups:
+                flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                               message="flag group does not exist",
+                                                               simple_message="flag group does not exist",
+                                                               uuid=ObjectId(flag_group_id))
+                response_code = 404
+        except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag group does not exist",
-                                                           simple_message="flag group does not exist",
+                                                           message="error in getting flags for flag group " + flag_group_id,
+                                                           simple_message="error pulling flags for flag group",
                                                            uuid=ObjectId(flag_group_id))
-            response_code = 404
+            response_code = 406
     if flag_schema_object is None:
         flags_in_flag_group = flagging_mongo.get_flag_group_flag(ObjectId(flag_group_id))
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        logic=flags_in_flag_group,
                                                        message="return flags for flag group",
                                                        simple_message="return flags for flag group",
-                                                       uuid=flag_group_id)
+                                                       uuid=ObjectId(flag_group_id),
+                                                       name=flagging_mongo.get_flag_group_name(ObjectId(flag_group_id)))
         response_code = 200
     return flag_schema_object, response_code
 
