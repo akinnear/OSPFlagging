@@ -1042,6 +1042,100 @@ def test_move_flag_to_production_error_in_flag(client):
 # move flag to production, valid
 
 
+#get flag groups
+def test_get_flag_groups(client):
+    #delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+    #create flag group
+    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
+    response = client.post(flag_group_creation_url)
+    assert response.status_code == 200
+
+    #get flag group
+    flag_group_get_url = "flag_group/get_flag_groups"
+    response = client.get(flag_group_get_url)
+    assert response.status_code == 200
+
+    #delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+
+#get flag group ids
+def test_get_flag_group_ids(client):
+    #delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+    #create flag group
+    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
+    response = client.post(flag_group_creation_url)
+    assert response.status_code == 200
+
+    #get flag group
+    flag_group_get_url = "flag_group/get_flag_group_ids"
+    response = client.get(flag_group_get_url)
+    assert response.status_code == 200
+
+    #delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+#get flag group names
+def test_get_flag_group_names(client):
+    #delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+    #create flag group
+    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
+    response = client.post(flag_group_creation_url)
+    assert response.status_code == 200
+
+    #get flag group
+    flag_group_get_url = "flag_group/get_flag_group_names"
+    response = client.get(flag_group_get_url)
+    assert response.status_code == 200
+
+    #delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+#get flag names in flag group
+#delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+    #create flag group
+    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
+    response = client.post(flag_group_creation_url)
+    assert response.status_code == 200
+
+    #get flag group
+    flag_group_get_url = "flag_group/get_flag_group_names"
+    response = client.get(flag_group_get_url)
+    assert response.status_code == 200
+
+    #delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+#get flag ids in flag group
+
+#get flag group flags
+
+
+
 
 
 

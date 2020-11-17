@@ -579,8 +579,8 @@ def get_flag_group_names(flagging_mongo: FlaggingMongo):
 def get_flag_names_in_flag_group(flag_group_id, flagging_mongo):
     return flagging_mongo.get_flag_names_from_flag_group(flag_group_id), 200
 
-def get_flag_ids_in_flag_group(flag_group_id, flagging_mongo):
-    return flagging_mongo.get_flag_group_flag(flag_group_id), 200
+# def get_flag_ids_in_flag_group(flag_group_id, flagging_mongo):
+#     return flagging_mongo.get_flag_group_flag(flag_group_id), 200
 
 def get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_mongo):
     flag_schema_object = None
