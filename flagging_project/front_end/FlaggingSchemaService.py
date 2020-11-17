@@ -674,18 +674,26 @@ def create_flag_group(flag_group_name: str, existing_flag_groups, flagging_mongo
 
 #A call to delete a flag group provided a UUID, return true/false
 def delete_flag_group(flag_group_id, existing_flag_groups, flagging_mongo: FlaggingMongo):
+    flag_schema_object = None
     if flag_group_id is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="flag group name must be specified",
                                                        simple_message="flag group name must be specified")
         response_code = 401
-    elif ObjectId(flag_group_id) not in existing_flag_groups:
-        flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="could not identify flag group " + flag_group_id + " in database",
-                                                       simple_message="could not identify flag group",
-                                                       uuid=ObjectId(flag_group_id))
-        response_code = 404
-    else:
+    if flag_schema_object is None:
+        try:
+            if ObjectId(flag_group_id) not in existing_flag_groups:
+                flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                               message="could not identify flag group " + flag_group_id + " in database",
+                                                               simple_message="could not identify flag group",
+                                                               uuid=ObjectId(flag_group_id))
+                response_code = 404
+        except Exception as e:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="could not identify flag group " + flag_group_id + " to delete",
+                                                           simple_message="error deleting flag group, invalid id type")
+            response_code = 406
+    if flag_schema_object is None:
         #remove flag deps for group
         flag_schema_object_flag_dep, fsofd_rc = delete_flag_dependency(flag_id=None,
                                                                        flag_group_id=flag_group_id,
