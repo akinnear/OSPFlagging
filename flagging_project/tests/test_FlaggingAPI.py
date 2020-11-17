@@ -1041,7 +1041,6 @@ def test_move_flag_to_production_error_in_flag(client):
 #TODO
 # move flag to production, valid
 
-
 #get flag groups
 def test_get_flag_groups(client):
     #delete all flag groups
@@ -1419,7 +1418,6 @@ def test_delete_flag_group_id_does_not_exist(client):
     flag_group_deletion_url = "flag_group/delete_all_flag_groups"
     response = client.delete(flag_group_deletion_url)
     assert response.status_code == 200
-
 
 #delete flag group, invalid id
 def test_delete_flag_group_invalid_id(client):
