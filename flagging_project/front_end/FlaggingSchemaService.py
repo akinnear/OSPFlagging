@@ -631,7 +631,7 @@ def get_specific_flag_group(flag_group_id: str, existing_flag_groups: [], flaggi
         except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="error pull flag group " + flag_group_id,
-                                                           simple_messge="invalid flag group id type")
+                                                           simple_message="invalid flag group id type")
             response_code = 406
     if flag_schema_object is None:
         flag_group_id_object = ObjectId(flag_group_id)
