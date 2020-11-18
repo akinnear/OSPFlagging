@@ -46,7 +46,7 @@ def get_specific_flag(flag_id, existing_flags: [], flagging_mongo: FlaggingMongo
         if flag_id is None:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="flag_id not specified")
-            response_code = 401
+            response_code = 400
     if flag_schema_object is None:
         try:
             if ObjectId(flag_id) not in existing_flags:
@@ -81,7 +81,7 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="flag name not specified",
                                                            simple_message="flag name not specified")
-            response_code = 401
+            response_code = 400
     if flag_schema_object is None:
         flag_validation = validate_logic(flag_name, flag_logic_information, flagging_mongo)
         if flag_validation.errors != {} or flag_validation.mypy_errors != {}:
@@ -128,7 +128,7 @@ def duplicate_flag(original_flag_id, existing_flags, flagging_mongo: FlaggingMon
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="flag id must be specified",
                                                        simple_message="flag id must be specified")
-        response_code = 401
+        response_code = 400
     if flag_schema_object is None:
         try:
             if ObjectId(original_flag_id) not in existing_flags:
@@ -164,7 +164,7 @@ def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, 
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="user must specify id of original flag",
                                                        simple_message="missing flag id")
-        response_code = 401
+        response_code = 400
     if flag_schema_object is None:
         if new_flag_name is None:
             # return error to user that original_flag_name and new_flag_name have to be specified
@@ -234,7 +234,7 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="user must specify flag id",
                                                            simple_message="user must specify flag id")
-            response_code = 401
+            response_code = 400
     if flag_schema_object is None:
         try:
             if ObjectId(flag_id) not in existing_flags:
@@ -458,7 +458,7 @@ def delete_flag(flag_id, existing_flags, flagging_mongo: FlaggingMongo):
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="user must specify flag id",
                                                        simple_message="missing flag id")
-        response_code = 401
+        response_code = 400
     #check if primary_key exists in db
     if flag_schema_object is None:
         try:
@@ -517,7 +517,7 @@ def move_flag_to_production(flag_id, existing_flags, flagging_mongo):
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="user must specify flag id",
                                                            simple_message="user must specifiy flag id")
-            response_code = 401
+            response_code = 400
     if flag_schema_object is None:
         try:
             if ObjectId(flag_id) not in existing_flags:
@@ -588,7 +588,7 @@ def get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_mongo):
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="flag group id must be specified",
                                                        simple_message="flag group id must be specified")
-        response_code = 401
+        response_code = 400
     if flag_schema_object is None:
         try:
             if ObjectId(flag_group_id) not in existing_flag_groups:
@@ -620,7 +620,7 @@ def get_specific_flag_group(flag_group_id: str, existing_flag_groups: [], flaggi
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="flag group id must be specified",
                                                        simple_message="flag group id must be specified")
-        response_code = 401
+        response_code = 400
     if flag_schema_object is None:
         try:
             if ObjectId(flag_group_id) not in existing_flag_groups:
@@ -653,7 +653,7 @@ def create_flag_group(flag_group_name: str, existing_flag_groups, flagging_mongo
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="unique flag group name must be specified",
                                                        simple_message="missing flag group name")
-        response_code = 401
+        response_code = 400
     elif flag_group_name in existing_flag_groups:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="new flag group name must be unique",
@@ -679,7 +679,7 @@ def delete_flag_group(flag_group_id, existing_flag_groups, flagging_mongo: Flagg
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="flag group name must be specified",
                                                        simple_message="flag group name must be specified")
-        response_code = 401
+        response_code = 400
     if flag_schema_object is None:
         try:
             if ObjectId(flag_group_id) not in existing_flag_groups:
@@ -723,19 +723,25 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="flag group must be specified",
                                                        simple_message="flag group must be specified")
-        response_code = 401
+        response_code = 400
 
     if flag_schema_object is None:
-        if ObjectId(flag_group_id) not in existing_flag_groups:
-            flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag_group " + flag_group_id + " does not exist",
-                                                           simple_message="flag group does not exist")
+        try:
+            if ObjectId(flag_group_id) not in existing_flag_groups:
+                flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                               message="flag_group " + flag_group_id + " does not exist",
+                                                               simple_message="flag group does not exist")
 
-            response_code = 404
+                response_code = 404
+        except Exception as e:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="error adding flag to flag group " + flag_group_id + ".  Error converting to ObjectId type",
+                                                           simple_message="error converting flag group id to ObjectId type")
+            response_code = 406
 
     #check that new flags is not empty
     if flag_schema_object is None:
-        if len(new_flags) == 0:
+        if len(new_flags) == 0 or new_flags == [None]:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="no new flags were specified",
                                                            simple_message="missing flags to add to flag group")
@@ -744,6 +750,17 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
             new_flags = list(dict.fromkeys(new_flags))
             # new_flags = [ObjectId(x) for x in new_flags]
 
+    if flag_schema_object is None:
+        #make sure flag id is valid
+        try:
+            test_new_flags = [ObjectId(x) for x in new_flags]
+        except Exception as e:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="error adding flag to flag group" + flag_group_id + ", error converting flag id to ObjectId type",
+                                                           simple_message="error adding flag to flag group",
+                                                           uuid=ObjectId(flag_group_id),
+                                                           name=flagging_mongo.get_flag_group_name(ObjectId(flag_group_id)))
+            response_code = 406
     if flag_schema_object is None:
         missing_flags = []
         duplicate_flags = []
@@ -794,7 +811,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                                    simple_message="flags in flag group has been updated",
                                                                    uuid=flag_with_updated_deps_id,
                                                                    name=flagging_mongo.get_flag_group_name(flag_with_updated_deps_id))
-                    response_code = 401
+                    response_code = 200
 
         elif len(missing_flags) != 0:
             # return error message that flag must be created first before added to flag group
@@ -803,7 +820,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                            simple_message="flag does not exist",
                                                            uuid=ObjectId(flag_group_id),
                                                            name=flagging_mongo.get_flag_group_name(ObjectId(flag_group_id)))
-            response_code = 401
+            response_code = 404
 
         elif len(duplicate_flags) != 0:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
@@ -811,7 +828,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                            simple_message='flag already in flag group',
                                                            uuid=ObjectId(flag_group_id),
                                                            name=flagging_mongo.get_flag_group_name(ObjectId(flag_group_id)))
-            response_code = 401
+            response_code = 405
 
         if flag_schema_object is None:
             #get names of flags in flag group
@@ -825,7 +842,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                                simple_message="flag already exists in flag group",
                                                                uuid=ObjectId(flag_group_id),
                                                                name=found_flag_group_name)
-                response_code = 404
+                response_code = 405
 
         if flag_schema_object is None:
             #create full valid flag logic information object
@@ -865,7 +882,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                         # flag_schema_object = FlaggingSchemaInformation(valid=False,
                         #                                                message=flagging_message,
                         #                                                uuid=flag_with_updated_deps_id)
-                        # response_code = 401
+                        # response_code = 400
 
                 #
 
@@ -1004,7 +1021,7 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="flag group not specified",
                                                            simple_message="flag group not specified")
-            response_code = 401
+            response_code = 400
     #check that flag_group_name exists
     if flag_schema_object is None:
         if ObjectId(flag_group_id) not in existing_flag_groups:
@@ -1018,7 +1035,7 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="no flags to remove were specified",
                                                            simple_message="missing flags to remove from flag group")
-            response_code = 401
+            response_code = 400
     if flag_schema_object is None:
         #for each flag to remove from group,
         #make sure the flag exists and is part of flag group
@@ -1040,7 +1057,7 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
                                                            simple_message="error removing flags from flag group",
                                                            uuid=ObjectId(flag_group_id),
                                                            name=flagging_mongo.get_flag_group_name(ObjectId(flag_group_id)))
-            response_code = 401
+            response_code = 400
         if flag_schema_object is None and len(flags_not_in_group) > 0:
             if len(flags_not_in_group) == 0:
                 flag_message = "the following flag is not part of flag group " + flag_group_id + ": " + str(flags_not_in_group[0])
@@ -1051,7 +1068,7 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
                                                            simple_message="error removing flags from flag group",
                                                            uuid=ObjectId(flag_group_id),
                                                            name=flagging_mongo.get_flag_group_name(ObjectId(flag_group_id)))
-            response_code = 401
+            response_code = 400
 
     if flag_schema_object is None:
         #get flag_id being removed
@@ -1103,7 +1120,7 @@ def duplicate_flag_group(original_flag_group_id: str, existing_flag_groups, new_
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="user must specify flag group id",
                                                        simple_message="user must specify flag group")
-        response_code = 401
+        response_code = 400
     #make sure og_flag_group_name exists
     if flag_schema_object is None:
         if ObjectId(original_flag_group_id) not in existing_flag_groups:
@@ -1142,7 +1159,7 @@ def move_flag_group_to_production(flag_group_id, existing_flag_groups, flagging_
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="flag group id must be specified",
                                                            simple_message="flag id must be specified")
-            response_code = 401
+            response_code = 400
     if flag_schema_object is None:
         if ObjectId(flag_group_id) not in existing_flag_groups:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
@@ -1157,7 +1174,7 @@ def move_flag_group_to_production(flag_group_id, existing_flag_groups, flagging_
                                                            simple_message="flag group can not be moved to production due to errors in flag group",
                                                            uuid=ObjectId(flag_group_id),
                                                            name=flagging_mongo.get_flag_group_name(ObjectId(flag_group_id)))
-            reponse_code = 405
+            response_code = 405
     if flag_schema_object is None:
         updated_flag_group_id = flagging_mongo.update_flag_group(flag_group_id=ObjectId(flag_group_id),
                                                                  update_value="PRODUCTION",

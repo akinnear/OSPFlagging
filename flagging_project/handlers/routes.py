@@ -281,19 +281,19 @@ def make_routes(app, flagging_mongo):
                                                                                        existing_flag_groups,
                                                                                        flagging_mongo)
                 flags_in_flag_group = flags_in_flag_group_schema.logic
-                if flags_in_flag_group_schema.valid:
-                    flag_schema_object, response_code = add_flag_to_flag_group(flag_group_id=flag_group_id,
-                                                                               new_flags=[flag_id],
-                                                                               existing_flags=existing_flags,
-                                                                               existing_flag_groups=existing_flag_groups,
-                                                                               flags_in_flag_group=flags_in_flag_group,
-                                                                               flagging_mongo=flagging_mongo)
-                else:
-                    flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                                   message="error in pulling flags for flag group" + str(
-                                                                       flag_group_id),
-                                                                   uuid=flag_group_id)
-                    response_code = 401
+                # if flags_in_flag_group_schema.valid:
+                flag_schema_object, response_code = add_flag_to_flag_group(flag_group_id=flag_group_id,
+                                                                           new_flags=[flag_id],
+                                                                           existing_flags=existing_flags,
+                                                                           existing_flag_groups=existing_flag_groups,
+                                                                           flags_in_flag_group=flags_in_flag_group,
+                                                                           flagging_mongo=flagging_mongo)
+                # else:
+                #     flag_schema_object = FlaggingSchemaInformation(valid=False,
+                #                                                    message="error in pulling flags for flag group" + str(
+                #                                                        flag_group_id),
+                #                                                    uuid=flag_group_id)
+                #     response_code = 401
                 data = {"valid": flag_schema_object.valid,
                         "message": flag_schema_object.message,
                         "simple_message": flag_schema_object.simple_message,
