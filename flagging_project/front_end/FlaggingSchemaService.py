@@ -1200,7 +1200,7 @@ def move_flag_group_to_production(flag_group_id, existing_flag_groups, flagging_
                                                                message="flag group does not exist",
                                                                simple_message="flag group does not exists",
                                                                uuid=ObjectId(flag_group_id))
-                response_code = 405
+                response_code = 404
         except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="error moving flag group " + flag_group_id + " to production, error converting flag group id to proper ObjectId type",
@@ -1215,7 +1215,19 @@ def move_flag_group_to_production(flag_group_id, existing_flag_groups, flagging_
                                                            name=flagging_mongo.get_flag_group_name(ObjectId(flag_group_id)))
             response_code = 405
     if flag_schema_object is None:
-        updated_flag_group_id = flagging_mongo.update_flag_group(flag_group_id=ObjectId(flag_group_id),
+        flag_error_bool = False
+        for flag in flagging_mongo.get_flag_group_flag(ObjectId(flag_group_id)):
+            if flagging_mongo.get_specific_flag_error(flag) != "":
+                flag_error_bool = True
+        if flag_error_bool:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="flag group " + flag_group_id + " can not be moved to production due to errors in flags found in flag group",
+                                                           simple_message="flag group can not be moved to production due to error in flag in flag group",
+                                                           uuid=ObjectId(flag_group_id),
+                                                           name=flagging_mongo.get_flag_group_name(ObjectId(flag_group_id)))
+            response_code = 405
+    if flag_schema_object is None:
+        updated_flag_group_id = flagging_mongo.update_flag_group(flag_group=ObjectId(flag_group_id),
                                                                  update_value="PRODUCTION",
                                                                  update_column=flag_group_status_col_name)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
