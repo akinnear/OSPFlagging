@@ -1,6 +1,6 @@
 import pytest
 from flask import Flask
-from handlers.routes import make_routes
+from handlers.FlaggingAPI import make_routes
 from flag_data.FlaggingMongo import FlaggingMongo
 from testcontainers.mongodb import MongoDbContainer
 from integration_tests import MONGO_DOCKER_IMAGE

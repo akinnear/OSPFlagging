@@ -19,7 +19,7 @@ from flagging.VariableInformation import VariableInformation
 from flagging.ModuleInformation import ModuleInformation
 from flagging.TypeValidationResults import TypeValidationResults
 from flagging.ErrorInformation import ErrorInformation
-from handlers.routes import make_routes
+from handlers.FlaggingAPI import make_routes
 
 def _create_flagging_mongo():
     return FlaggingMongo("mongodb://localhost:27017/flagging")
