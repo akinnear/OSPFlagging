@@ -2373,7 +2373,6 @@ def test_remove_flag_from_flag_group_invalid_flag_group_id(client):
     response = client.delete(flag_dep_deletion_url)
     assert response.status_code == 200
 
-
 #remove flag from flag group, missing flag to remove
 def test_remove_flag_from_flag_group_missing_flag(client):
     # delete all flags
@@ -2759,7 +2758,6 @@ def test_duplicate_flag_group_missing_flag_group_id(client):
     response = client.delete(flag_group_deletion_url)
     assert response.status_code == 200
 
-
 #duplicate flag group, flag group does not exist
 def test_duplicate_flag_group_flag_group_no_exist(client):
     # delete all flag group
@@ -2921,6 +2919,171 @@ def test_duplicate_flag_group_valid(client):
     flag_group_deletion_url = "flag_group/delete_all_flag_groups"
     response = client.delete(flag_group_deletion_url)
     assert response.status_code == 200
+
+#move flag group to production, missing flag group id
+def test_move_flag_group_to_production_missing_flag_group_id(client):
+    # delete all flag group
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+    # create flag group
+    flag_group_name = "FlagGroup1A"
+    flag_group_creation_url = "flag_group/create_flag_group/XX/" + flag_group_name
+    response = client.post(flag_group_creation_url)
+    assert response.status_code == 200
+
+    # get flag group id
+    flag_group_id_get_url = "flag_group/get_flag_group_ids"
+    response = client.get(flag_group_id_get_url)
+    assert response.status_code == 200
+
+    # unpack flag group id
+    x = response.get_data().decode("utf-8")
+    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+    
+    #move flag group to production
+    move_flag_group_to_production_url = "flag_group/move_flag_group_to_production"
+    response = client.put(move_flag_group_to_production_url)
+    assert response.status_code == 400
+
+    # delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+    
+#move flag group to production, flag group does not exist
+def test_move_flag_group_to_production_flag_group_no_exist(client):
+    # delete all flag group
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+    # create flag group
+    flag_group_name = "FlagGroup1A"
+    flag_group_creation_url = "flag_group/create_flag_group/XX/" + flag_group_name
+    response = client.post(flag_group_creation_url)
+    assert response.status_code == 200
+
+    # get flag group id
+    flag_group_id_get_url = "flag_group/get_flag_group_ids"
+    response = client.get(flag_group_id_get_url)
+    assert response.status_code == 200
+
+    # unpack flag group id
+    x = response.get_data().decode("utf-8")
+    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+    
+    #create new unique flag group id
+    new_flag_group_id = str(generate())
+    while flag_group_id == new_flag_group_id:
+        new_flag_group_id = str(generate())
+
+    # move flag group to production
+    move_flag_group_to_production_url = "flag_group/move_flag_group_to_production/" + new_flag_group_id
+    response = client.put(move_flag_group_to_production_url)
+    assert response.status_code == 404
+
+    # delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+    
+#move flag group to production, invalid flag group id
+def test_move_flag_group_to_production_invalid_flag_group_id(client):
+    # delete all flag group
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+    # create flag group
+    flag_group_name = "FlagGroup1A"
+    flag_group_creation_url = "flag_group/create_flag_group/XX/" + flag_group_name
+    response = client.post(flag_group_creation_url)
+    assert response.status_code == 200
+
+    # get flag group id
+    flag_group_id_get_url = "flag_group/get_flag_group_ids"
+    response = client.get(flag_group_id_get_url)
+    assert response.status_code == 200
+
+    # unpack flag group id
+    x = response.get_data().decode("utf-8")
+    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+
+    # move flag group to production
+    move_flag_group_to_production_url = "flag_group/move_flag_group_to_production/" + "1A1A"
+    response = client.put(move_flag_group_to_production_url)
+    assert response.status_code == 400
+
+    # delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+#move flag group to production, error in flag group
+def test_move_flag_group_to_production_error_error_in_flag_group(client):
+    # delete all flags
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
+
+    # delete all flag group
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+    # delete all dependency entries
+    flag_dep_deletion_url = "flag_dependency/delete_all_flag_dependencies"
+    response = client.delete(flag_dep_deletion_url)
+    assert response.status_code == 200
+
+    # create flag group
+    flag_group_name = "FlagGroup1A"
+    flag_group_creation_url = "flag_group/create_flag_group/XX/" + flag_group_name
+    response = client.post(flag_group_creation_url)
+    assert response.status_code == 200
+
+    # get flag group id
+    flag_group_id_get_url = "flag_group/get_flag_group_ids"
+    response = client.get(flag_group_id_get_url)
+    assert response.status_code == 200
+
+    # unpack flag group id
+    x = response.get_data().decode("utf-8")
+    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+
+    # create flag
+    flag_creation_url = "flag/create_flag/XX/Flag1A"
+    response = client.post(flag_creation_url)
+    assert response.status_code == 200
+
+    # get id
+    flag_id_get_url = "flag/get_flag_ids"
+    response = client.get(flag_id_get_url)
+    assert response.status_code == 200
+
+    # unpack flag id
+    x = response.get_data().decode("utf-8")
+    flag_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+    
+    #add flag to flag group, flag has error, thereby flag group will have error
+    add_flag_url = "flag_group/add_flag_to_flag_group/" + flag_group_id + "/x/" + flag_id
+    response = client.put(add_flag_url)
+    assert response.status_code == 200
+
+    # move flag group to production
+    move_flag_group_to_production_url = "flag_group/move_flag_group_to_production/" + flag_group_id
+    response = client.put(move_flag_group_to_production_url)
+    assert response.status_code == 405
+
+    # delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+#TODO
+# move flag group to production, valid
 
 
 
