@@ -2728,7 +2728,199 @@ def test_remove_flag_from_flag_group_valid(client):
     response = client.delete(flag_dep_deletion_url)
     assert response.status_code == 200
 
+#duplicate flag group, missing flag group id
+def test_duplicate_flag_group_missing_flag_group_id(client):
+    # delete all flag group
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
 
+    # create flag group
+    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
+    response = client.post(flag_group_creation_url)
+    assert response.status_code == 200
+
+    # get flag group id
+    flag_group_id_get_url = "flag_group/get_flag_group_ids"
+    response = client.get(flag_group_id_get_url)
+    assert response.status_code == 200
+
+    # unpack flag group id
+    x = response.get_data().decode("utf-8")
+    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+
+    #duplicate flag group
+    flag_group_duplicate_url = "flag_group/duplicate_flag_group"
+    response = client.post(flag_group_duplicate_url)
+    assert response.status_code == 400
+
+    # delete all flag group
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+
+#duplicate flag group, flag group does not exist
+def test_duplicate_flag_group_flag_group_no_exist(client):
+    # delete all flag group
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+    # create flag group
+    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
+    response = client.post(flag_group_creation_url)
+    assert response.status_code == 200
+
+    # get flag group id
+    flag_group_id_get_url = "flag_group/get_flag_group_ids"
+    response = client.get(flag_group_id_get_url)
+    assert response.status_code == 200
+
+    # unpack flag group id
+    x = response.get_data().decode("utf-8")
+    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+
+    #create new unique flag group id
+    new_flag_group_id = str(generate())
+    while flag_group_id == new_flag_group_id:
+        new_flag_group_id = str(generate())
+
+    #duplicate flag group
+    flag_group_duplicate_url = "flag_group/duplicate_flag_group/" + new_flag_group_id + "/FlagGroup2B"
+    response = client.post(flag_group_duplicate_url)
+    assert response.status_code == 404
+
+    # delete all flag group
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+#duplicate flag group, invalid flag group id
+def test_duplicate_flag_group_invalid_flag_group_id(client):
+    # delete all flag group
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+    # create flag group
+    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
+    response = client.post(flag_group_creation_url)
+    assert response.status_code == 200
+
+    # get flag group id
+    flag_group_id_get_url = "flag_group/get_flag_group_ids"
+    response = client.get(flag_group_id_get_url)
+    assert response.status_code == 200
+
+    # unpack flag group id
+    x = response.get_data().decode("utf-8")
+    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+
+    #duplicate flag group
+    flag_group_duplicate_url = "flag_group/duplicate_flag_group/1A1A/FlagGroup2B"
+    response = client.post(flag_group_duplicate_url)
+    assert response.status_code == 400
+
+    # delete all flag group
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+#duplicate flag group, missing new name
+def test_duplicate_flag_group_missing_new_name(client):
+    # delete all flag group
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+    # create flag group
+    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
+    response = client.post(flag_group_creation_url)
+    assert response.status_code == 200
+
+    # get flag group id
+    flag_group_id_get_url = "flag_group/get_flag_group_ids"
+    response = client.get(flag_group_id_get_url)
+    assert response.status_code == 200
+
+    # unpack flag group id
+    x = response.get_data().decode("utf-8")
+    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+
+    #duplicate_flag_group
+    flag_group_duplicate_url = "flag_group/duplicate_flag_group/" + flag_group_id
+    response = client.post(flag_group_duplicate_url)
+    assert response.status_code == 400
+
+    # delete all flag group
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+#duplicate flag group, new name same as old name
+def test_duplicate_flag_group_same_name(client):
+    # delete all flag group
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+    # create flag group
+    flag_group_name = "FlagGroup1A"
+    flag_group_creation_url = "flag_group/create_flag_group/XX/" + flag_group_name
+    response = client.post(flag_group_creation_url)
+    assert response.status_code == 200
+
+    # get flag group id
+    flag_group_id_get_url = "flag_group/get_flag_group_ids"
+    response = client.get(flag_group_id_get_url)
+    assert response.status_code == 200
+
+    # unpack flag group id
+    x = response.get_data().decode("utf-8")
+    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+
+    #duplicate_flag_group
+    flag_group_duplicate_url = "flag_group/duplicate_flag_group/" + flag_group_id + "/" + flag_group_name
+    response = client.post(flag_group_duplicate_url)
+    assert response.status_code == 405
+
+    # delete all flag group
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+#dupliacte flag group, valid
+def test_duplicate_flag_group_valid(client):
+    # delete all flag group
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+    # create flag group
+    flag_group_name = "FlagGroup1A"
+    flag_group_creation_url = "flag_group/create_flag_group/XX/" + flag_group_name
+    response = client.post(flag_group_creation_url)
+    assert response.status_code == 200
+
+    # get flag group id
+    flag_group_id_get_url = "flag_group/get_flag_group_ids"
+    response = client.get(flag_group_id_get_url)
+    assert response.status_code == 200
+
+    # unpack flag group id
+    x = response.get_data().decode("utf-8")
+    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+
+    # duplicate_flag_group
+    flag_group_duplicate_url = "flag_group/duplicate_flag_group/" + flag_group_id + "/" + "FlagGroup2B"
+    response = client.post(flag_group_duplicate_url)
+    assert response.status_code == 200
+
+    # delete all flag group
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
 
 
 
