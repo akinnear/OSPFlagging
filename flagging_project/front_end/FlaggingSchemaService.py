@@ -1141,10 +1141,25 @@ def duplicate_flag_group(original_flag_group_id: str, existing_flag_groups, new_
         response_code = 400
     #make sure og_flag_group_name exists
     if flag_schema_object is None:
-        if ObjectId(original_flag_group_id) not in existing_flag_groups:
+        try:
+            if ObjectId(original_flag_group_id) not in existing_flag_groups:
+                flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                               message="flag group " + str(original_flag_group_id) + " does not exist",
+                                                               simple_message="flag group does not exist")
+                response_code = 404
+        except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag group " + str(original_flag_group_id) + " does not exist",
-                                                           simple_message="flag group does not exist")
+                                                           message="error duplicating flag group " + original_flag_group_id + ", error converting flag group id to proper OjbectId type",
+                                                           simple_message="error duplicating flag group")
+            response_code = 400
+
+    if flag_schema_object is None:
+        if new_flag_group_name is None:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="error duplicating flag group " + original_flag_group_id + ", missing new flag group name",
+                                                           simple_message="error duplicating flag group",
+                                                           uuid=ObjectId(original_flag_group_id),
+                                                           name=flagging_mongo.get_flag_group_name(ObjectId(original_flag_group_id)))
             response_code = 400
     if flag_schema_object is None:
         original_flag_group_name = flagging_mongo.get_flag_group_name(ObjectId(original_flag_group_id))
@@ -1154,7 +1169,7 @@ def duplicate_flag_group(original_flag_group_id: str, existing_flag_groups, new_
                                                            simple_message="new name for flag group must be unique",
                                                            uuid=original_flag_group_id,
                                                            name=original_flag_group_name)
-            response_code = 403
+            response_code = 405
 
     if flag_schema_object is None:
         #get new id
