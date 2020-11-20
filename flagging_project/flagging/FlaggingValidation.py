@@ -19,9 +19,6 @@ def validate_flag_logic(flag_name, flag_feeders, flag_dependencies, flag_logic):
 def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_logic_info: FlagLogicInformation, **kwargs):
     og_flag_included_in_flag_dep = kwargs.get("og_flag_included_in_flag_dep", False)
     results = FlaggingValidationResults()
-    #TODO
-    # if no flag name provided, use number of entries in flag dependency set via API
-    # and add one, FlagName<Max+1>
     flag_dependencies = flag_dependencies if flag_dependencies else {}
     my_py_output = validate_returns_boolean(flag_logic_info, flag_feeders if flag_feeders else {})
 
