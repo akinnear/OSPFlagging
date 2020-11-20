@@ -963,7 +963,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                     else:
                         flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
                             ", ".join(str(x) for x in cyclical_errors))
-            flag_schema_object, fli_rc = get_specific_flag(flag_id=ObjectId(new_flags[0]), existing_flags = get_all_flag_ids(flagging_mongo), flagging_mongo=flagging_mongo)
+            flag_schema_object, fli_rc = get_specific_flag(flag_id=ObjectId(new_flags[0]), existing_flags=flagging_mongo.get_flag_ids(), flagging_mongo=flagging_mongo)
             referenced_flag_names_in_flag_id = flag_schema_object.logic.referenced_flags.keys()
             referenced_flags = []
             for x in referenced_flag_names_in_flag_id:
