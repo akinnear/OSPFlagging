@@ -8,7 +8,8 @@ from front_end.FlaggingSchemaService import get_all_flags, get_specific_flag, \
     get_flag_group_flags, get_flag_names_in_flag_group, get_flag_dep_ids, move_flag_group_to_production, \
     move_flag_to_production, delete_all_flags, delete_all_flag_groups, delete_all_flag_dependencies
 from flagging.FlagLogicInformation import FlagLogicInformation
-from flag_names.FlagService import pull_flag_names_in_flag_group, pull_flag_names, pull_flag_logic_information
+from flag_names.FlagService import pull_flag_names_in_flag_group, pull_flag_names, \
+    pull_flag_logic_information, get_valid_dummy_flag
 from front_end.FlaggingSchemaInformation import FlaggingSchemaInformation
 import json
 from flagging.FlaggingNodeVisitor import CodeLocation
@@ -104,7 +105,8 @@ def make_routes(app, flagging_mongo):
                     else:
                     return ff2 < reduce(f, [47,11,42,102,13])""",
                     validation_results=TypeValidationResults())
-                flag_info = pull_flag_logic_information(unique_dummy_flag=unique_dummy_flag)
+                # flag_info = pull_flag_logic_information(unique_dummy_flag=unique_dummy_flag)
+                flag_info = get_valid_dummy_flag()
                 flag_schema_object, response_code = create_flag(flag_name, flag_info, flagging_mongo)
                 data = {"valid": flag_schema_object.valid,
                         "message": flag_schema_object.message,
