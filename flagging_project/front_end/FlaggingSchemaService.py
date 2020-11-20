@@ -963,8 +963,10 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                     else:
                         flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
                             ", ".join(str(x) for x in cyclical_errors))
+            else:
+                cyclical_errors = []
             flag_schema_object, fli_rc = get_specific_flag(flag_id=ObjectId(new_flags[0]), existing_flags=flagging_mongo.get_flag_ids(), flagging_mongo=flagging_mongo)
-            referenced_flag_names_in_flag_id = flag_schema_object.logic.referenced_flags.keys()
+            referenced_flag_names_in_flag_id = flag_schema_object.logic['referenced_flags']
             referenced_flags = []
             for x in referenced_flag_names_in_flag_id:
                 referenced_flags.append(ReferencedFlag(flag_name=x, flag_group_id=ObjectId(flag_group_id)))
@@ -973,14 +975,14 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
             existing_flag_dep_keys, efdkrc = get_flag_dep_ids(flagging_mongo)
             flag_name = flagging_mongo.get_flag_name(ObjectId(new_flags[0]))
             if ObjectId(new_flags[0]) not in existing_flag_dep_keys:
-                flag_dep_id, fdi_rc = create_flag_dependency(flag_id=new_flags[0],
+                flag_dep_schema_object, fdi_rc = create_flag_dependency(flag_id=new_flags[0],
                                                              flag_name=flag_name,
                                                              flag_group_id=flag_group_id,
                                                              existing_flag_ids=flag_ids, existing_flag_dep_keys=existing_flag_dep_keys, flag_dependencies=[], flagging_mongo=flagging_mongo)
 
 
 
-            updated_flag_dep_id, ufdirc = add_dependencies_to_flag(flag_dep_id=flag_dep_id, existing_flag_dep_keys=existing_flag_dep_keys, new_dependencies=referenced_flags, flagging_mongo=flagging_mongo)
+            updated_flag_dep_id, ufdirc = add_dependencies_to_flag(flag_dep_id=str(flag_dep_schema_object.uuid), existing_flag_dep_keys=existing_flag_dep_keys, new_dependencies=referenced_flags, flagging_mongo=flagging_mongo)
 
             full_flag_set = new_flags + list(dict.fromkeys(flags_in_flag_group))
             full_flag_set = [ObjectId(x) for x in full_flag_set]
@@ -990,8 +992,6 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                 flag_group_set_to_draft = flagging_mongo.update_flag_group(flag_group=ObjectId(flag_group_id),
                                                                              update_value="DRAFT",
                                                                              update_column=flag_group_status_col_name)
-
-            else:
                 flag_group_set_to_draft = flagging_mongo.update_flag_group(flag_group=ObjectId(flag_group_id),
                                                                            update_value="CYCLICAL FLAG ERROR",
                                                                            update_column=flag_group_error_col_name)
@@ -1405,9 +1405,15 @@ def add_dependencies_to_flag(flag_dep_id, existing_flag_dep_keys: [], new_depend
                                                            message="flag dep id not specified")
             response_code = 400
     if flag_schema_object is None:
-        if ObjectId(flag_dep_id) not in existing_flag_dep_keys:
+        try:
+            if ObjectId(flag_dep_id) not in existing_flag_dep_keys:
+                flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                               message="flag_dep does not exist in flag dependency database")
+                response_code = 404
+        except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag_dep does not exist in flag dependency database")
+                                                           messge="error in add dependencies to flag, improper flag dep id, " + flag_dep_id,
+                                                           simple_message="error in add dependency to flag")
             response_code = 400
     # if flag_schema_object is None:
     #     existing_flags = flagging_mongo.get_flag_ids()
