@@ -2,6 +2,7 @@ from flagging.FlagLogicInformation import FlagLogicInformation
 from flagging.FlaggingNodeVisitor import CodeLocation
 from flagging.VariableInformation import VariableInformation
 from bson.objectid import ObjectId
+from flagging.FlaggingNodeVisitor import determine_variables
 
 def pull_flag_ids(*args, **kwargs):
     dummy_flag_ids = kwargs.get("dummy_flag_ids", None)
@@ -74,4 +75,11 @@ def pull_flag_logic_information(*args, **kwargs):
         flag_info = FlagLogicInformation()
     return flag_info
 
-
+def get_valid_dummy_flag():
+    logic = """\
+if FF1 > 10:
+    return True
+else:
+    return False"""
+    flag_info = determine_variables(logic)
+    return flag_info
