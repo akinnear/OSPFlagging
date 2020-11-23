@@ -1402,17 +1402,19 @@ def add_dependencies_to_flag(flag_dep_id, existing_flag_dep_keys: [], new_depend
     if flag_schema_object is None:
         if flag_dep_id is None:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag dep id not specified")
+                                                           message="flag dep id not specified",
+                                                           simple_message="flag dep id not specified")
             response_code = 400
     if flag_schema_object is None:
         try:
             if ObjectId(flag_dep_id) not in existing_flag_dep_keys:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                               message="flag_dep does not exist in flag dependency database")
+                                                               message="flag_dep does not exist in flag dependency database",
+                                                               simple_message="flag dep does not exist in flag dependency database")
                 response_code = 404
         except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           messge="error in add dependencies to flag, improper flag dep id, " + flag_dep_id,
+                                                           message="error in add dependencies to flag, improper flag dep id, " + flag_dep_id,
                                                            simple_message="error in add dependency to flag")
             response_code = 400
     # if flag_schema_object is None:
@@ -1430,6 +1432,7 @@ def add_dependencies_to_flag(flag_dep_id, existing_flag_dep_keys: [], new_depend
         updated_flag_dep_id = flagging_mongo.add_specific_flag_dependencies(ObjectId(flag_dep_id), new_dependencies, "DEPENDENT_FLAGS")
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="dependencies have been updated",
+                                                       simple_message="dependencies have been updated",
                                                        uuid=updated_flag_dep_id)
         response_code = 200
     return flag_schema_object, response_code
@@ -1440,13 +1443,22 @@ def remove_dependencies_from_flag(flag_dep_id, existing_flag_dep_keys: [], rm_de
     if flag_schema_object is None:
         if flag_dep_id is None:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag dep id not specified")
+                                                           message="flag dep id not specified",
+                                                           simple_message="flag dep id not specified")
             response_code = 400
     if flag_schema_object is None:
-        if ObjectId(flag_dep_id) not in existing_flag_dep_keys:
+        try:
+            if ObjectId(flag_dep_id) not in existing_flag_dep_keys:
+                flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                               message="flag dep does not exist in flag dependency database",
+                                                               simple_message="flag des does not exist in flag dependency database")
+                response_code = 404
+        except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag dep does not exist in flag dependency database")
-            response_code = 404
+                                                           message="error in remove dependencies from flag, improper flag dep id, " + flag_dep_id,
+                                                           simple_message="error in remove dependency from flag")
+            response_code = 400
+
     # if flag_schema_object is None:
     #     existing_flag_dep_flags = flagging_mongo.get_specific_flag_dependency_flags(ObjectId(flag_dep_id))
     #     missing_flags = []
@@ -1462,6 +1474,7 @@ def remove_dependencies_from_flag(flag_dep_id, existing_flag_dep_keys: [], rm_de
         updated_flag_dep_id = flagging_mongo.remove_specific_flag_dependencies(ObjectId(flag_dep_id), rm_dependencies, "DEPENDENT_FLAGS")
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="dependencies have been updated",
+                                                       simple_message="dependencies have been updated",
                                                        uuid=updated_flag_dep_id)
         response_code = 200
     return flag_schema_object, response_code
