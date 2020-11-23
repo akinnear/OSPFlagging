@@ -8,6 +8,14 @@ from app import _create_flagging_mongo
 import json
 import re
 from random_object_id import generate
+from flag_names.FlagService import pull_flag_logic_information
+from flagging.FlagLogicInformation import FlagLogicInformation
+from flagging.FlaggingNodeVisitor import CodeLocation
+from flagging.VariableInformation import VariableInformation
+from flagging.ModuleInformation import ModuleInformation
+from flagging.TypeValidationResults import TypeValidationResults
+from flagging.ErrorInformation import ErrorInformation
+from unittest import mock
 
 # def make_flag_data_pretty(payload):
 #     data = payload.split("\\")
@@ -1007,7 +1015,42 @@ def test_move_flag_to_production_invalid_id(client):
     assert response.status_code == 200
 
 #move flag to production, error in flag
-def test_move_flag_to_production_error_in_flag(client):
+unique_dummy_flag = FlagLogicInformation(
+    used_variables={VariableInformation("ff1"): {CodeLocation(4, 11)},
+                    VariableInformation("ff2"): {CodeLocation(6, 11)},
+                    VariableInformation("a"): {CodeLocation(2, 16), CodeLocation(2, 22)},
+                    VariableInformation("b"): {CodeLocation(2, 26), CodeLocation(2, 34)},
+                    VariableInformation("f"): {CodeLocation(3, 10), CodeLocation(4, 24),
+                                               CodeLocation(6, 24)}},
+    assigned_variables={VariableInformation("f"): {CodeLocation(2, 0)},
+                        VariableInformation("a"): {CodeLocation(2, 11)},
+                        VariableInformation('b'): {CodeLocation(2, 13)}},
+    referenced_functions={
+        VariableInformation("reduce"): {CodeLocation(3, 3), CodeLocation(4, 17), CodeLocation(6, 17)}},
+    defined_functions={VariableInformation("my_add"): {CodeLocation(2, 4)}},
+    defined_classes={VariableInformation("my_class"): {CodeLocation(1, 1)}},
+    referenced_modules={ModuleInformation("wtforms"): {CodeLocation(2, 5)},
+                        ModuleInformation("functools", "my_funky_tools"): {CodeLocation(1, 7)}},
+    referenced_flags={"Flag5": {CodeLocation(5, 10), CodeLocation(6, 10)},
+                      "Flag6": {CodeLocation(7, 10)}},
+    return_points={CodeLocation(4, 4), CodeLocation(6, 4)},
+    used_lambdas={"LAMBDA": {CodeLocation(2, 4)}},
+    errors=[ErrorInformation(cl=CodeLocation(3, 5),
+                             msg="invalid syntax",
+                             text="x = =  f\n"),
+            ErrorInformation(cl=CodeLocation(5, 5),
+                             msg="invalid syntax",
+                             text="y = = =  q2@\n")],
+    flag_logic="""
+    f = lambda a,b: a if (a > b) else b
+    if reduce(f, [47,11,42,102,13]) > 100:
+    return ff1 > reduce(f, [47,11,42,102,13])
+    else:
+    return ff2 < reduce(f, [47,11,42,102,13])""",
+    validation_results=TypeValidationResults())
+error_flag = pull_flag_logic_information(unique_dummy_flag=unique_dummy_flag)
+@mock.patch("handlers.FlaggingAPI.get_valid_dummy_flag", return_value=error_flag, autospec=True)
+def test_move_flag_to_production_error_in_flag(mock_error_flag, client):
     # delete all flags
     flag_deletion_url = "flag/delete_all_flags"
     response = client.delete(flag_deletion_url)
@@ -1037,8 +1080,36 @@ def test_move_flag_to_production_error_in_flag(client):
     response = client.delete(flag_deletion_url)
     assert response.status_code == 200
 
-#TODO
-# move flag to production, valid
+#move flag to production, valid
+def test_move_flag_to_production_valid(client):
+    # delete all flags
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
+
+    # create flag
+    flag_creation_url = "flag/create_flag/XX/Flag1A"
+    response = client.post(flag_creation_url)
+    assert response.status_code == 200
+
+    # get id
+    flag_id_get_url = "flag/get_flag_ids"
+    response = client.get(flag_id_get_url)
+    assert response.status_code == 200
+
+    # unpack flag id
+    x = response.get_data().decode("utf-8")
+    id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+
+    # production flag
+    flag_production_url = "flag/move_flag_to_production/" + id
+    response = client.put(flag_production_url)
+    assert response.status_code == 200
+
+    # delete all flags
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
 
 #get flag groups
 def test_get_flag_groups(client):
@@ -3022,7 +3093,42 @@ def test_move_flag_group_to_production_invalid_flag_group_id(client):
     assert response.status_code == 200
 
 #move flag group to production, error in flag group
-def test_move_flag_group_to_production_error_error_in_flag_group(client):
+unique_dummy_flag = FlagLogicInformation(
+    used_variables={VariableInformation("ff1"): {CodeLocation(4, 11)},
+                    VariableInformation("ff2"): {CodeLocation(6, 11)},
+                    VariableInformation("a"): {CodeLocation(2, 16), CodeLocation(2, 22)},
+                    VariableInformation("b"): {CodeLocation(2, 26), CodeLocation(2, 34)},
+                    VariableInformation("f"): {CodeLocation(3, 10), CodeLocation(4, 24),
+                                               CodeLocation(6, 24)}},
+    assigned_variables={VariableInformation("f"): {CodeLocation(2, 0)},
+                        VariableInformation("a"): {CodeLocation(2, 11)},
+                        VariableInformation('b'): {CodeLocation(2, 13)}},
+    referenced_functions={
+        VariableInformation("reduce"): {CodeLocation(3, 3), CodeLocation(4, 17), CodeLocation(6, 17)}},
+    defined_functions={VariableInformation("my_add"): {CodeLocation(2, 4)}},
+    defined_classes={VariableInformation("my_class"): {CodeLocation(1, 1)}},
+    referenced_modules={ModuleInformation("wtforms"): {CodeLocation(2, 5)},
+                        ModuleInformation("functools", "my_funky_tools"): {CodeLocation(1, 7)}},
+    referenced_flags={"Flag5": {CodeLocation(5, 10), CodeLocation(6, 10)},
+                      "Flag6": {CodeLocation(7, 10)}},
+    return_points={CodeLocation(4, 4), CodeLocation(6, 4)},
+    used_lambdas={"LAMBDA": {CodeLocation(2, 4)}},
+    errors=[ErrorInformation(cl=CodeLocation(3, 5),
+                             msg="invalid syntax",
+                             text="x = =  f\n"),
+            ErrorInformation(cl=CodeLocation(5, 5),
+                             msg="invalid syntax",
+                             text="y = = =  q2@\n")],
+    flag_logic="""
+    f = lambda a,b: a if (a > b) else b
+    if reduce(f, [47,11,42,102,13]) > 100:
+    return ff1 > reduce(f, [47,11,42,102,13])
+    else:
+    return ff2 < reduce(f, [47,11,42,102,13])""",
+    validation_results=TypeValidationResults())
+error_flag = pull_flag_logic_information(unique_dummy_flag=unique_dummy_flag)
+@mock.patch("handlers.FlaggingAPI.get_valid_dummy_flag", return_value=error_flag, autospec=True)
+def test_move_flag_group_to_production_error_error_in_flag_group(mock_error_flag, client):
     # delete all flags
     flag_deletion_url = "flag/delete_all_flags"
     response = client.delete(flag_deletion_url)
@@ -3082,8 +3188,65 @@ def test_move_flag_group_to_production_error_error_in_flag_group(client):
     response = client.delete(flag_group_deletion_url)
     assert response.status_code == 200
 
-#TODO
-# move flag group to production, valid
+def test_move_flag_group_to_production_valid(client):
+    # delete all flags
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
+
+    # delete all flag group
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
+
+    # delete all dependency entries
+    flag_dep_deletion_url = "flag_dependency/delete_all_flag_dependencies"
+    response = client.delete(flag_dep_deletion_url)
+    assert response.status_code == 200
+
+    # create flag group
+    flag_group_name = "FlagGroup1A"
+    flag_group_creation_url = "flag_group/create_flag_group/XX/" + flag_group_name
+    response = client.post(flag_group_creation_url)
+    assert response.status_code == 200
+
+    # get flag group id
+    flag_group_id_get_url = "flag_group/get_flag_group_ids"
+    response = client.get(flag_group_id_get_url)
+    assert response.status_code == 200
+
+    # unpack flag group id
+    x = response.get_data().decode("utf-8")
+    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+
+    # create flag
+    flag_creation_url = "flag/create_flag/XX/Flag1A"
+    response = client.post(flag_creation_url)
+    assert response.status_code == 200
+
+    # get id
+    flag_id_get_url = "flag/get_flag_ids"
+    response = client.get(flag_id_get_url)
+    assert response.status_code == 200
+
+    # unpack flag id
+    x = response.get_data().decode("utf-8")
+    flag_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+
+    # add flag to flag group, flag has error, thereby flag group will have error
+    add_flag_url = "flag_group/add_flag_to_flag_group/" + flag_group_id + "/x/" + flag_id
+    response = client.put(add_flag_url)
+    assert response.status_code == 200
+
+    # move flag group to production
+    move_flag_group_to_production_url = "flag_group/move_flag_group_to_production/" + flag_group_id
+    response = client.put(move_flag_group_to_production_url)
+    assert response.status_code == 200
+
+    # delete all flag groups
+    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
+    response = client.delete(flag_group_deletion_url)
+    assert response.status_code == 200
 
 
 
