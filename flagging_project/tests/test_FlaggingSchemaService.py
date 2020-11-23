@@ -14,7 +14,7 @@ from flagging.FlagErrorInformation import FlagErrorInformation
 from flag_names.FlagService import pull_flag_names, \
     pull_flag_names_in_flag_group, pull_flag_ids
 from flag_names.FlagGroupService import pull_flag_group_names, pull_flag_group_ids
-from front_end.FlaggingDependencies import add_flag_dependencies, remove_flag_dependencies
+# from front_end.FlaggingDependencies import add_flag_dependencies, remove_flag_dependencies
 from flag_data.FlaggingMongo import FlaggingMongo
 from random_object_id import generate as generate_object_id
 from bson.objectid import ObjectId
@@ -657,312 +657,312 @@ def test_duplicate_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb, mv
     assert result.valid == False
     assert result.message == "flag group " + str(flag_group_id) + " does not exist"
 
-#test, add new dependency to flag
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_add_new_flag_dependency(flagging_mongo, mvrb):
-    current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
-    new_deps = ["FLAG5E", "FLAG6F"]
-    flagging_mongo.add_specific_flag_dependencies.return_value = "FLAG13M"
-    flagging_mongo.return_value.get_specific_flag_dependencies.return_value = current_flag_deps
-    mock_flagging_mongo = flagging_mongo
-    flag_id = "FLAG1A"
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
-                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
-    flag_dependencies = {"FLAG1A": {"FLAG2B", "FLAG3C"},
-                          "FLAG2B": {"FLAG3C"},
-                          "FLAG3C": set(),
-                          "FLAG4D": {"FLAG5E"},
-                          "FLAG5E": set(),
-                          "FLAG6F": set(),
-                          "FLAG7G": {"FLAG8G"},
-                          "FLAG8G": {"FLAG9I", "FLAG10J", "FLAG11K"},
-                          "FLAG9I": set(),
-                          "FLAG10J": {"FLAG9I"},
-                          "FLAG11K": set(),
-                          "FLAG12J": set()}
-    result = add_flag_dependencies(flag=flag_id, new_deps=new_deps, existing_flags=existing_flags, all_flag_dependencies=flag_dependencies, flagging_mongo=mock_flagging_mongo)
-    assert result.valid == True
-    assert result.message == "the following flag has been updated with new dependencies: " + flag_id
-    assert result.uuid == "FLAG13M"
+# #test, add new dependency to flag
+# @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# def test_add_new_flag_dependency(flagging_mongo, mvrb):
+#     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
+#     new_deps = ["FLAG5E", "FLAG6F"]
+#     flagging_mongo.add_specific_flag_dependencies.return_value = "FLAG13M"
+#     flagging_mongo.return_value.get_specific_flag_dependencies.return_value = current_flag_deps
+#     mock_flagging_mongo = flagging_mongo
+#     flag_id = "FLAG1A"
+#     existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
+#                                                        "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
+#     flag_dependencies = {"FLAG1A": {"FLAG2B", "FLAG3C"},
+#                           "FLAG2B": {"FLAG3C"},
+#                           "FLAG3C": set(),
+#                           "FLAG4D": {"FLAG5E"},
+#                           "FLAG5E": set(),
+#                           "FLAG6F": set(),
+#                           "FLAG7G": {"FLAG8G"},
+#                           "FLAG8G": {"FLAG9I", "FLAG10J", "FLAG11K"},
+#                           "FLAG9I": set(),
+#                           "FLAG10J": {"FLAG9I"},
+#                           "FLAG11K": set(),
+#                           "FLAG12J": set()}
+#     result = add_flag_dependencies(flag=flag_id, new_deps=new_deps, existing_flags=existing_flags, all_flag_dependencies=flag_dependencies, flagging_mongo=mock_flagging_mongo)
+#     assert result.valid == True
+#     assert result.message == "the following flag has been updated with new dependencies: " + flag_id
+#     assert result.uuid == "FLAG13M"
 
-#test, add new dependency to flag, missing flag_name/id (flag being modified)
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_add_new_flag_dependency_missing_flag(flagging_mongo, mvrb):
-    current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
-    new_deps = ["FLAG5E", "FLAG6F"]
-    flagging_mongo.add_specific_flag_dependencies.return_value = "FLAG13M"
-    flagging_mongo.return_value.get_specific_flag_dependencies.return_value = current_flag_deps
-    mock_flagging_mongo = flagging_mongo
-    flag_id = None
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
-                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
-    flag_dependencies = {"FLAG1A": {"FLAG2B", "FLAG3C"},
-                          "FLAG2B": {"FLAG3C"},
-                          "FLAG3C": set(),
-                          "FLAG4D": {"FLAG5E"},
-                          "FLAG5E": set(),
-                          "FLAG6F": set(),
-                          "FLAG7G": {"FLAG8G"},
-                          "FLAG8G": {"FLAG9I", "FLAG10J", "FLAG11K"},
-                          "FLAG9I": set(),
-                          "FLAG10J": {"FLAG9I"},
-                          "FLAG11K": set(),
-                          "FLAG12J": set()}
-    result = add_flag_dependencies(flag=flag_id, new_deps=new_deps, existing_flags=existing_flags, all_flag_dependencies=flag_dependencies, flagging_mongo=mock_flagging_mongo)
-    assert result.valid == False
-    assert result.message == "flag name not specified"
+# #test, add new dependency to flag, missing flag_name/id (flag being modified)
+# @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# def test_add_new_flag_dependency_missing_flag(flagging_mongo, mvrb):
+#     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
+#     new_deps = ["FLAG5E", "FLAG6F"]
+#     flagging_mongo.add_specific_flag_dependencies.return_value = "FLAG13M"
+#     flagging_mongo.return_value.get_specific_flag_dependencies.return_value = current_flag_deps
+#     mock_flagging_mongo = flagging_mongo
+#     flag_id = None
+#     existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
+#                                                        "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
+#     flag_dependencies = {"FLAG1A": {"FLAG2B", "FLAG3C"},
+#                           "FLAG2B": {"FLAG3C"},
+#                           "FLAG3C": set(),
+#                           "FLAG4D": {"FLAG5E"},
+#                           "FLAG5E": set(),
+#                           "FLAG6F": set(),
+#                           "FLAG7G": {"FLAG8G"},
+#                           "FLAG8G": {"FLAG9I", "FLAG10J", "FLAG11K"},
+#                           "FLAG9I": set(),
+#                           "FLAG10J": {"FLAG9I"},
+#                           "FLAG11K": set(),
+#                           "FLAG12J": set()}
+#     result = add_flag_dependencies(flag=flag_id, new_deps=new_deps, existing_flags=existing_flags, all_flag_dependencies=flag_dependencies, flagging_mongo=mock_flagging_mongo)
+#     assert result.valid == False
+#     assert result.message == "flag name not specified"
 
-#test, add new depdendnecy to flag, flag_name/id does not exist (flag being modified)
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_add_new_flag_dependency_flag_does_not_exist(flagging_mongo, mvrb):
-    current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
-    new_deps = ["FLAG5E", "FLAG6F"]
-    flagging_mongo.add_specific_flag_dependencies.return_value = "FLAG13M"
-    flagging_mongo.return_value.get_specific_flag_dependencies.return_value = current_flag_deps
-    mock_flagging_mongo = flagging_mongo
-    flag_id = "FLAG14N"
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
-                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
-    flag_dependencies = {"FLAG1A": {"FLAG2B", "FLAG3C"},
-                          "FLAG2B": {"FLAG3C"},
-                          "FLAG3C": set(),
-                          "FLAG4D": {"FLAG5E"},
-                          "FLAG5E": set(),
-                          "FLAG6F": set(),
-                          "FLAG7G": {"FLAG8G"},
-                          "FLAG8G": {"FLAG9I", "FLAG10J", "FLAG11K"},
-                          "FLAG9I": set(),
-                          "FLAG10J": {"FLAG9I"},
-                          "FLAG11K": set(),
-                          "FLAG12J": set()}
-    result = add_flag_dependencies(flag=flag_id, new_deps=new_deps, existing_flags=existing_flags, all_flag_dependencies=flag_dependencies, flagging_mongo=mock_flagging_mongo)
-    assert result.valid == False
-    assert result.message == "flag " + flag_id + " does not exist"
+# #test, add new depdendnecy to flag, flag_name/id does not exist (flag being modified)
+# @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# def test_add_new_flag_dependency_flag_does_not_exist(flagging_mongo, mvrb):
+#     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
+#     new_deps = ["FLAG5E", "FLAG6F"]
+#     flagging_mongo.add_specific_flag_dependencies.return_value = "FLAG13M"
+#     flagging_mongo.return_value.get_specific_flag_dependencies.return_value = current_flag_deps
+#     mock_flagging_mongo = flagging_mongo
+#     flag_id = "FLAG14N"
+#     existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
+#                                                        "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
+#     flag_dependencies = {"FLAG1A": {"FLAG2B", "FLAG3C"},
+#                           "FLAG2B": {"FLAG3C"},
+#                           "FLAG3C": set(),
+#                           "FLAG4D": {"FLAG5E"},
+#                           "FLAG5E": set(),
+#                           "FLAG6F": set(),
+#                           "FLAG7G": {"FLAG8G"},
+#                           "FLAG8G": {"FLAG9I", "FLAG10J", "FLAG11K"},
+#                           "FLAG9I": set(),
+#                           "FLAG10J": {"FLAG9I"},
+#                           "FLAG11K": set(),
+#                           "FLAG12J": set()}
+#     result = add_flag_dependencies(flag=flag_id, new_deps=new_deps, existing_flags=existing_flags, all_flag_dependencies=flag_dependencies, flagging_mongo=mock_flagging_mongo)
+#     assert result.valid == False
+#     assert result.message == "flag " + flag_id + " does not exist"
 
-#test, add new dependency to flag, missing flag_name/id (flag dependency being added)
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_add_new_flag_dependency_missing_new_deps(flagging_mongo, mvrb):
-    current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
-    new_deps = []
-    flagging_mongo.add_specific_flag_dependencies.return_value = "FLAG13M"
-    flagging_mongo.return_value.get_specific_flag_dependencies.return_value = current_flag_deps
-    mock_flagging_mongo = flagging_mongo
-    flag_id = "FLAG1A"
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
-                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
-    flag_dependencies = {"FLAG1A": {"FLAG2B", "FLAG3C"},
-                          "FLAG2B": {"FLAG3C"},
-                          "FLAG3C": set(),
-                          "FLAG4D": {"FLAG5E"},
-                          "FLAG5E": set(),
-                          "FLAG6F": set(),
-                          "FLAG7G": {"FLAG8G"},
-                          "FLAG8G": {"FLAG9I", "FLAG10J", "FLAG11K"},
-                          "FLAG9I": set(),
-                          "FLAG10J": {"FLAG9I"},
-                          "FLAG11K": set(),
-                          "FLAG12J": set()}
-    result = add_flag_dependencies(flag=flag_id, new_deps=new_deps, existing_flags=existing_flags, all_flag_dependencies=flag_dependencies, flagging_mongo=mock_flagging_mongo)
-    assert result.valid == False
-    assert result.message == "no new flag dependencies were identified"
+# #test, add new dependency to flag, missing flag_name/id (flag dependency being added)
+# @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# def test_add_new_flag_dependency_missing_new_deps(flagging_mongo, mvrb):
+#     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
+#     new_deps = []
+#     flagging_mongo.add_specific_flag_dependencies.return_value = "FLAG13M"
+#     flagging_mongo.return_value.get_specific_flag_dependencies.return_value = current_flag_deps
+#     mock_flagging_mongo = flagging_mongo
+#     flag_id = "FLAG1A"
+#     existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
+#                                                        "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
+#     flag_dependencies = {"FLAG1A": {"FLAG2B", "FLAG3C"},
+#                           "FLAG2B": {"FLAG3C"},
+#                           "FLAG3C": set(),
+#                           "FLAG4D": {"FLAG5E"},
+#                           "FLAG5E": set(),
+#                           "FLAG6F": set(),
+#                           "FLAG7G": {"FLAG8G"},
+#                           "FLAG8G": {"FLAG9I", "FLAG10J", "FLAG11K"},
+#                           "FLAG9I": set(),
+#                           "FLAG10J": {"FLAG9I"},
+#                           "FLAG11K": set(),
+#                           "FLAG12J": set()}
+#     result = add_flag_dependencies(flag=flag_id, new_deps=new_deps, existing_flags=existing_flags, all_flag_dependencies=flag_dependencies, flagging_mongo=mock_flagging_mongo)
+#     assert result.valid == False
+#     assert result.message == "no new flag dependencies were identified"
 
-#test, add new dependeny to flag, flag_name/id does not exist (flag dependency being added)
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_add_new_flag_dependency_new_dep_does_not_exist(flagging_mongo, mvrb):
-    current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
-    new_deps = ["FLAG5E", "FLAG16P"]
-    flagging_mongo.add_specific_flag_dependencies.return_value = "FLAG13M"
-    flagging_mongo.return_value.get_specific_flag_dependencies.return_value = current_flag_deps
-    mock_flagging_mongo = flagging_mongo
-    flag_id = "FLAG1A"
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
-                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
-    flag_dependencies = {"FLAG1A": {"FLAG2B", "FLAG3C"},
-                          "FLAG2B": {"FLAG3C"},
-                          "FLAG3C": set(),
-                          "FLAG4D": {"FLAG5E"},
-                          "FLAG5E": set(),
-                          "FLAG6F": set(),
-                          "FLAG7G": {"FLAG8G"},
-                          "FLAG8G": {"FLAG9I", "FLAG10J", "FLAG11K"},
-                          "FLAG9I": set(),
-                          "FLAG10J": {"FLAG9I"},
-                          "FLAG11K": set(),
-                          "FLAG12J": set()}
-    result = add_flag_dependencies(flag=flag_id, new_deps=new_deps, existing_flags=existing_flags, all_flag_dependencies=flag_dependencies, flagging_mongo=mock_flagging_mongo)
-    assert result.valid == False
-    assert result.message == "the following flag attempting to be added as new dependencies do not exist: " + "FLAG16P"
+# #test, add new dependeny to flag, flag_name/id does not exist (flag dependency being added)
+# @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# def test_add_new_flag_dependency_new_dep_does_not_exist(flagging_mongo, mvrb):
+#     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
+#     new_deps = ["FLAG5E", "FLAG16P"]
+#     flagging_mongo.add_specific_flag_dependencies.return_value = "FLAG13M"
+#     flagging_mongo.return_value.get_specific_flag_dependencies.return_value = current_flag_deps
+#     mock_flagging_mongo = flagging_mongo
+#     flag_id = "FLAG1A"
+#     existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
+#                                                        "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
+#     flag_dependencies = {"FLAG1A": {"FLAG2B", "FLAG3C"},
+#                           "FLAG2B": {"FLAG3C"},
+#                           "FLAG3C": set(),
+#                           "FLAG4D": {"FLAG5E"},
+#                           "FLAG5E": set(),
+#                           "FLAG6F": set(),
+#                           "FLAG7G": {"FLAG8G"},
+#                           "FLAG8G": {"FLAG9I", "FLAG10J", "FLAG11K"},
+#                           "FLAG9I": set(),
+#                           "FLAG10J": {"FLAG9I"},
+#                           "FLAG11K": set(),
+#                           "FLAG12J": set()}
+#     result = add_flag_dependencies(flag=flag_id, new_deps=new_deps, existing_flags=existing_flags, all_flag_dependencies=flag_dependencies, flagging_mongo=mock_flagging_mongo)
+#     assert result.valid == False
+#     assert result.message == "the following flag attempting to be added as new dependencies do not exist: " + "FLAG16P"
 
-#test, add new dependeny to flag, flag is already dependent on flag dependency being added
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_add_new_flag_dependency_flag_already_contains_dep(flagging_mongo, mvrb):
-    current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
-    new_deps = ["FLAG5E", "FLAG2B"]
-    flagging_mongo.add_specific_flag_dependencies.return_value = "FLAG13M"
-    flagging_mongo.get_specific_flag_dependencies.return_value = current_flag_deps
-    mock_flagging_mongo = flagging_mongo
-    flag_id = "FLAG1A"
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
-                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
-    flag_dependencies = {"FLAG1A": {"FLAG2B", "FLAG3C"},
-                          "FLAG2B": {"FLAG3C"},
-                          "FLAG3C": set(),
-                          "FLAG4D": {"FLAG5E"},
-                          "FLAG5E": set(),
-                          "FLAG6F": set(),
-                          "FLAG7G": {"FLAG8G"},
-                          "FLAG8G": {"FLAG9I", "FLAG10J", "FLAG11K"},
-                          "FLAG9I": set(),
-                          "FLAG10J": {"FLAG9I"},
-                          "FLAG11K": set(),
-                          "FLAG12L": {"FLAG3C"}}
-    result = add_flag_dependencies(flag=flag_id, new_deps=new_deps, existing_flags=existing_flags, all_flag_dependencies=flag_dependencies, flagging_mongo=mock_flagging_mongo)
-    assert result.valid == False
-    assert result.message == "the following flag attempting to be added as a new dependency already exists as a dependency (duplicate dependency): " + "FLAG2B"
+# #test, add new dependeny to flag, flag is already dependent on flag dependency being added
+# @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# def test_add_new_flag_dependency_flag_already_contains_dep(flagging_mongo, mvrb):
+#     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
+#     new_deps = ["FLAG5E", "FLAG2B"]
+#     flagging_mongo.add_specific_flag_dependencies.return_value = "FLAG13M"
+#     flagging_mongo.get_specific_flag_dependencies.return_value = current_flag_deps
+#     mock_flagging_mongo = flagging_mongo
+#     flag_id = "FLAG1A"
+#     existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
+#                                                        "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
+#     flag_dependencies = {"FLAG1A": {"FLAG2B", "FLAG3C"},
+#                           "FLAG2B": {"FLAG3C"},
+#                           "FLAG3C": set(),
+#                           "FLAG4D": {"FLAG5E"},
+#                           "FLAG5E": set(),
+#                           "FLAG6F": set(),
+#                           "FLAG7G": {"FLAG8G"},
+#                           "FLAG8G": {"FLAG9I", "FLAG10J", "FLAG11K"},
+#                           "FLAG9I": set(),
+#                           "FLAG10J": {"FLAG9I"},
+#                           "FLAG11K": set(),
+#                           "FLAG12L": {"FLAG3C"}}
+#     result = add_flag_dependencies(flag=flag_id, new_deps=new_deps, existing_flags=existing_flags, all_flag_dependencies=flag_dependencies, flagging_mongo=mock_flagging_mongo)
+#     assert result.valid == False
+#     assert result.message == "the following flag attempting to be added as a new dependency already exists as a dependency (duplicate dependency): " + "FLAG2B"
 
-#test, add new dependency to flag, new depdendency being added results in cyclical flag
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_add_new_flag_dependency_results_in_cyclical_flag_dep(flagging_mongo, mvrb):
-    current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
-    new_deps = ["FLAG5E", "FLAG12L"]
-    flagging_mongo.add_specific_flag_dependencies.return_value = "FLAG13M"
-    flagging_mongo.get_specific_flag_dependencies.return_value = current_flag_deps
-    mock_flagging_mongo = flagging_mongo
-    flag_id = "FLAG1A"
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
-                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
-    flag_dependencies = {"FLAG1A": {"FLAG2B", "FLAG3C"},
-                          "FLAG2B": {"FLAG3C"},
-                          "FLAG3C": set(),
-                          "FLAG4D": {"FLAG5E"},
-                          "FLAG5E": set(),
-                          "FLAG6F": set(),
-                          "FLAG7G": {"FLAG8G"},
-                          "FLAG8G": {"FLAG9I", "FLAG10J", "FLAG11K"},
-                          "FLAG9I": set(),
-                          "FLAG10J": {"FLAG9I"},
-                          "FLAG11K": set(),
-                          "FLAG12L": {"FLAG1A"}}
-    result = add_flag_dependencies(flag=flag_id, new_deps=new_deps, existing_flags=existing_flags, all_flag_dependencies=flag_dependencies, flagging_mongo=mock_flagging_mongo)
-    assert result.valid == False
-    assert result.message == "the following flag dependency resulted in cyclical dependencies: " + "FLAG12L"
+# #test, add new dependency to flag, new depdendency being added results in cyclical flag
+# @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# def test_add_new_flag_dependency_results_in_cyclical_flag_dep(flagging_mongo, mvrb):
+#     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
+#     new_deps = ["FLAG5E", "FLAG12L"]
+#     flagging_mongo.add_specific_flag_dependencies.return_value = "FLAG13M"
+#     flagging_mongo.get_specific_flag_dependencies.return_value = current_flag_deps
+#     mock_flagging_mongo = flagging_mongo
+#     flag_id = "FLAG1A"
+#     existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
+#                                                        "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
+#     flag_dependencies = {"FLAG1A": {"FLAG2B", "FLAG3C"},
+#                           "FLAG2B": {"FLAG3C"},
+#                           "FLAG3C": set(),
+#                           "FLAG4D": {"FLAG5E"},
+#                           "FLAG5E": set(),
+#                           "FLAG6F": set(),
+#                           "FLAG7G": {"FLAG8G"},
+#                           "FLAG8G": {"FLAG9I", "FLAG10J", "FLAG11K"},
+#                           "FLAG9I": set(),
+#                           "FLAG10J": {"FLAG9I"},
+#                           "FLAG11K": set(),
+#                           "FLAG12L": {"FLAG1A"}}
+#     result = add_flag_dependencies(flag=flag_id, new_deps=new_deps, existing_flags=existing_flags, all_flag_dependencies=flag_dependencies, flagging_mongo=mock_flagging_mongo)
+#     assert result.valid == False
+#     assert result.message == "the following flag dependency resulted in cyclical dependencies: " + "FLAG12L"
 
-#test, remove flag deps
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_remove_flag_dependencies(flagging_mongo, mvrb):
-    mock_flagging_mongo = flagging_mongo
-    current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
-    deps_2_remove = ["FLAG2B", "FLAG3C"]
-    flagging_mongo.remove_specific_flag_dependencies.return_value = "FLAG13M"
-    flagging_mongo.get_specific_flag_dependencies.return_value = current_flag_deps
-    flag_id = "FLAG1A"
-    flag_dependencies = {"FLAG1A": {"FLAG2B", "FLAG3C"},
-                         "FLAG2B": {"FLAG3C"},
-                         "FLAG3C": set(),
-                         "FLAG4D": {"FLAG5E"},
-                         "FLAG5E": set(),
-                         "FLAG6F": set(),
-                         "FLAG7G": {"FLAG8G"},
-                         "FLAG8G": {"FLAG9I", "FLAG10J", "FLAG11K"},
-                         "FLAG9I": set(),
-                         "FLAG10J": {"FLAG9I"},
-                         "FLAG11K": set(),
-                         "FLAG12L": {"FLAG3C"}}
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
-                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
-    result = remove_flag_dependencies(flag=flag_id, deps_2_remove=deps_2_remove, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
-    assert result.valid == True
-    assert result.message == "the following dependencies were removed from flag " + flag_id + ": " + (", ".join(deps_2_remove))
-    assert result.uuid == "FLAG13M"
+# #test, remove flag deps
+# @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# def test_remove_flag_dependencies(flagging_mongo, mvrb):
+#     mock_flagging_mongo = flagging_mongo
+#     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
+#     deps_2_remove = ["FLAG2B", "FLAG3C"]
+#     flagging_mongo.remove_specific_flag_dependencies.return_value = "FLAG13M"
+#     flagging_mongo.get_specific_flag_dependencies.return_value = current_flag_deps
+#     flag_id = "FLAG1A"
+#     flag_dependencies = {"FLAG1A": {"FLAG2B", "FLAG3C"},
+#                          "FLAG2B": {"FLAG3C"},
+#                          "FLAG3C": set(),
+#                          "FLAG4D": {"FLAG5E"},
+#                          "FLAG5E": set(),
+#                          "FLAG6F": set(),
+#                          "FLAG7G": {"FLAG8G"},
+#                          "FLAG8G": {"FLAG9I", "FLAG10J", "FLAG11K"},
+#                          "FLAG9I": set(),
+#                          "FLAG10J": {"FLAG9I"},
+#                          "FLAG11K": set(),
+#                          "FLAG12L": {"FLAG3C"}}
+#     existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
+#                                                        "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
+#     result = remove_flag_dependencies(flag=flag_id, deps_2_remove=deps_2_remove, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+#     assert result.valid == True
+#     assert result.message == "the following dependencies were removed from flag " + flag_id + ": " + (", ".join(deps_2_remove))
+#     assert result.uuid == "FLAG13M"
 
 #test, remove flag deps, missing original flag
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_remove_flag_dependencies_missing_original_flag(flagging_mongo, mvrb):
-    mock_flagging_mongo = flagging_mongo
-    current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
-    deps_2_remove = ["FLAG2B", "FLAG3C"]
-    flagging_mongo.remove_specific_flag_dependencies.return_value = "FLAG13M"
-    flagging_mongo.get_specific_flag_dependencies.return_value = current_flag_deps
-    flag_id = None
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
-                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
-    result = remove_flag_dependencies(flag=flag_id, deps_2_remove=deps_2_remove, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
-    assert result.valid == False
-    assert result.message == "flag name not specified"
+# @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# def test_remove_flag_dependencies_missing_original_flag(flagging_mongo, mvrb):
+#     mock_flagging_mongo = flagging_mongo
+#     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
+#     deps_2_remove = ["FLAG2B", "FLAG3C"]
+#     flagging_mongo.remove_specific_flag_dependencies.return_value = "FLAG13M"
+#     flagging_mongo.get_specific_flag_dependencies.return_value = current_flag_deps
+#     flag_id = None
+#     existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
+#                                                        "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
+#     result = remove_flag_dependencies(flag=flag_id, deps_2_remove=deps_2_remove, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+#     assert result.valid == False
+#     assert result.message == "flag name not specified"
 
-#test, remove flag deps, original flag does not exist
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_remove_flag_dependencies_orginal_flag_does_not_exist(flagging_mongo, mvrb):
-    mock_flagging_mongo = flagging_mongo
-    current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
-    deps_2_remove = ["FLAG2B", "FLAG3C"]
-    flagging_mongo.remove_specific_flag_dependencies.return_value = "FLAG13M"
-    flagging_mongo.get_specific_flag_dependencies.return_value = current_flag_deps
-    flag_id = "FLAG14N"
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
-                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
-    result = remove_flag_dependencies(flag=flag_id, deps_2_remove=deps_2_remove, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
-    assert result.valid == False
-    assert result.message == "flag " + flag_id + " does not exist"
+# #test, remove flag deps, original flag does not exist
+# @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# def test_remove_flag_dependencies_orginal_flag_does_not_exist(flagging_mongo, mvrb):
+#     mock_flagging_mongo = flagging_mongo
+#     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
+#     deps_2_remove = ["FLAG2B", "FLAG3C"]
+#     flagging_mongo.remove_specific_flag_dependencies.return_value = "FLAG13M"
+#     flagging_mongo.get_specific_flag_dependencies.return_value = current_flag_deps
+#     flag_id = "FLAG14N"
+#     existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
+#                                                        "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
+#     result = remove_flag_dependencies(flag=flag_id, deps_2_remove=deps_2_remove, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+#     assert result.valid == False
+#     assert result.message == "flag " + flag_id + " does not exist"
 
-#test, remove flag deps, missing deps 2 remove
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_remove_flag_dependencies_missing_dependencies_to_remove(flagging_mongo, mvrb):
-    mock_flagging_mongo = flagging_mongo
-    current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
-    deps_2_remove = []
-    flagging_mongo.remove_specific_flag_dependencies.return_value = "FLAG13M"
-    flagging_mongo.get_specific_flag_dependencies.return_value = current_flag_deps
-    flag_id = "FLAG1A"
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
-                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
-    result = remove_flag_dependencies(flag=flag_id, deps_2_remove=deps_2_remove, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
-    assert result.valid == False
-    assert result.message == "no dependencies to remove were identified"
+# #test, remove flag deps, missing deps 2 remove
+# @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# def test_remove_flag_dependencies_missing_dependencies_to_remove(flagging_mongo, mvrb):
+#     mock_flagging_mongo = flagging_mongo
+#     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
+#     deps_2_remove = []
+#     flagging_mongo.remove_specific_flag_dependencies.return_value = "FLAG13M"
+#     flagging_mongo.get_specific_flag_dependencies.return_value = current_flag_deps
+#     flag_id = "FLAG1A"
+#     existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
+#                                                        "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
+#     result = remove_flag_dependencies(flag=flag_id, deps_2_remove=deps_2_remove, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+#     assert result.valid == False
+#     assert result.message == "no dependencies to remove were identified"
 
-#test, remove flag deps, deps 2 remove do not exist
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_remove_flag_dependencies_deps_to_remove_do_not_exist(flagging_mongo, mvrb):
-    mock_flagging_mongo = flagging_mongo
-    current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
-    deps_2_remove = ["FLAG2B", "FLAG3C", "FLAG14N"]
-    flagging_mongo.remove_specific_flag_dependencies.return_value = "FLAG13M"
-    flagging_mongo.get_specific_flag_dependencies.return_value = current_flag_deps
-    flag_id = "FLAG1A"
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
-                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
-    result = remove_flag_dependencies(flag=flag_id, deps_2_remove=deps_2_remove, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
-    assert result.valid == False
-    assert result.message == "the following flag is not part of the flag dependency set: " + "FLAG14N"
+# #test, remove flag deps, deps 2 remove do not exist
+# @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# def test_remove_flag_dependencies_deps_to_remove_do_not_exist(flagging_mongo, mvrb):
+#     mock_flagging_mongo = flagging_mongo
+#     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
+#     deps_2_remove = ["FLAG2B", "FLAG3C", "FLAG14N"]
+#     flagging_mongo.remove_specific_flag_dependencies.return_value = "FLAG13M"
+#     flagging_mongo.get_specific_flag_dependencies.return_value = current_flag_deps
+#     flag_id = "FLAG1A"
+#     existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
+#                                                        "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
+#     result = remove_flag_dependencies(flag=flag_id, deps_2_remove=deps_2_remove, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+#     assert result.valid == False
+#     assert result.message == "the following flag is not part of the flag dependency set: " + "FLAG14N"
 
-#test, remove flag deps, deps 2 remove do not exist as current deps
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_remove_flag_dependencies_deps_to_remove_do_not_exist_as_current_dependencies(flagging_mongo, mvrb):
-    mock_flagging_mongo = flagging_mongo
-    current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
-    deps_2_remove = ["FLAG2B", "FLAG3C", "FLAG5E", "FLAG6F"]
-    flagging_mongo.remove_specific_flag_dependencies.return_value = "FLAG13M"
-    flagging_mongo.get_specific_flag_dependencies.return_value = current_flag_deps
-    flag_id = "FLAG1A"
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
-                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
-    result = remove_flag_dependencies(flag=flag_id, deps_2_remove=deps_2_remove, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
-    print("hello")
-    assert result.valid == False
-    assert result.message == "the following flags are not part of the flag dependency set: FLAG5E, FLAG6F"
+# #test, remove flag deps, deps 2 remove do not exist as current deps
+# @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# def test_remove_flag_dependencies_deps_to_remove_do_not_exist_as_current_dependencies(flagging_mongo, mvrb):
+#     mock_flagging_mongo = flagging_mongo
+#     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
+#     deps_2_remove = ["FLAG2B", "FLAG3C", "FLAG5E", "FLAG6F"]
+#     flagging_mongo.remove_specific_flag_dependencies.return_value = "FLAG13M"
+#     flagging_mongo.get_specific_flag_dependencies.return_value = current_flag_deps
+#     flag_id = "FLAG1A"
+#     existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
+#                                                        "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
+#     result = remove_flag_dependencies(flag=flag_id, deps_2_remove=deps_2_remove, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+#     print("hello")
+#     assert result.valid == False
+#     assert result.message == "the following flags are not part of the flag dependency set: FLAG5E, FLAG6F"
 
 
 #test, create flag group
@@ -1074,13 +1074,13 @@ def test_add_flags_to_flag_group(flagging_mongo, mgfd, mvrb):
     existing_flags = pull_flag_ids()
     existing_flag_groups = pull_flag_group_ids()
     flag_group_id = ObjectId("B11111111111111111111101")
-    new_flags = [ObjectId("A11111111111111111111103"), ObjectId("A11111111111111111111104")]
+    new_flags = [ObjectId("A11111111111111111111103")]
     flags_in_flag_group = [ObjectId("A11111111111111111111101"), ObjectId("A11111111111111111111102")]
     result, response_code = add_flag_to_flag_group(flag_group_id=str(flag_group_id), new_flags=[str(x) for x in new_flags], existing_flags=existing_flags,
                                     existing_flag_groups=existing_flag_groups, flags_in_flag_group=flags_in_flag_group,
                                     flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
-    assert result.message == "flag group " + str(flag_group_id) + " has been updated with flag(s) " + (", ".join([str(x) for x in new_flags]))
+    assert result.message == "flag group " + str(flag_group_id) + " has been updated with flag(s) " + (", ".join([str(x) for x in new_flags]) + "\n")
     assert result.uuid == mock_return_value
     assert response_code == 200
 
@@ -1101,7 +1101,7 @@ def test_add_flags_to_flag_group_2(flagging_mongo, mgfd, mvrb):
                                     existing_flag_groups=existing_flag_groups, flags_in_flag_group=flags_in_flag_group,
                                     flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
-    assert result.message == "flag group " + str(flag_group_id) + " has been updated with flag(s) " + (", ".join([str(x) for x in new_flags]))
+    assert result.message == "flag group " + str(flag_group_id) + " has been updated with flag(s) " + (", ".join([str(x) for x in new_flags])) + "\n"
     assert result.uuid == mock_return_value
     assert response_code == 200
 
@@ -1279,7 +1279,7 @@ def test_add_flags_to_flag_group_cyclical_flag_not_refereced(flagging_mongo, mgf
                                     existing_flag_groups=existing_flag_groups, flags_in_flag_group=flags_in_flag_group,
                                     flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
-    assert result.message == "flag group " + str(flag_group_id) + " has been updated with flag(s) " + (", ".join([str(x) for x in new_flags]))
+    assert result.message == "flag group " + str(flag_group_id) + " has been updated with flag(s) " + (", ".join([str(x) for x in new_flags])) + "\n"
     assert result.uuid == mock_return_value
     assert response_code == 200
 
@@ -1447,82 +1447,82 @@ def test_remove_flag_from_flag_group_flag_group_does_not_exist(flagging_mongo, m
     # assert result.valid == False
     # assert result.message == "the following flags are not part of flag group " + flag_group_name + ": " + ("").join(flags_2_remove)
 
-#test, create flag dependency
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_create_flag_dependency(flagging_mongo, mvrb):
-    flagging_mongo.add_flag_dependencies.return_value = "flag_dep_key_1A"
-    existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
-    flag_name = "FLAG4D"
-    new_flag_deps = ["FLAG2B", "FLAG5E"],
-    result = create_flag_dependency(flag_name=flag_name, existing_flag_dep_keys=existing_flag_dep_keys, flag_dependencies=new_flag_deps, flagging_mongo=flagging_mongo)
-    assert result.valid == True
-    assert result.message == "flag dependency data for flag " + flag_name + " has been created"
-    assert result.uuid == "flag_dep_key_1A"
+# #test, create flag dependency
+# @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# def test_create_flag_dependency(flagging_mongo, mvrb):
+#     flagging_mongo.add_flag_dependencies.return_value = "flag_dep_key_1A"
+#     existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
+#     flag_name = "FLAG4D"
+#     new_flag_deps = ["FLAG2B", "FLAG5E"],
+#     result = create_flag_dependency(flag_name=flag_name, existing_flag_dep_keys=existing_flag_dep_keys, flag_dependencies=new_flag_deps, flagging_mongo=flagging_mongo)
+#     assert result.valid == True
+#     assert result.message == "flag dependency data for flag " + flag_name + " has been created"
+#     assert result.uuid == "flag_dep_key_1A"
 
-#test, create flag dependency, flag name not passed
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_create_flag_dependency_no_flag_name(flagging_mongo, mvrb):
-    flagging_mongo.add_flag_dependencies.return_value = "flag_dep_key_1A"
-    existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
-    flag_name = None
-    new_flag_deps = ["FLAG2B", "FLAG5E"],
-    result = create_flag_dependency(flag_name=flag_name, existing_flag_dep_keys=existing_flag_dep_keys,
-                                    flag_dependencies=new_flag_deps, flagging_mongo=flagging_mongo)
-    assert result.valid == False
-    assert result.message == "flag name not specified"
-    assert result.uuid == None
+# #test, create flag dependency, flag name not passed
+# @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# def test_create_flag_dependency_no_flag_name(flagging_mongo, mvrb):
+#     flagging_mongo.add_flag_dependencies.return_value = "flag_dep_key_1A"
+#     existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
+#     flag_name = None
+#     new_flag_deps = ["FLAG2B", "FLAG5E"],
+#     result = create_flag_dependency(flag_name=flag_name, existing_flag_dep_keys=existing_flag_dep_keys,
+#                                     flag_dependencies=new_flag_deps, flagging_mongo=flagging_mongo)
+#     assert result.valid == False
+#     assert result.message == "flag name not specified"
+#     assert result.uuid == None
 
-#test, create flag dependency, flag name already in existing flag set
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_create_flag_dependency_flag_already_exists(flagging_mongo, mvrb):
-    flagging_mongo.add_flag_dependencies.return_value = "flag_dep_key_1A"
-    existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
-    flag_name = "FLAG3C"
-    new_flag_deps = ["FLAG2B", "FLAG5E"],
-    result = create_flag_dependency(flag_name=flag_name, existing_flag_dep_keys=existing_flag_dep_keys,
-                                    flag_dependencies=new_flag_deps, flagging_mongo=flagging_mongo)
-    assert result.valid == False
-    assert result.message == "flag dependencies for flag " + flag_name + " already exist"
-    assert result.uuid == None
+# #test, create flag dependency, flag name already in existing flag set
+# @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# def test_create_flag_dependency_flag_already_exists(flagging_mongo, mvrb):
+#     flagging_mongo.add_flag_dependencies.return_value = "flag_dep_key_1A"
+#     existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
+#     flag_name = "FLAG3C"
+#     new_flag_deps = ["FLAG2B", "FLAG5E"],
+#     result = create_flag_dependency(flag_name=flag_name, existing_flag_dep_keys=existing_flag_dep_keys,
+#                                     flag_dependencies=new_flag_deps, flagging_mongo=flagging_mongo)
+#     assert result.valid == False
+#     assert result.message == "flag dependencies for flag " + flag_name + " already exist"
+#     assert result.uuid == None
 
-#test, delete flag dependnecy
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_delete_flag_dependency(flagging_mongo, mvrb):
-    flagging_mongo.remove_flag_dependencies.return_value = "Flag_ID_XX_RM"
-    existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
-    flag_id = "FLAG1A"
-    result = delete_flag_dependency(flag_id, existing_flag_dep_keys, flagging_mongo)
-    assert result.valid == True
-    assert result.message == "flag " + flag_id + "has been removed from flag dependency database"
-    assert result.uuid == "Flag_ID_XX_RM"
+# #test, delete flag dependnecy
+# @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# def test_delete_flag_dependency(flagging_mongo, mvrb):
+#     flagging_mongo.remove_flag_dependencies.return_value = "Flag_ID_XX_RM"
+#     existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
+#     flag_id = "FLAG1A"
+#     result = delete_flag_dependency(flag_id, existing_flag_dep_keys, flagging_mongo)
+#     assert result.valid == True
+#     assert result.message == "flag " + flag_id + "has been removed from flag dependency database"
+#     assert result.uuid == "Flag_ID_XX_RM"
 
-#test, delete flag dependency, flag id not passed
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_delete_flag_dependency_flag_id_not_passed(flagging_mongo, mvrb):
-    flagging_mongo.remove_flag_dependencies.return_value = "Flag_ID_XX_RM"
-    existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
-    flag_id = None
-    result = delete_flag_dependency(flag_id, existing_flag_dep_keys, flagging_mongo)
-    assert result.valid == False
-    assert result.message == "flag id not specified"
-    assert result.uuid == None
+# #test, delete flag dependency, flag id not passed
+# @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# def test_delete_flag_dependency_flag_id_not_passed(flagging_mongo, mvrb):
+#     flagging_mongo.remove_flag_dependencies.return_value = "Flag_ID_XX_RM"
+#     existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
+#     flag_id = None
+#     result = delete_flag_dependency(flag_id, existing_flag_dep_keys, flagging_mongo)
+#     assert result.valid == False
+#     assert result.message == "flag id not specified"
+#     assert result.uuid == None
 
-#test, delete flag dependnecy, flag id not in existing flag dependency database
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_delete_flag_dependency_flag_id_does_not_exist(flagging_mongo, mvrb):
-    flagging_mongo.remove_flag_dependencies.return_value = "Flag_ID_XX_RM"
-    existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
-    flag_id = "FLAG4D"
-    result = delete_flag_dependency(flag_id, existing_flag_dep_keys, flagging_mongo)
-    assert result.valid == False
-    assert result.message == "flag dependencies for flag " + flag_id + " do not exist"
-    assert result.uuid == None
+# #test, delete flag dependnecy, flag id not in existing flag dependency database
+# @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# def test_delete_flag_dependency_flag_id_does_not_exist(flagging_mongo, mvrb):
+#     flagging_mongo.remove_flag_dependencies.return_value = "Flag_ID_XX_RM"
+#     existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
+#     flag_id = "FLAG4D"
+#     result = delete_flag_dependency(flag_id, existing_flag_dep_keys, flagging_mongo)
+#     assert result.valid == False
+#     assert result.message == "flag dependencies for flag " + flag_id + " do not exist"
+#     assert result.uuid == None
 
 #test, add_dependencies_to_flag
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
@@ -1532,10 +1532,11 @@ def test_add_flag_dependencies_to_flag(flagging_mongo, mvrb):
     existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
     flag_id = "FLAG1A"
     new_deps_2_add = ["FLAG2B"]
-    result = add_dependencies_to_flag(flag_id, existing_flag_dep_keys, new_deps_2_add, flagging_mongo)
+    result, response_code = add_dependencies_to_flag(flag_id, existing_flag_dep_keys, new_deps_2_add, flagging_mongo)
     assert result.valid == True
     assert result.message == "dependencies have been updated"
     assert result.uuid == "FLAG_ID_DEPS_ADDED_1A"
+    assert response_code == 200
 
 #test, add_dependencies_to_flag, flag id not passed
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
@@ -1545,10 +1546,11 @@ def test_add_flag_dependencies_to_flag_missing_flag_id(flagging_mongo, mvrb):
     existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
     flag_id = None
     new_deps_2_add = ["FLAG2B"]
-    result = add_dependencies_to_flag(flag_id, existing_flag_dep_keys, new_deps_2_add, flagging_mongo)
+    result, response_code = add_dependencies_to_flag(flag_id, existing_flag_dep_keys, new_deps_2_add, flagging_mongo)
     assert result.valid == False
     assert result.message == "flag id not specified"
     assert result.uuid == None
+    assert response_code >= 400
 
 #tests, add deps to flag, flag_id does not exist as an existing flag dep key
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
@@ -1558,10 +1560,11 @@ def test_add_flag_dependencies_to_flag_flag_id_does_not_exist(flagging_mongo, mv
     existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
     flag_id = "FLAG4D"
     new_deps_2_add = ["FLAG2B"]
-    result = add_dependencies_to_flag(flag_id, existing_flag_dep_keys, new_deps_2_add, flagging_mongo)
+    result, response_code = add_dependencies_to_flag(flag_id, existing_flag_dep_keys, new_deps_2_add, flagging_mongo)
     assert result.valid == False
     assert result.message == "flag does not exist in flag dependency database"
     assert result.uuid == None
+    assert response_code >= 400
 
 #test, remove deps from flag
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
@@ -1571,10 +1574,11 @@ def test_remove_flag_dependencies_from_flag(flagging_mongo, mvrb):
     flag_id = "FLAG2B"
     existing_flag_dep_keys = ['FLAG1A', "FLAG2B", "FLAG3C"]
     deps_2_remove = ["FLAG1A"]
-    result = remove_dependencies_from_flag(flag_id, existing_flag_dep_keys, deps_2_remove, flagging_mongo)
+    result, response_code = remove_dependencies_from_flag(flag_id, existing_flag_dep_keys, deps_2_remove, flagging_mongo)
     assert result.valid == True
     assert result.message == "dependencies have been updated"
     assert result.uuid == "FLAG_ID_DEP_RM_1A"
+    assert response_code == 200
 
 #test, remove deps from flag, flag id not passed
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
@@ -1584,21 +1588,23 @@ def test_remove_flag_dependencies_from_flag_missing_flag_id(flagging_mongo, mvrb
     flag_id = None
     existing_flag_dep_keys = ['FLAG1A', "FLAG2B", "FLAG3C"]
     deps_2_remove = ["FLAG1A"]
-    result = remove_dependencies_from_flag(flag_id, existing_flag_dep_keys, deps_2_remove, flagging_mongo)
+    result, reponse_code  = remove_dependencies_from_flag(flag_id, existing_flag_dep_keys, deps_2_remove, flagging_mongo)
     assert result.valid == False
     assert result.message == "flag id not specified"
     assert result.uuid == None
+    assert response_code >= 400
 
 #test, remove deps from flag, flag_id does not exist as an existing flag dep key
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
 def test_remove_flag_dependencies_from_flag_flag_id_does_not_exist(flagging_mongo, mvrb):
     flagging_mongo.remove_specific_flag_dependencies.return_value = "FLAG_ID_DEP_RM_1A"
-    flag_id = "FLAG4D"
-    existing_flag_dep_keys = ['FLAG1A', "FLAG2B", "FLAG3C"]
-    deps_2_remove = ["FLAG1A"]
-    result = remove_dependencies_from_flag(flag_id, existing_flag_dep_keys, deps_2_remove, flagging_mongo)
+    flag_id = "1"*22 + "4D"
+    existing_flag_dep_keys = ["1"*21 + "1AD", "1"*21 + "2BD"]
+    deps_2_remove = ["1"*22 + "1A"]
+    result, response_code = remove_dependencies_from_flag(flag_id, existing_flag_dep_keys, deps_2_remove, flagging_mongo)
     assert result.valid == False
-    assert result.message == "flag does not exist in flag dependency database"
+    assert result.message == "flag dep does not exist in flag dependency database"
     assert result.uuid == None
+    assert response_code >= 400
 
