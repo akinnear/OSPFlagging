@@ -965,7 +965,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                             ", ".join(str(x) for x in cyclical_errors))
             else:
                 cyclical_errors = []
-            flag_spec_schema_object, fli_rc = get_specific_flag(flag_id=ObjectId(new_flags[0]), existing_flags=flagging_mongo.get_flag_ids(), flagging_mongo=flagging_mongo)
+            flag_spec_schema_object, fli_rc = get_specific_flag(flag_id=ObjectId(new_flags[0]), existing_flags=existing_flags, flagging_mongo=flagging_mongo)
             referenced_flag_names_in_flag_id = flag_spec_schema_object.logic['referenced_flags']
             referenced_flags = []
             for x in referenced_flag_names_in_flag_id:
