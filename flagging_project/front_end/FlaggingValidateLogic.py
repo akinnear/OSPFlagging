@@ -1,6 +1,5 @@
 from flag_feeders.FlagFeederService import pull_flag_feeders
 from flagging.FlagLogicInformation import FlagLogicInformation
-from front_end.FlaggingDependencies import get_flag_dependencies
 from flagging.FlaggingValidation import validate_flag_logic_information
 from front_end.ReferencedFlag import ReferencedFlag
 
