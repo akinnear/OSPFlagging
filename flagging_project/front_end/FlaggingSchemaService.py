@@ -1409,7 +1409,7 @@ def add_dependencies_to_flag(flag_dep_id, existing_flag_dep_keys: [], new_depend
         try:
             if ObjectId(flag_dep_id) not in existing_flag_dep_keys:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                               message="flag_dep does not exist in flag dependency database",
+                                                               message="flag dep does not exist in flag dependency database",
                                                                simple_message="flag dep does not exist in flag dependency database")
                 response_code = 404
         except Exception as e:
