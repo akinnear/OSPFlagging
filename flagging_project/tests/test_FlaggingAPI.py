@@ -1,11 +1,7 @@
 import pytest
 from flask import Flask
 from handlers.FlaggingAPI import make_routes
-from flag_data.FlaggingMongo import FlaggingMongo
-from testcontainers.mongodb import MongoDbContainer
-from integration_tests import MONGO_DOCKER_IMAGE
 from app import _create_flagging_mongo
-import json
 import re
 from random_object_id import generate
 from flag_names.FlagService import pull_flag_logic_information
@@ -17,22 +13,11 @@ from flagging.TypeValidationResults import TypeValidationResults
 from flagging.ErrorInformation import ErrorInformation
 from unittest import mock
 
-# def make_flag_data_pretty(payload):
-#     data = payload.split("\\")
-#     my_dict = {}
-#     keys = ["valid", "message", "simple_message", "uuid", "flag_name", "flag_logic"]
-#     for i in range(0, len(data)):
-#         if data[i] in keys:
-#             my_dict[data[i]] = ""
-#             j = i
-#         else:
-#             my_dict[data[j]] = data[i]
 
 
 @pytest.fixture
 def client():
     app = Flask(__name__)
-    # app.config["DEBUG"] = True
     app.config["TESTING"] = True
     flagging_mongo = _create_flagging_mongo()
     make_routes(app, flagging_mongo)
