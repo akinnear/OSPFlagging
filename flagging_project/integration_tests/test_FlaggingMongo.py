@@ -899,7 +899,7 @@ def test_add_new_flag_deps_key():
             assert len(flagging_mongo.get_flag_dependencies()) == 2
             assert "FLAG1" in db[FLAG_DEPENDENCIES].find_one({"_id": flag_3_id})["DEPENDENT_FLAGS"]
 
-#remove flag key#
+#remove flag dep key
 def test_remove_flag_deps_key():
     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
             _create_flagging_mongo(container) as flagging_mongo:
@@ -915,7 +915,7 @@ def test_remove_flag_deps_key():
 
             #remove flag_key for FLAG1
             flag_1_id = db[FLAG_DEPENDENCIES].find_one({"FLAG_NAME": "FLAG1"})["_id"]
-            flagging_mongo.remove_flag_dependencies(flag=flag_1_id)
+            flagging_mongo.remove_flag_dependencies(flag_dep_id=flag_1_id)
             assert len(flagging_mongo.get_flag_dependencies()) == 1
             assert db[FLAG_DEPENDENCIES].find_one({"_id": flag_deps_id_1}) == None
             assert db[FLAG_DEPENDENCIES].find_one({"_id": new_flag_deps_key})["FLAG_NAME"] == "FLAG3"
