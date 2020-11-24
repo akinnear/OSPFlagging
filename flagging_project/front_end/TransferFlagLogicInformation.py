@@ -88,39 +88,50 @@ def _convert_FLI_to_TFLI(FLI):
     return tfli_dict
 
 def _convert_TFLI_to_FLI(tfli_dict, og_FLI):
-    FLI = FlagLogicInformation()
 
-    def iterate_transfer_data(tfli_dict, fli_param, param_name):
+    def iterate_transfer_data(tfli_dict, param_name):
         '''
 
-        :param tfli_dict: full transfer flag logic information dictionary
-        :param fli_param: FlagLogicInformation parameter, e.g. FLI.assigned_variables
-        :param param_name: name of matching parameter, e.g. "assigned_variables"
-            used for determining out to treat tfli_dict data
-        :return: FlagLogicInformation object fli
+        :param tfli_dict: transfer flag logc dictionary
+        :param param_name: parameter name, e.g. "used_variables", "referenced_functions", etc.
+        :return:
         '''
-        for dict in tfli_dict[param_name]:
-            # variable information key
-            name_key = dict["name"]
-            if param_name == "referenced_functions":
-                as_name_key = dict["as_name"]
-                fli_key = VariableInformation(name=name_key,
-                                              asname=as_name_key)
-            else:
-                fli_key = VariableInformation(name=name_key)
-            fli_param[fli_key] = set()
-            # set of code location value
-            for code_loc in dict["locations"]:
-                cl = CodeLocation(line_number=code_loc["line_number"], column_offset=code_loc["column_offset"])
-                fli_param[fli_key].add(cl)
+        if param_name in ["used_variables", "assigned_variables", "referenced_functions",
+                          "defined_functions", "defined_classes"]:
+            fli_param = {}
+            for dict in tfli_dict[param_name]:
+                # variable information key
+                name_key = dict["name"]
+                if param_name == "referenced_functions":
+                    as_name_key = dict["as_name"]
+                    fli_key = VariableInformation(name=name_key,
+                                                  asname=as_name_key)
+                else:
+                    fli_key = VariableInformation(name=name_key)
+                fli_param[fli_key] = set()
+                # set of code location value
+                for code_loc in dict["locations"]:
+                    cl = CodeLocation(line_number=code_loc["line_number"], column_offset=code_loc["column_offset"])
+                    fli_param[fli_key].add(cl)
+        elif param_name == "flag_logic":
+            fli_param = 'test'
+        return fli_param
 
-    iterate_transfer_data(tfli_dict, FLI.used_variables, "used_variables")
-    iterate_transfer_data(tfli_dict, FLI.assigned_variables, "assigned_variables")
-    iterate_transfer_data(tfli_dict, FLI.referenced_functions, "referenced_functions")
-    iterate_transfer_data(tfli_dict, FLI.defined_functions, "defined_functions")
-    iterate_transfer_data(tfli_dict, FLI.defined_classes, "defined_classes")
+    used_variables = iterate_transfer_data(tfli_dict, "used_variables")
+    assigned_variables = iterate_transfer_data(tfli_dict, "assigned_variables")
+    referenced_functions = iterate_transfer_data(tfli_dict, "referenced_functions")
+    defined_functions = iterate_transfer_data(tfli_dict, "defined_functions")
+    defined_classes = iterate_transfer_data(tfli_dict, "defined_classes")
+    flag_logic = iterate_transfer_data(tfli_dict, "flag_logic")
 
-    print('hello')
+
+    flag_logic_info = FlagLogicInformation(used_variables=used_variables,
+                                           assigned_variables=assigned_variables,
+                                           referenced_functions=referenced_functions,
+                                           defined_functions=defined_functions,
+                                           defined_classes=defined_classes)
+
+    return flag_logic_info
 
 
     # for dict in TFLI["used_variables"]:
