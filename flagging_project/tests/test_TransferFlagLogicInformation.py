@@ -93,9 +93,11 @@ return ff2 < reduce(f, [47,11,42,102,13])""",
     assert transfer_flag_logic_information["defined_classes"][0]["locations"][0]["column_offset"] == 1
     #
     assert transfer_flag_logic_information["referenced_modules"][0]["name"] == "wtforms"
+    assert transfer_flag_logic_information["referenced_modules"][0]["as_name"] == "wtforms"
     assert transfer_flag_logic_information["referenced_modules"][0]["locations"][0]["line_number"] == 2
     assert transfer_flag_logic_information["referenced_modules"][0]["locations"][0]["column_offset"] == 5
     assert transfer_flag_logic_information["referenced_modules"][1]["name"] == "functools"
+    assert transfer_flag_logic_information["referenced_modules"][1]["as_name"] == "my_funky_tools"
     assert transfer_flag_logic_information["referenced_modules"][1]["locations"][0]["line_number"] == 1
     assert transfer_flag_logic_information["referenced_modules"][1]["locations"][0]["column_offset"] == 7
     #
@@ -136,7 +138,7 @@ return ff2 < reduce(f, [47,11,42,102,13])"""
 
 def test_flag_logic_information_from_transfer_object_creation():
     # create FLI
-    flag_logic_information = FlagLogicInformation(
+    flag_logic_information_og = FlagLogicInformation(
         used_variables={VariableInformation("ff1"): {CodeLocation(4, 11)},
                         VariableInformation("ff2"): {CodeLocation(6, 11)},
                         VariableInformation("a"): {CodeLocation(2, 16), CodeLocation(2, 22)},
@@ -168,10 +170,18 @@ def test_flag_logic_information_from_transfer_object_creation():
     return ff2 < reduce(f, [47,11,42,102,13])""",
         validation_results=TypeValidationResults())
     # convert to transfer object form
-    transfer_flag_logic_information = _convert_FLI_to_TFLI(flag_logic_information)
+    transfer_flag_logic_information = _convert_FLI_to_TFLI(flag_logic_information_og)
 
     #convert back to flag logic information object
-    fl_object = _convert_TFLI_to_FLI(transfer_flag_logic_information, flag_logic_information)
+    fl_object = _convert_TFLI_to_FLI(transfer_flag_logic_information, flag_logic_information_og)
+
+    assert flag_logic_information_og.used_variables == fl_object.used_variables
+    assert flag_logic_information_og.assigned_variables == fl_object.assigned_variables
+    assert flag_logic_information_og.referenced_functions == fl_object.referenced_functions
+    assert flag_logic_information_og.defined_functions == fl_object.defined_functions
+    assert flag_logic_information_og.defined_classes == fl_object.defined_classes
+    assert flag_logic_information_og.referenced_modules == fl_object.referenced_modules
+    assert flag_logic_information_og.referenced_flags == fl_object.referenced_flags
 
 
 
