@@ -87,33 +87,38 @@ def _convert_FLI_to_TFLI(FLI):
 
     return tfli_dict
 
-def _convert_TFLI_to_FLI(TFLI, og_FLI):
+def _convert_TFLI_to_FLI(tfli_dict, og_FLI):
     FLI = FlagLogicInformation()
 
-    def iterate_transfer_data(tfli_param, fli_param):
+    def iterate_transfer_data(tfli_dict, fli_param, param_name):
         '''
 
-        :param tfli_param: TFLI["used_variables"]
-        :param fli_param: FLI.used_variables
-        :param param_key: "used_variables"
-        :return:
+        :param tfli_dict: full transfer flag logic information dictionary
+        :param fli_param: FlagLogicInformation parameter, e.g. FLI.assigned_variables
+        :param param_name: name of matching parameter, e.g. "assigned_variables"
+            used for determining out to treat tfli_dict data
+        :return: FlagLogicInformation object fli
         '''
-
-        for dict in tfli_param:
+        for dict in tfli_dict[param_name]:
             # variable information key
             name_key = dict["name"]
-            fli_key = VariableInformation(name_key)
+            if param_name == "referenced_functions":
+                as_name_key = dict["as_name"]
+                fli_key = VariableInformation(name=name_key,
+                                              asname=as_name_key)
+            else:
+                fli_key = VariableInformation(name=name_key)
             fli_param[fli_key] = set()
             # set of code location value
             for code_loc in dict["locations"]:
                 cl = CodeLocation(line_number=code_loc["line_number"], column_offset=code_loc["column_offset"])
                 fli_param[fli_key].add(cl)
 
-    iterate_transfer_data(FLI.used_variables, TFLI["used_variables"])
-    iterate_transfer_data(FLI.assigned_variables, TFLI["assigned_variables"])
-    iterate_transfer_data(FLI.referenced_functions, TFLI["referenced_functions"])
-    iterate_transfer_data(FLI.defined_functions, TFLI["defined_functions"])
-    iterate_transfer_data(FLI.defined_classes, TFLI["defined_classes"])
+    iterate_transfer_data(tfli_dict, FLI.used_variables, "used_variables")
+    iterate_transfer_data(tfli_dict, FLI.assigned_variables, "assigned_variables")
+    iterate_transfer_data(tfli_dict, FLI.referenced_functions, "referenced_functions")
+    iterate_transfer_data(tfli_dict, FLI.defined_functions, "defined_functions")
+    iterate_transfer_data(tfli_dict, FLI.defined_classes, "defined_classes")
 
     print('hello')
 
