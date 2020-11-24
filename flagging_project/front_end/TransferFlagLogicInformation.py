@@ -1,4 +1,9 @@
-
+from flagging.FlagLogicInformation import FlagLogicInformation
+from flagging.FlaggingNodeVisitor import CodeLocation
+from flagging.FlagErrorInformation import FlagErrorInformation
+from flagging.VariableInformation import VariableInformation
+from flagging.ModuleInformation import ModuleInformation
+import json
 
 class TransferFlagLogicInformation:
     def __init__(self, used_variables=None, assigned_variables=None, referenced_functions=None,
@@ -49,6 +54,9 @@ def _convert_FLI_to_TFLI(FLI):
                 dictionary_data = dict()
                 if key in ["referenced_flags", "used_lambdas"]:
                     dictionary_data["name"] = name
+                elif key == "referenced_modules":
+                    dictionary_data["name"] = name.name
+                    dictionary_data["as_name"] = name.asname
                 else:
                     dictionary_data["name"] = name.name
                 dictionary_data["locations"] = []
@@ -78,6 +86,87 @@ def _convert_FLI_to_TFLI(FLI):
     tfli_dict = make_dict(TFLI)
 
     return tfli_dict
+
+def _convert_TFLI_to_FLI(TFLI, og_FLI):
+    FLI = FlagLogicInformation()
+
+    def iterate_transfer_data(fli_param, tfli_param):
+        '''
+
+        :param tfli_param: TFLI["used_variables"]
+        :param fli_param: FLI.used_variables
+        :return:
+        '''
+        for dict in tfli_param:
+            # variable information key
+            name_key = dict["name"]
+            fli_key = VariableInformation(name_key)
+            fli_param[fli_key] = set()
+            # set of code location value
+            for code_loc in dict["locations"]:
+                cl = CodeLocation(line_number=code_loc["line_number"], column_offset=code_loc["column_offset"])
+                fli_param[fli_key].add(cl)
+
+    iterate_transfer_data(FLI.used_variables, TFLI["used_variables"])
+    iterate_transfer_data(FLI.assigned_variables, TFLI["assigned_variables"])
+    iterate_transfer_data(FLI.referenced_functions, TFLI["referenced_functions"])
+    iterate_transfer_data(FLI.defined_functions, TFLI["defined_functions"])
+    iterate_transfer_data(FLI.defined_classes, TFLI["defined_classes"])
+
+    print('hello')
+
+
+    # for dict in TFLI["used_variables"]:
+    #     #variable information key
+    #     fli_key = dict["name"]
+    #     FLI.used_variables.set_default(fli_key, set())
+    #     #set of code location value
+    #     for code_loc in dict["locations"]:
+    #         cl = CodeLocation(line_number=code_loc["line_number"], column_offset=code_loc["column_offset"])
+    #         FLI.used_variables[fli_key].add(cl)
+
+    for dict in TFLI["assigned_variables"]:
+        #variable information key
+        fli_key = dict["name"]
+        FLI.used_variables.set_default(fli_key, set())
+        #set of code location value
+        for code_loc in dict["locations"]:
+            cl = CodeLocation(line_number=code_loc["line_number"], column_offset=code_loc["column_offset"])
+            FLI.used_variables[fli_key].add(cl)
+
+    for dict in TFLI["referenced_functions"]:
+        #variable information key
+        fli_key = dict["name"]
+        FLI.used_variables.set_default(fli_key, set())
+        #set of code location value
+        for code_loc in dict["locations"]:
+            cl = CodeLocation(line_number=code_loc["line_number"], column_offset=code_loc["column_offset"])
+            FLI.used_variables[fli_key].add(cl)
+
+    for dict in TFLI["defined_functions"]:
+        # variable information key
+        fli_key = dict["name"]
+        FLI.used_variables.set_default(fli_key, set())
+        # set of code location value
+        for code_loc in dict["locations"]:
+            cl = CodeLocation(line_number=code_loc["line_number"], column_offset=code_loc["column_offset"])
+            FLI.used_variables[fli_key].add(cl)
+
+    for dict in TFLI["defined_classes"]:
+        # variable information key
+        fli_key = dict["name"]
+        FLI.used_variables.set_default(fli_key, set())
+        # set of code location value
+        for code_loc in dict["locations"]:
+            cl = CodeLocation(line_number=code_loc["line_number"], column_offset=code_loc["column_offset"])
+            FLI.used_variables[fli_key].add(cl)
+
+
+    print("hello")
+
+
+
+
 
 
 
