@@ -1609,3 +1609,9 @@ def test_remove_flag_dependencies_from_flag_flag_id_does_not_exist(flagging_mong
     assert result.uuid == None
     assert response_code >= 400
 
+#TODO
+# create flag, create flag group, add flag to flag group, check flag dep entry
+# create flag, create flag group, add flag to flag group, get flag results in flag dependency entry
+# create flag, create flag group, add flag to flag group, remove flag from flag group (invalid flag)
+# create flag, create flag group, add flag to fla group, remove flag from flag group, get flag results in flag dependency entry
+
