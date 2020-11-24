@@ -83,3 +83,9 @@ else:
     return False"""
     flag_info = determine_variables(logic)
     return flag_info
+
+
+
+def get_flag_service(flag_logic):
+    flag_node_visitor = determine_variables(flag_logic)
+    return flag_node_visitor
