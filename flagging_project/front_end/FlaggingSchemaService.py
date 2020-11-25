@@ -52,7 +52,7 @@ def get_specific_flag(flag_id, existing_flags: [], flagging_mongo: FlaggingMongo
         try:
             if ObjectId(flag_id) not in existing_flags:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                               message="flag: " + flag_id + "does not exist",
+                                                               message="flag: " + flag_id + " does not exist",
                                                                simple_message="flag does not exist")
                 response_code = 404
         except Exception as e:
