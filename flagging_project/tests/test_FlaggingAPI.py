@@ -12,6 +12,11 @@ from flagging.ModuleInformation import ModuleInformation
 from flagging.TypeValidationResults import TypeValidationResults
 from flagging.ErrorInformation import ErrorInformation
 from unittest import mock
+from flagging.FlaggingNodeVisitor import determine_variables
+from front_end.TransferFlagLogicInformation import _convert_FLI_to_TFLI
+import requests
+import json
+from bson.objectid import ObjectId
 
 
 
@@ -33,33 +38,17 @@ def test_flag_home(client):
     assert str_data == 'flag home page to go here'
     assert response.status_code == 200
 
-#test get flags no flags
-def test_get_flags_no_flags(client):
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
 
-    url = '/flag/get_flags'
-    response = client.get(url)
-    data = response.get_data()
-    str_data = data.decode("utf-8").replace("\n","")
-    assert str_data == '{"flags":[]}'
-    assert response.status_code == 200
-
-#test get flag ids no ids
-def test_get_flag_ids_no_flag_ids(client):
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
-
+#tets get flag ids
+ids = [ObjectId(x) for x in ["1"*24, "2"*24, "1A"*12]]
+@mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=(ids, 200), autospec=True)
+def test_get_flag_ids(mock_call_return, client):
     url = '/flag/get_flag_ids'
     response = client.get(url)
-    data = response.get_data()
-    str_data = data.decode("utf-8").replace("\n", "")
-    assert str_data == '{"_ids":[]}'
     assert response.status_code == 200
+    assert response.json == {"_ids": ["1"*24, "2"*24, "1A"*12]}
+    assert response.status == "200 OK"
+
 
 #get specific flag, id does not exist
 def test_get_specific_flag_does_not_exist(client):
@@ -3236,7 +3225,25 @@ def test_move_flag_group_to_production_valid(client):
 
 
 
+def test_simple_request_post(client):
+    # delete all flags
+    flag_deletion_url = "flag/delete_all_flags"
+    response = client.delete(flag_deletion_url)
+    assert response.status_code == 200
 
+    flag_logic ="""\
+if FF1 > 10:
+    return True
+else:
+    return False"""
+    flag_logic_info = determine_variables(flag_logic)
+    payload = _convert_FLI_to_TFLI(flag_logic_info)
+    url = "http://localhost:5000/flag/create_flag/x/Flag1A"
+
+    r = requests.post(url, data=json.dumps(payload))
+
+    unpack = client.get("flag/get_flags")
+    print("hello")
 
 
 
