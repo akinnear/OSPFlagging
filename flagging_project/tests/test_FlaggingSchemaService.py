@@ -19,6 +19,7 @@ from flag_data.FlaggingMongo import FlaggingMongo
 from random_object_id import generate as generate_object_id
 from bson.objectid import ObjectId
 from front_end.ReferencedFlag import ReferencedFlag
+from front_end.TransferFlagLogicInformation import _convert_FLI_to_TFLI
 
 
 
@@ -61,6 +62,7 @@ def test_create_flag(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.add_flag.return_value = 1
     mock_flagging_mongo = flagging_mongo()
     flag_name = "Flag1"
+    flagging_mongo.return_value.get_flag_name.return_value = flag_name
     flag_logic_information = FlagLogicInformation(
     used_variables={VariableInformation("FF1"): {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15),
                                                  CodeLocation(9, 5), CodeLocation(17, 15)},
@@ -81,10 +83,13 @@ def test_create_flag(flagging_mongo, mvrb, mvl):
     errors=[],
     flag_logic="""does not matter""",
     validation_results=TypeValidationResults())
+    flagging_mongo.return_value.get_flag_logic_information.return_value = _convert_FLI_to_TFLI(flag_logic_information)
     result, response_code = create_flag(flag_name, flag_logic_information, mock_flagging_mongo)
     assert result.valid == True
     assert result.message == "new flag created"
+    assert result.name == flag_name
     assert result.uuid == 1
+    assert result.logic == _convert_FLI_to_TFLI(flag_logic_information)
     assert response_code == 200
 
 
@@ -187,6 +192,8 @@ def test_create_flag_myerror(flagging_mongo, mvrb, mvl):
     assert result.valid == False
     assert result.message == "error in flag logic"
     assert response_code == 200
+
+
 
 
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
