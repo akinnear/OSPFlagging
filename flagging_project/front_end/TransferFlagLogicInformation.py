@@ -1,6 +1,7 @@
 from flagging.FlagLogicInformation import FlagLogicInformation
 from flagging.FlaggingNodeVisitor import CodeLocation
 from flagging.FlagErrorInformation import FlagErrorInformation
+from flagging.ErrorInformation import ErrorInformation
 from flagging.VariableInformation import VariableInformation
 from flagging.ModuleInformation import ModuleInformation
 import json
@@ -87,7 +88,7 @@ def _convert_FLI_to_TFLI(FLI):
 
     return tfli_dict
 
-def _convert_TFLI_to_FLI(tfli_dict, og_FLI):
+def _convert_TFLI_to_FLI(tfli_dict):
 
     def iterate_transfer_data(tfli_dict, param_name):
         '''
@@ -125,6 +126,13 @@ def _convert_TFLI_to_FLI(tfli_dict, og_FLI):
                 for code_loc in my_dict["locations"]:
                     cl = CodeLocation(line_number=code_loc["line_number"], column_offset=code_loc["column_offset"])
                     fli_param.add(cl)
+        elif param_name == "errors":
+            fli_param = []
+            for error_info in tfli_dict[param_name]:
+                for code_loc in error_info["locations"]:
+                    cl = CodeLocation(line_number=code_loc["line_number"], column_offset=code_loc["column_offset"])
+                fli_key = ErrorInformation(msg=error_info["msg"], text=error_info["text"], cl=cl)
+                fli_param.append(fli_key)
         return fli_param
 
     used_variables = iterate_transfer_data(tfli_dict, "used_variables")
@@ -137,7 +145,9 @@ def _convert_TFLI_to_FLI(tfli_dict, og_FLI):
     flag_logic = iterate_transfer_data(tfli_dict, "flag_logic")
     return_points = iterate_transfer_data(tfli_dict, "return_points")
     used_lambdas = iterate_transfer_data(tfli_dict, "used_lambdas")
-    #errors
+    errors = iterate_transfer_data(tfli_dict, "errors")
+
+    print('hello')
 
 
     flag_logic_info = FlagLogicInformation(used_variables=used_variables,
@@ -149,7 +159,8 @@ def _convert_TFLI_to_FLI(tfli_dict, og_FLI):
                                            referenced_flags=referenced_flags,
                                            return_points=return_points,
                                            flag_logic=flag_logic,
-                                           used_lambdas=used_lambdas)
+                                           used_lambdas=used_lambdas,
+                                           errors=errors)
 
     return flag_logic_info
 
