@@ -102,7 +102,7 @@ def _convert_TFLI_to_FLI(tfli_dict, og_FLI):
             for dict in tfli_dict[param_name]:
                 # variable information key
                 name_key = dict["name"]
-                if param_name == "referenced_functions":
+                if param_name == "referenced_modules":
                     as_name_key = dict["as_name"]
                     fli_key = VariableInformation(name=name_key,
                                                   asname=as_name_key)
@@ -114,7 +114,7 @@ def _convert_TFLI_to_FLI(tfli_dict, og_FLI):
                     cl = CodeLocation(line_number=code_loc["line_number"], column_offset=code_loc["column_offset"])
                     fli_param[fli_key].add(cl)
         elif param_name == "flag_logic":
-            fli_param = 'test'
+            fli_param = tfli_dict[param_name][0]["logic"]
         return fli_param
 
     used_variables = iterate_transfer_data(tfli_dict, "used_variables")
@@ -129,7 +129,8 @@ def _convert_TFLI_to_FLI(tfli_dict, og_FLI):
                                            assigned_variables=assigned_variables,
                                            referenced_functions=referenced_functions,
                                            defined_functions=defined_functions,
-                                           defined_classes=defined_classes)
+                                           defined_classes=defined_classes,
+                                           flag_logic=flag_logic)
 
     return flag_logic_info
 

@@ -175,11 +175,12 @@ def test_flag_logic_information_from_transfer_object_creation():
     #convert back to flag logic information object
     fl_object = _convert_TFLI_to_FLI(transfer_flag_logic_information, flag_logic_information_og)
 
-    # assert flag_logic_information_og.used_variables == fl_object.used_variables
-    # assert flag_logic_information_og.assigned_variables == fl_object.assigned_variables
-    # assert flag_logic_information_og.referenced_functions == fl_object.referenced_functions
-    # assert flag_logic_information_og.defined_functions == fl_object.defined_functions
-    # assert flag_logic_information_og.defined_classes == fl_object.defined_classes
+    assert flag_logic_information_og.used_variables == fl_object.used_variables
+    assert flag_logic_information_og.assigned_variables == fl_object.assigned_variables
+    assert flag_logic_information_og.referenced_functions == fl_object.referenced_functions
+    assert flag_logic_information_og.defined_functions == fl_object.defined_functions
+    assert flag_logic_information_og.defined_classes == fl_object.defined_classes
+    assert flag_logic_information_og.flag_logic == fl_object.flag_logic
     # assert flag_logic_information_og.referenced_modules == fl_object.referenced_modules
     # assert flag_logic_information_og.referenced_flags == fl_object.referenced_flags
 
