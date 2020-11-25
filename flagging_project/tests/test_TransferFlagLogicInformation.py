@@ -181,7 +181,7 @@ def test_flag_logic_information_from_transfer_object_creation():
     assert flag_logic_information_og.defined_functions == fl_object.defined_functions
     assert flag_logic_information_og.defined_classes == fl_object.defined_classes
     assert flag_logic_information_og.flag_logic == fl_object.flag_logic
-    # assert flag_logic_information_og.referenced_modules == fl_object.referenced_modules
+    assert flag_logic_information_og.referenced_modules == fl_object.referenced_modules
     # assert flag_logic_information_og.referenced_flags == fl_object.referenced_flags
 
 

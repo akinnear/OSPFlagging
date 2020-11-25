@@ -97,15 +97,14 @@ def _convert_TFLI_to_FLI(tfli_dict, og_FLI):
         :return:
         '''
         if param_name in ["used_variables", "assigned_variables", "referenced_functions",
-                          "defined_functions", "defined_classes"]:
+                          "referenced_modules", "defined_functions", "defined_classes"]:
             fli_param = {}
             for dict in tfli_dict[param_name]:
                 # variable information key
                 name_key = dict["name"]
                 if param_name == "referenced_modules":
                     as_name_key = dict["as_name"]
-                    fli_key = VariableInformation(name=name_key,
-                                                  asname=as_name_key)
+                    fli_key = ModuleInformation(name=name_key, asname=as_name_key)
                 else:
                     fli_key = VariableInformation(name=name_key)
                 fli_param[fli_key] = set()
@@ -122,6 +121,7 @@ def _convert_TFLI_to_FLI(tfli_dict, og_FLI):
     referenced_functions = iterate_transfer_data(tfli_dict, "referenced_functions")
     defined_functions = iterate_transfer_data(tfli_dict, "defined_functions")
     defined_classes = iterate_transfer_data(tfli_dict, "defined_classes")
+    referenced_modules = iterate_transfer_data(tfli_dict, "referenced_modules")
     flag_logic = iterate_transfer_data(tfli_dict, "flag_logic")
 
 
@@ -130,6 +130,7 @@ def _convert_TFLI_to_FLI(tfli_dict, og_FLI):
                                            referenced_functions=referenced_functions,
                                            defined_functions=defined_functions,
                                            defined_classes=defined_classes,
+                                           referenced_modules=referenced_modules,
                                            flag_logic=flag_logic)
 
     return flag_logic_info
