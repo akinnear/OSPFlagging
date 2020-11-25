@@ -123,6 +123,8 @@ def test_create_flag_missing_name(flagging_mongo, mvrb, mvl):
     result, response_code = create_flag(flag_name, flag_logic_information, mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "flag name not specified"
+    assert result.simple_message == "flag name not specified"
+    assert result.name == None
     assert response_code >= 400
 
 
