@@ -183,6 +183,8 @@ def test_flag_logic_information_from_transfer_object_creation():
     assert flag_logic_information_og.flag_logic == fl_object.flag_logic
     assert flag_logic_information_og.referenced_modules == fl_object.referenced_modules
     assert flag_logic_information_og.referenced_flags == fl_object.referenced_flags
+    assert flag_logic_information_og.return_points == fl_object.return_points
+    assert flag_logic_information_og.used_lambdas == fl_object.used_lambdas
 
 
 
