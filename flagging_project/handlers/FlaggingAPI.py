@@ -49,13 +49,13 @@ def make_routes(app, flagging_mongo):
                 flags, response_code = get_all_flags(flagging_mongo)
                 flags = [str(x) for x in flags]
                 data = {'flags': flags}
-                return jsonify(data), response_code
+                return data, response_code
 
             if function == "get_flag_ids":
                 flag_ids, response_code = get_all_flag_ids(flagging_mongo)
                 flag_ids = [str(x) for x in flag_ids]
                 data = {"_ids": flag_ids}
-                return jsonify(data), response_code
+                return data, response_code
 
             if function == "get_specific_flag":
                 existing_flag_ids, response_code_ids = get_all_flag_ids(flagging_mongo)
@@ -199,19 +199,19 @@ def make_routes(app, flagging_mongo):
                 flag_groups, response_code = get_flag_groups(flagging_mongo)
                 flag_groups = [str(x) for x in flag_groups]
                 data = {'flags_groups': flag_groups}
-                return jsonify(data), response_code
+                return data, response_code
 
             if function == "get_flag_group_ids":
                 flag_group_ids, response_code = get_flag_group_ids(flagging_mongo)
                 flag_group_ids = [str(x) for x in flag_group_ids]
                 data = {'flags_group_ids': flag_group_ids}
-                return jsonify(data), response_code
+                return data, response_code
 
             if function == "get_flag_group_names":
                 flag_group_names, response_code = get_flag_group_names(flagging_mongo)
                 flag_group_names = [str(x) for x in flag_group_names]
                 data = {'flag_group_names': flag_group_names}
-                return jsonify(data), response_code
+                return data, response_code
 
             if function == "get_flag_group_flags":
                 flag_group_ids, response_code_flag_group_ids = get_flag_group_ids(flagging_mongo)
@@ -363,7 +363,7 @@ def make_routes(app, flagging_mongo):
                 flag_deps, response_code = get_flag_dependencies(flagging_mongo)
                 flag_deps = [str(x) for x in flag_deps]
                 data = {"flag_deps": flag_deps}
-                return jsonify(data), response_code
+                return data, response_code
 
             if function == "get_specific_flag_dependency":
                 existing_flag_dep_ids, response_code_ids = get_flag_dep_ids(flagging_mongo)
