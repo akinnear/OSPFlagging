@@ -45,18 +45,21 @@ def get_specific_flag(flag_id, existing_flags: [], flagging_mongo: FlaggingMongo
     if flag_schema_object is None:
         if flag_id is None:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag_id not specified")
+                                                           message="flag_id not specified",
+                                                           simple_message="flag id not specified")
             response_code = 400
     if flag_schema_object is None:
         try:
             if ObjectId(flag_id) not in existing_flags:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                               message="flag does not exist")
+                                                               message="flag: " + flag_id + "does not exist",
+                                                               simple_message="flag does not exist")
                 response_code = 404
         except Exception as e:
             print(e)
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="error coverting flag id to Object ID type")
+                                                           message="error converting flag id to Object ID type",
+                                                           simple_message="error converting flag id to Object ID type")
             response_code = 400
     if flag_schema_object is None:
         flag_id_object = ObjectId(flag_id)
@@ -1338,7 +1341,8 @@ def delete_flag_dependency(flag_id, flag_group_id, flagging_mongo: FlaggingMongo
     if flag_schema_object is None:
         if flag_id is None and flag_group_id is None:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="missing flag id and flag group id")
+                                                           message="missing flag id and flag group id",
+                                                           simple_message="missing flag id and flag group id")
             response_code = 400
     if flag_schema_object is None:
         if flag_id is None:
