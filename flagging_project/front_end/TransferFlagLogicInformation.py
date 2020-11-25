@@ -97,23 +97,34 @@ def _convert_TFLI_to_FLI(tfli_dict, og_FLI):
         :return:
         '''
         if param_name in ["used_variables", "assigned_variables", "referenced_functions",
-                          "referenced_modules", "defined_functions", "defined_classes"]:
+                          "referenced_modules", "defined_functions", "defined_classes",
+                          "referenced_flags", "used_lambdas"]:
             fli_param = {}
-            for dict in tfli_dict[param_name]:
+            for my_dict in tfli_dict[param_name]:
                 # variable information key
-                name_key = dict["name"]
+                name_key = my_dict["name"]
                 if param_name == "referenced_modules":
-                    as_name_key = dict["as_name"]
+                    as_name_key = my_dict["as_name"]
                     fli_key = ModuleInformation(name=name_key, asname=as_name_key)
+                elif param_name == "referenced_flags":
+                    fli_key = name_key
+                elif param_name == "used_lambdas":
+                    fli_key = "LAMBDA"
                 else:
                     fli_key = VariableInformation(name=name_key)
                 fli_param[fli_key] = set()
                 # set of code location value
-                for code_loc in dict["locations"]:
+                for code_loc in my_dict["locations"]:
                     cl = CodeLocation(line_number=code_loc["line_number"], column_offset=code_loc["column_offset"])
                     fli_param[fli_key].add(cl)
         elif param_name == "flag_logic":
             fli_param = tfli_dict[param_name][0]["logic"]
+        elif param_name == "return_points":
+            for my_dict in tfli_dict[param_name]:
+                fli_param = set()
+                for code_loc in my_dict["locations"]:
+                    cl = CodeLocation(line_number=code_loc["line_number"], column_offset=code_loc["column_offset"])
+                    fli_param.add(cl)
         return fli_param
 
     used_variables = iterate_transfer_data(tfli_dict, "used_variables")
@@ -122,7 +133,11 @@ def _convert_TFLI_to_FLI(tfli_dict, og_FLI):
     defined_functions = iterate_transfer_data(tfli_dict, "defined_functions")
     defined_classes = iterate_transfer_data(tfli_dict, "defined_classes")
     referenced_modules = iterate_transfer_data(tfli_dict, "referenced_modules")
+    referenced_flags = iterate_transfer_data(tfli_dict, "referenced_flags")
     flag_logic = iterate_transfer_data(tfli_dict, "flag_logic")
+    return_points = iterate_transfer_data(tfli_dict, "return_points")
+    used_lambdas = iterate_transfer_data(tfli_dict, "used_lambdas")
+    #errors
 
 
     flag_logic_info = FlagLogicInformation(used_variables=used_variables,
@@ -131,7 +146,10 @@ def _convert_TFLI_to_FLI(tfli_dict, og_FLI):
                                            defined_functions=defined_functions,
                                            defined_classes=defined_classes,
                                            referenced_modules=referenced_modules,
-                                           flag_logic=flag_logic)
+                                           referenced_flags=referenced_flags,
+                                           return_points=return_points,
+                                           flag_logic=flag_logic,
+                                           used_lambdas=used_lambdas)
 
     return flag_logic_info
 
