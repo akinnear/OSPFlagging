@@ -17,6 +17,7 @@ from flagging.VariableInformation import VariableInformation
 from flagging.ModuleInformation import ModuleInformation
 from flagging.TypeValidationResults import TypeValidationResults
 from flagging.ErrorInformation import ErrorInformation
+from front_end.TransferFlagLogicInformation import _convert_TFLI_to_FLI
 
 
 def make_routes(app, flagging_mongo):
@@ -68,45 +69,22 @@ def make_routes(app, flagging_mongo):
                 return data, response_code
 
             if function == "create_flag":
-                # TODO
-                # need to pull flag logic,
-                # need method and function to return flag logic without direct reference
-                # to mongo db in function
-                unique_dummy_flag = FlagLogicInformation(
-                    used_variables={VariableInformation("ff1"): {CodeLocation(4, 11)},
-                                    VariableInformation("ff2"): {CodeLocation(6, 11)},
-                                    VariableInformation("a"): {CodeLocation(2, 16), CodeLocation(2, 22)},
-                                    VariableInformation("b"): {CodeLocation(2, 26), CodeLocation(2, 34)},
-                                    VariableInformation("f"): {CodeLocation(3, 10), CodeLocation(4, 24),
-                                                               CodeLocation(6, 24)}},
-                    assigned_variables={VariableInformation("f"): {CodeLocation(2, 0)},
-                                        VariableInformation("a"): {CodeLocation(2, 11)},
-                                        VariableInformation('b'): {CodeLocation(2, 13)}},
-                    referenced_functions={
-                        VariableInformation("reduce"): {CodeLocation(3, 3), CodeLocation(4, 17), CodeLocation(6, 17)}},
-                    defined_functions={VariableInformation("my_add"): {CodeLocation(2, 4)}},
-                    defined_classes={VariableInformation("my_class"): {CodeLocation(1, 1)}},
-                    referenced_modules={ModuleInformation("wtforms"): {CodeLocation(2, 5)},
-                                        ModuleInformation("functools", "my_funky_tools"): {CodeLocation(1, 7)}},
-                    referenced_flags={"Flag5": {CodeLocation(5, 10), CodeLocation(6, 10)},
-                                      "Flag6": {CodeLocation(7, 10)}},
-                    return_points={CodeLocation(4, 4), CodeLocation(6, 4)},
-                    used_lambdas={"LAMBDA": {CodeLocation(2, 4)}},
-                    errors=[ErrorInformation(cl=CodeLocation(3, 5),
-                                             msg="invalid syntax",
-                                             text="x = =  f\n"),
-                            ErrorInformation(cl=CodeLocation(5, 5),
-                                             msg="invalid syntax",
-                                             text="y = = =  q2@\n")],
-                    flag_logic="""
-                    f = lambda a,b: a if (a > b) else b
-                    if reduce(f, [47,11,42,102,13]) > 100:
-                    return ff1 > reduce(f, [47,11,42,102,13])
-                    else:
-                    return ff2 < reduce(f, [47,11,42,102,13])""",
-                    validation_results=TypeValidationResults())
-                # flag_info = pull_flag_logic_information(unique_dummy_flag=unique_dummy_flag)
-                flag_info = get_valid_dummy_flag()
+                try:
+                    flag_info_transfer_object = request.get_json(force=True)
+                except Exception as e:
+                    data = {"valid": False,
+                            "message": "error reading flag data to create flag",
+                            "simple_message": "error reading flag data to create flag"}
+                    response_code = 500
+                    return data, response_code
+                try:
+                    flag_info = _convert_TFLI_to_FLI(flag_info_transfer_object)
+                except Exception as e:
+                    data = {"valid": False,
+                            "message": "error converting flag data to proper form to create flag",
+                            "simple_message": "error converting flag data to proper form to create flag"}
+                    response_code = 500
+                    return data, response_code
                 flag_schema_object, response_code = create_flag(flag_name, flag_info, flagging_mongo)
                 data = {"valid": flag_schema_object.valid,
                         "message": flag_schema_object.message,
@@ -129,13 +107,23 @@ def make_routes(app, flagging_mongo):
                 return data, response_code
 
             if function == "update_flag_logic":
-                # TODO
-                # need to pull flag logic,
-                # need method and function to return flag logic without direct reference
-                # to mongo db in function
-
+                try:
+                    flag_info_transfer_object = request.get_json(force=True)
+                except Exception as e:
+                    data = {"valid": False,
+                            "message": "error reading flag data to update flag logic",
+                            "simple_message": "error reading flag data to update flag logic"}
+                    response_code = 500
+                    return data, response_code
+                try:
+                    flag_info = _convert_TFLI_to_FLI(flag_info_transfer_object)
+                except Exception as e:
+                    data = {"valid": False,
+                            "message": "error converting flag data to proper form to update flag logic",
+                            "simple_message": "error converting flag data to proper form to update flag logic"}
+                    response_code = 500
+                    return data, response_code
                 existing_flag_ids, response_code_ids = get_all_flag_ids(flagging_mongo)
-                flag_info = pull_flag_logic_information(dummy_flag_2=True)
                 flag_schema_object, response_code = update_flag_logic(flag_id, flag_info, existing_flag_ids,
                                                                       flagging_mongo)
                 data = {"valid": flag_schema_object.valid,
