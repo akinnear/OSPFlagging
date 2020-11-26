@@ -434,6 +434,7 @@ def test_update_flag_logic_missing_flag_2(flagging_mongo, mvrb, mvl):
 @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
 def test_update_flag_logic_errors(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 3
+    flagging_mongo.return_value.get_flag_name.return_value = "Flag3C"
     mock_flagging_mongo = flagging_mongo()
     og_flag_id = ObjectId(generate_object_id())
     existing_flags = pull_flag_names(dummy_flag_names=[og_flag_id, ObjectId(generate_object_id())])
@@ -457,11 +458,15 @@ def test_update_flag_logic_errors(flagging_mongo, mvrb, mvl):
     errors=[],
     flag_logic="""does not matter""",
     validation_results=TypeValidationResults())
+    flagging_mongo.return_value.get_flag_logic_information.return_value = _convert_FLI_to_TFLI(nw_flag_logic_information)
     result, response_code = update_flag_logic(flag_id=str(og_flag_id), new_flag_logic_information=nw_flag_logic_information, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "error in flag logic"
+    assert result.simple_message == "new logic updated but has errors"
     assert result.uuid == 3
-    response_code == 200
+    assert result.name == "Flag3C"
+    assert result.logic == _convert_FLI_to_TFLI(nw_flag_logic_information)
+    assert response_code == 200
 
 
 #update flag lgoic, mypy_error in result
@@ -472,6 +477,7 @@ def test_update_flag_logic_mypy_errors(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 3
     mock_flagging_mongo = flagging_mongo()
     og_flag_id = ObjectId(generate_object_id())
+    flagging_mongo.return_value.get_flag_name.return_value = "Flag3C"
     existing_flags = pull_flag_names(dummy_flag_names=[og_flag_id, ObjectId(generate_object_id())])
     nw_flag_logic_information = FlagLogicInformation(
     used_variables={VariableInformation("FF1"): {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15),
@@ -493,9 +499,14 @@ def test_update_flag_logic_mypy_errors(flagging_mongo, mvrb, mvl):
     errors=[],
     flag_logic="""does not matter""",
     validation_results=TypeValidationResults())
+    flagging_mongo.return_value.get_flag_logic_information.return_value = _convert_FLI_to_TFLI(nw_flag_logic_information)
     result, response_code = update_flag_logic(flag_id=str(og_flag_id), new_flag_logic_information=nw_flag_logic_information, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "error in flag logic"
+    assert result.simple_message == "new logic updated but has errors"
+    assert result.uuid == 3
+    assert result.name == "Flag3C"
+    assert result.logic == _convert_FLI_to_TFLI(nw_flag_logic_information)
     assert response_code == 200
 
 
@@ -508,12 +519,16 @@ def test_update_delete_flag(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
     rfrv = ObjectId(generate_object_id())
     flagging_mongo.return_value.remove_flag.return_value = rfrv
+    flagging_mongo.return_value.get_flag_name.return_value = "Flag1A"
     og_flag_id = ObjectId(generate_object_id())
     existing_flags = pull_flag_names(dummy_flag_names=[og_flag_id, ObjectId(generate_object_id())])
     result, response_code = delete_flag(flag_id=str(og_flag_id), existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
     assert result.message == str(og_flag_id) + " has been deleted"
+    assert result.simple_message == "flag has been deleted"
     assert result.uuid == rfrv
+    assert result.name == "Flag1A"
+    assert result.logic == None
     assert response_code == 200
 
 #test to delete flag, missign flag id
@@ -527,7 +542,10 @@ def test_update_delete_flag_missing_flag_id(flagging_mongo, mvrb, mvl):
     result, response_code = delete_flag(flag_id=og_flag_id, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "user must specify flag id"
+    assert result.simple_message == "missing flag id"
     assert result.uuid == og_flag_id
+    assert result.name == None
+    assert result.logic == None
     assert response_code >= 400
 
 #test to delete flag, flag does not exist
@@ -542,7 +560,10 @@ def test_update_delete_flag_flag_does_not_exist(flagging_mongo, mvrb, mvl):
         og_flag_id = ObjectId(generate_object_id())
     result, response_code = delete_flag(flag_id=str(og_flag_id), existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
-    assert result.message == "flag id specified does not exist"
+    assert result.message == "flag id " + str(og_flag_id) + " does not exist"
+    assert result.simple_message == "flag id does not exist"
+    assert result.uuid == None
+    assert result.logic == None
     assert response_code >= 400
 
 #test, duplicate flag
@@ -553,11 +574,16 @@ def test_duplicate_flag(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo
     flagging_mongo.duplicate_flag.return_value = 4
     flag_id = ObjectId(generate_object_id())
+    flagging_mongo.get_flag_name.return_value = "Flag4D"
+    flagging_mongo.get_flag_logic_information.return_value = "logic here"
     existing_flag_ids = pull_flag_names(dummy_flag_names=[flag_id, ObjectId(generate_object_id())])
     result, response_code = duplicate_flag(original_flag_id=str(flag_id), existing_flags=existing_flag_ids, flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
     assert result.message == str(flag_id) + " has be duplicated"
+    assert result.simple_message == "flag has been duplicated"
     assert result.uuid == 4
+    assert result.name == "Flag4D"
+    assert result.logic == "logic here"
     assert response_code == 200
 
 #test, duplicate flag, flag name not specified
