@@ -242,8 +242,8 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
         try:
             if ObjectId(flag_id) not in existing_flags:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                               message="could not identify existing flag " + flag_id,
-                                                               simple_message="could not identify flag")
+                                                               message="flag id " + str(flag_id) + " does not exist",
+                                                               simple_message="flag id does not exist")
                 response_code = 404
         except Exception as e:
             print(e)
