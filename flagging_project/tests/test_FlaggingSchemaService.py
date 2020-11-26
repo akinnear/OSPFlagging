@@ -244,6 +244,9 @@ def test_update_flag_name_missing_og_flag(flagging_mongo, mvrb, mvl):
     assert result.valid == False
     assert result.message == "user must specify id of original flag"
     assert result.simple_message == "missing flag id"
+    assert result.uuid == None
+    assert result.name == None
+    assert result.logic == None
     assert response_code >= 400
 
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
@@ -258,6 +261,9 @@ def test_update_flag_name_missing_new_flag(flagging_mongo, mvrb, mvl):
     assert result.valid == False
     assert result.message == "user must specify name of new flag"
     assert result.simple_message == "missing new flag name"
+    assert result.uuid == None
+    assert result.name == None
+    assert result.logic == None
     assert response_code >= 400
 
 
@@ -274,6 +280,9 @@ def test_update_flag_name_og_flag_not_found(flagging_mongo, mvrb, mvl):
     assert result.valid == False
     assert result.message == "original flag id " + str(og_flag_id) + " does not exist"
     assert result.simple_message == "flag id does not exist"
+    assert result.uuid == None
+    assert result.name == None
+    assert result.logic == None
     assert response_code >= 400
 
 #test update flag name, new name same as old name
@@ -289,10 +298,11 @@ def test_update_flag_name_og_name_same_as_nw_name(flagging_mongo, mvrb, mvl):
     existing_flags = pull_flag_names(dummy_flag_names=[og_flag_id, ObjectId(generate_object_id())])
     result, response_code = update_flag_name(original_flag_id=str(og_flag_id), new_flag_name=nw_flag_name, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
-    assert result.uuid == str(og_flag_id)
     assert result.message == "flag id: " + str(og_flag_id) + " with name: Flag2 must be given a new unique name"
     assert result.simple_message == "new flag name must be different than original flag name"
+    assert result.uuid == str(og_flag_id)
     assert result.name == nw_flag_name
+    assert result.logic == None
     assert response_code >= 400
 
 #test update flag logic informatio
@@ -324,10 +334,15 @@ def test_update_flag_logic(flagging_mongo, mvrb, mvl):
     errors=[],
     flag_logic="""does not matter""",
     validation_results=TypeValidationResults())
+    flagging_mongo.return_value.get_flag_logic_information.return_value = _convert_FLI_to_TFLI(nw_flag_logic_information)
+    flagging_mongo.return_value.get_flag_name.return_value = "FlagName1A"
     result, response_code = update_flag_logic(flag_id=str(og_flag_id), new_flag_logic_information=nw_flag_logic_information, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
     assert result.message == "logic for flag " + str(3) + " has been updated"
+    assert result.simple_message == "flag logic has been updated"
     assert result.uuid == 3
+    assert result.name == "FlagName1A"
+    assert result.logic == _convert_FLI_to_TFLI(nw_flag_logic_information)
     assert response_code == 200
 
 
@@ -364,6 +379,10 @@ def test_update_flag_logic_missing_flag_1(flagging_mongo, mvrb, mvl):
                                existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "user must specify flag id"
+    assert result.simple_message == "user must specify flag id"
+    assert result.uuid == None
+    assert result.name == None
+    assert result.logic == None
     assert response_code >= 400
 
 #update flag logic, flag id does not exists
@@ -400,7 +419,11 @@ def test_update_flag_logic_missing_flag_2(flagging_mongo, mvrb, mvl):
     result, response_code = update_flag_logic(flag_id=str(og_flag_id), new_flag_logic_information=nw_flag_logic_information,
                                existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
-    assert result.message == "could not identify existing flag " + str(og_flag_id)
+    assert result.message == "flag id " + str(og_flag_id) + " does not exist"
+    assert result.simple_message == "flag id does not exist"
+    assert result.uuid == None
+    assert result.name == None
+    assert result.logic == None
     assert response_code >= 400
 
 
