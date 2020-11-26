@@ -124,7 +124,9 @@ def test_create_flag_missing_name(flagging_mongo, mvrb, mvl):
     assert result.valid == False
     assert result.message == "flag name not specified"
     assert result.simple_message == "flag name not specified"
+    assert result.uuid == None
     assert result.name == None
+    assert result.logic == None
     assert response_code >= 400
 
 
@@ -158,12 +160,14 @@ def test_create_flag_error(flagging_mongo, mvrb, mvl):
     errors=[],
     flag_logic="""does not matter""",
     validation_results=TypeValidationResults())
+    flagging_mongo.return_value.get_flag_logic_information.return_value = _convert_FLI_to_TFLI(flag_logic_information)
     result, response_code = create_flag(flag_name, flag_logic_information, mock_flagging_mongo)
     assert result.valid == False
-    assert result.uuid == 1
-    assert result.name == flag_name
     assert result.message == "error in flag logic"
     assert result.simple_message == "error in flag logic"
+    assert result.uuid == 1
+    assert result.name == flag_name
+    assert result.logic == _convert_FLI_to_TFLI(flag_logic_information)
     assert response_code == 200
 
 
@@ -195,12 +199,14 @@ def test_create_flag_myerror(flagging_mongo, mvrb, mvl):
     errors=[],
     flag_logic="""does not matter""",
     validation_results=TypeValidationResults())
+    flagging_mongo.return_value.get_flag_logic_information.return_value = _convert_FLI_to_TFLI(flag_logic_information)
     result, response_code = create_flag(flag_name, flag_logic_information, mock_flagging_mongo)
     assert result.valid == False
-    assert result.uuid == 1
-    assert result.name == flag_name
     assert result.message == "error in flag logic"
     assert result.simple_message == "error in flag logic"
+    assert result.uuid == 1
+    assert result.name == flag_name
+    assert result.logic == _convert_FLI_to_TFLI(flag_logic_information)
     assert response_code == 200
 
 
@@ -221,6 +227,7 @@ def test_update_flag_name(flagging_mongo, mvrb, mvl):
     assert result.message == "original flag " + str(og_flag_id) + " has been renamed " + nw_flag_name
     assert result.simple_message == "flag has been renamed"
     assert result.uuid == 2
+    assert result.name != None
     assert result.logic == {"_id": "logic"}
     assert response_code == 200
 
@@ -266,6 +273,26 @@ def test_update_flag_name_og_flag_not_found(flagging_mongo, mvrb, mvl):
     result, response_code = update_flag_name(original_flag_id=str(og_flag_id), new_flag_name=nw_flag_name, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "original flag id " + str(og_flag_id) + " does not exist"
+    assert result.simple_message == "flag id does not exist"
+    assert response_code >= 400
+
+#test update flag name, new name same as old name
+@mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
+@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
+@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+def test_update_flag_name_og_name_same_as_nw_name(flagging_mongo, mvrb, mvl):
+    flagging_mongo.return_value.update_flag.return_value = 2
+    mock_flagging_mongo = flagging_mongo()
+    og_flag_id = ObjectId(generate_object_id())
+    nw_flag_name = "Flag2"
+    flagging_mongo.return_value.get_flag_name.return_value = nw_flag_name
+    existing_flags = pull_flag_names(dummy_flag_names=[og_flag_id, ObjectId(generate_object_id())])
+    result, response_code = update_flag_name(original_flag_id=str(og_flag_id), new_flag_name=nw_flag_name, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
+    assert result.valid == False
+    assert result.uuid == str(og_flag_id)
+    assert result.message == "flag id: " + str(og_flag_id) + " with name: Flag2 must be given a new unique name"
+    assert result.simple_message == "new flag name must be different than original flag name"
+    assert result.name == nw_flag_name
     assert response_code >= 400
 
 #test update flag logic informatio
