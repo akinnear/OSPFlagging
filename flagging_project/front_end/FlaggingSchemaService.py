@@ -210,7 +210,7 @@ def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, 
         if og_flag_name == new_flag_name:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="flag id: " + original_flag_id + " with name: " + og_flag_name + " must be given a new unique name",
-                                                           simple_message="new flag name must be different than orginal flag name",
+                                                           simple_message="new flag name must be different than original flag name",
                                                            name=og_flag_name,
                                                            uuid=original_flag_id)
             response_code = 405
