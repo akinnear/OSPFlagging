@@ -1140,7 +1140,7 @@ def duplicate_flag_group(original_flag_group_id: str, existing_flag_groups, new_
     if original_flag_group_id is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="user must specify flag group id",
-                                                       simple_message="user must specify flag group")
+                                                       simple_message="user must specify flag group id")
         response_code = 400
     #make sure og_flag_group_name exists
     if flag_schema_object is None:
