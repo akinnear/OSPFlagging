@@ -680,15 +680,15 @@ def delete_flag_group(flag_group_id, existing_flag_groups, flagging_mongo: Flagg
     flag_schema_object = None
     if flag_group_id is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="flag group name must be specified",
-                                                       simple_message="flag group name must be specified")
+                                                       message="flag group id must be specified",
+                                                       simple_message="flag group id must be specified")
         response_code = 400
     if flag_schema_object is None:
         try:
             if ObjectId(flag_group_id) not in existing_flag_groups:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                                message="could not identify flag group " + flag_group_id + " in database",
-                                                               simple_message="could not identify flag group",
+                                                               simple_message="could not identify flag group in database",
                                                                uuid=ObjectId(flag_group_id))
                 response_code = 404
         except Exception as e:
