@@ -221,7 +221,7 @@ def test_update_flag_name(flagging_mongo, mvrb, mvl):
     og_flag_id = ObjectId(generate_object_id())
     nw_flag_name = "Flag2"
     flagging_mongo.return_value.get_flag_logic_information.return_value = {"_id": "logic"}
-    existing_flags = pull_flag_names(dummy_flag_names=[og_flag_id, ObjectId(generate_object_id())])
+    existing_flags = [og_flag_id, ObjectId(generate_object_id())]
     result, response_code = update_flag_name(original_flag_id=str(og_flag_id), new_flag_name=nw_flag_name, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
     assert result.message == "original flag " + str(og_flag_id) + " has been renamed " + nw_flag_name
@@ -239,7 +239,7 @@ def test_update_flag_name_missing_og_flag(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
     og_flag_id = None
     nw_flag_name = "Flag2"
-    existing_flags = pull_flag_names(dummy_flag_names=[ObjectId(generate_object_id()), ObjectId(generate_object_id())])
+    existing_flags = [ObjectId(generate_object_id()), ObjectId(generate_object_id())]
     result, response_code = update_flag_name(original_flag_id=og_flag_id, new_flag_name=nw_flag_name, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "user must specify id of original flag"
@@ -256,7 +256,7 @@ def test_update_flag_name_missing_new_flag(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 2
     og_flag_id = "FlagID1"
     nw_flag_name = None
-    existing_flags = pull_flag_names(dummy_flag_names=[ObjectId(generate_object_id()), ObjectId(generate_object_id())])
+    existing_flags = [ObjectId(generate_object_id()), ObjectId(generate_object_id())]
     result, response_code = update_flag_name(original_flag_id=str(og_flag_id), new_flag_name=nw_flag_name, existing_flags=existing_flags, flagging_mongo=flagging_mongo)
     assert result.valid == False
     assert result.message == "user must specify name of new flag"
@@ -275,7 +275,7 @@ def test_update_flag_name_og_flag_not_found(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
     og_flag_id = ObjectId(generate_object_id())
     nw_flag_name = "Flag2"
-    existing_flags = pull_flag_names(dummy_flag_names=[ObjectId(generate_object_id()), ObjectId(generate_object_id())])
+    existing_flags = [ObjectId(generate_object_id()), ObjectId(generate_object_id())]
     result, response_code = update_flag_name(original_flag_id=str(og_flag_id), new_flag_name=nw_flag_name, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "original flag id " + str(og_flag_id) + " does not exist"
@@ -295,7 +295,7 @@ def test_update_flag_name_og_name_same_as_nw_name(flagging_mongo, mvrb, mvl):
     og_flag_id = ObjectId(generate_object_id())
     nw_flag_name = "Flag2"
     flagging_mongo.return_value.get_flag_name.return_value = nw_flag_name
-    existing_flags = pull_flag_names(dummy_flag_names=[og_flag_id, ObjectId(generate_object_id())])
+    existing_flags = [og_flag_id, ObjectId(generate_object_id())]
     result, response_code = update_flag_name(original_flag_id=str(og_flag_id), new_flag_name=nw_flag_name, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "flag id: " + str(og_flag_id) + " with name: Flag2 must be given a new unique name"
@@ -313,7 +313,7 @@ def test_update_flag_logic(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 3
     mock_flagging_mongo = flagging_mongo()
     og_flag_id = ObjectId(generate_object_id())
-    existing_flags = pull_flag_names(dummy_flag_names=[og_flag_id, ObjectId(generate_object_id())])
+    existing_flags = [og_flag_id, ObjectId(generate_object_id())]
     nw_flag_logic_information = FlagLogicInformation(
     used_variables={VariableInformation("FF1"): {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15),
                                                  CodeLocation(9, 5), CodeLocation(17, 15)},
@@ -353,7 +353,7 @@ def test_update_flag_logic(flagging_mongo, mvrb, mvl):
 def test_update_flag_logic_missing_flag_1(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 3
     mock_flagging_mongo = flagging_mongo()
-    existing_flags = pull_flag_names(dummy_flag_names=[ObjectId(generate_object_id()), ObjectId(generate_object_id())])
+    existing_flags = [ObjectId(generate_object_id()), ObjectId(generate_object_id())]
     og_flag_id = None
     nw_flag_logic_information = FlagLogicInformation(
         used_variables={VariableInformation("FF1"): {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15),
@@ -392,7 +392,7 @@ def test_update_flag_logic_missing_flag_1(flagging_mongo, mvrb, mvl):
 def test_update_flag_logic_missing_flag_2(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 3
     mock_flagging_mongo = flagging_mongo()
-    existing_flags = pull_flag_names(dummy_flag_names=[ObjectId(generate_object_id()), ObjectId(generate_object_id())])
+    existing_flags = [ObjectId(generate_object_id()), ObjectId(generate_object_id())]
     og_flag_id = ObjectId(generate_object_id())
     while og_flag_id in existing_flags:
         og_flag_id = ObjectId(generate_object_id())
@@ -437,7 +437,7 @@ def test_update_flag_logic_errors(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.get_flag_name.return_value = "Flag3C"
     mock_flagging_mongo = flagging_mongo()
     og_flag_id = ObjectId(generate_object_id())
-    existing_flags = pull_flag_names(dummy_flag_names=[og_flag_id, ObjectId(generate_object_id())])
+    existing_flags = [og_flag_id, ObjectId(generate_object_id())]
     nw_flag_logic_information = FlagLogicInformation(
     used_variables={VariableInformation("FF1"): {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15),
                                                  CodeLocation(9, 5), CodeLocation(17, 15)},
@@ -478,7 +478,7 @@ def test_update_flag_logic_mypy_errors(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
     og_flag_id = ObjectId(generate_object_id())
     flagging_mongo.return_value.get_flag_name.return_value = "Flag3C"
-    existing_flags = pull_flag_names(dummy_flag_names=[og_flag_id, ObjectId(generate_object_id())])
+    existing_flags = [og_flag_id, ObjectId(generate_object_id())]
     nw_flag_logic_information = FlagLogicInformation(
     used_variables={VariableInformation("FF1"): {CodeLocation(3, 7), CodeLocation(6, 15), CodeLocation(7, 15),
                                                  CodeLocation(9, 5), CodeLocation(17, 15)},
@@ -521,7 +521,7 @@ def test_update_delete_flag(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.remove_flag.return_value = rfrv
     flagging_mongo.return_value.get_flag_name.return_value = "Flag1A"
     og_flag_id = ObjectId(generate_object_id())
-    existing_flags = pull_flag_names(dummy_flag_names=[og_flag_id, ObjectId(generate_object_id())])
+    existing_flags = [og_flag_id, ObjectId(generate_object_id())]
     result, response_code = delete_flag(flag_id=str(og_flag_id), existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
     assert result.message == str(og_flag_id) + " has been deleted"
@@ -537,7 +537,7 @@ def test_update_delete_flag(flagging_mongo, mvrb, mvl):
 @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
 def test_update_delete_flag_missing_flag_id(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAGID1", "FLAGID2"])
+    existing_flags = ["FLAGID1", "FLAGID2"]
     og_flag_id = None
     result, response_code = delete_flag(flag_id=og_flag_id, existing_flags=existing_flags, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
@@ -554,7 +554,7 @@ def test_update_delete_flag_missing_flag_id(flagging_mongo, mvrb, mvl):
 @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
 def test_update_delete_flag_flag_does_not_exist(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
-    existing_flags = pull_flag_names(dummy_flag_names=[ObjectId(generate_object_id()), ObjectId(generate_object_id())])
+    existing_flags = [ObjectId(generate_object_id()), ObjectId(generate_object_id())]
     og_flag_id = ObjectId(generate_object_id())
     while og_flag_id in existing_flags:
         og_flag_id = ObjectId(generate_object_id())
@@ -576,7 +576,7 @@ def test_duplicate_flag(flagging_mongo, mvrb, mvl):
     flag_id = ObjectId(generate_object_id())
     flagging_mongo.get_flag_name.return_value = "Flag4D"
     flagging_mongo.get_flag_logic_information.return_value = "logic here"
-    existing_flag_ids = pull_flag_names(dummy_flag_names=[flag_id, ObjectId(generate_object_id())])
+    existing_flag_ids = [flag_id, ObjectId(generate_object_id())]
     result, response_code = duplicate_flag(original_flag_id=str(flag_id), existing_flags=existing_flag_ids, flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
     assert result.message == str(flag_id) + " has be duplicated"
@@ -594,7 +594,7 @@ def test_duplicate_flag_missing_flag_id(flagging_mongo, mvrb, mvl):
     flagging_mongo.duplicate_flag.return_value = 4
     mock_flagging_mongo = flagging_mongo
     flag_id = None
-    existing_flag_ids = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B"])
+    existing_flag_ids = ["FLAG1A", "FLAG2B"]
     result, response_code = duplicate_flag(original_flag_id=flag_id, existing_flags=existing_flag_ids, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "flag id must be specified"
@@ -611,7 +611,7 @@ def test_duplicate_flag_missing_flag_id(flagging_mongo, mvrb, mvl):
 def test_duplicate_flag_flag_does_not_exist(flagging_mongo, mvrb, mvl):
     flagging_mongo.duplicate_flag.return_value = 4
     mock_flagging_mongo = flagging_mongo
-    existing_flag_ids = pull_flag_names(dummy_flag_names=[ObjectId(generate_object_id()), ObjectId(generate_object_id())])
+    existing_flag_ids = [ObjectId(generate_object_id()), ObjectId(generate_object_id())]
     flag_id = ObjectId(generate_object_id())
     while flag_id in existing_flag_ids:
         flag_id = ObjectId(generate_object_id())
@@ -632,7 +632,7 @@ def test_duplicate_flag_flag_does_not_exist(flagging_mongo, mvrb, mvl):
 def test_create_flag_group_name_not_specified(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.add_flag_group.return_value = 5
     mock_flagging_mongo = flagging_mongo()
-    existing_flag_group_names = pull_flag_group_names(dummy_flag_group_names=["FlagGroup1", "FlagGroup2"])
+    existing_flag_group_names = ["FlagGroup1", "FlagGroup2"]
     new_flag_group = None
     result, response_code = create_flag_group(flag_group_name=new_flag_group, existing_flag_groups=existing_flag_group_names, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
@@ -650,14 +650,14 @@ def test_create_flag_group_name_not_specified(flagging_mongo, mvrb, mvl):
 def test_create_flag_group_name_not_unique(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.add_flag_group.return_value = 5
     mock_flagging_mongo = flagging_mongo()
-    existing_flag_group_names = pull_flag_group_names(dummy_flag_group_names=["FlagGroup1", "FlagGroup2"])
-    new_flag_group = "FlagGroup1"
-    result, response_code = create_flag_group(flag_group_name=new_flag_group, existing_flag_groups=existing_flag_group_names, flagging_mongo=mock_flagging_mongo)
+    existing_flag_group_names = ["FlagGroup1", "FlagGroup2"]
+    new_flag_group_name = "FlagGroup1"
+    result, response_code = create_flag_group(flag_group_name=new_flag_group_name, existing_flag_groups=existing_flag_group_names, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "new flag group name must be unique"
     assert result.simple_message == "new flag group name must be unique"
     assert result.uuid == None
-    assert result.name == None
+    assert result.name == new_flag_group_name
     assert result.logic == None
     assert response_code >= 400
 
@@ -669,7 +669,7 @@ def test_create_flag_group_name_not_unique(flagging_mongo, mvrb, mvl):
 def test_remove_flag_group_1(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
     flagging_mongo.return_value.remove_flag_group.return_value = 6
-    existing_flag_group_names = pull_flag_group_names(dummy_flag_group_names=[ObjectId("1A"*12), ObjectId("2B"*12)])
+    existing_flag_group_names = [ObjectId("1A"*12), ObjectId("2B"*12)]
     flag_group_2_remove = "1A"*12
     flagging_mongo.return_value.get_flag_dep_by_flag_group_id.return_value = [1, 2]
     flagging_mongo.return_value.remove_specific_flag_dependencies_via_flag_group_id.return_value = [ObjectId("3C"*12), ObjectId("4D"*12)]
@@ -689,7 +689,7 @@ def test_remove_flag_group_1(flagging_mongo, mvrb, mvl):
 def test_remove_flag_group_missing_flag_group_name(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
     flagging_mongo.return_value.remove_flag_group.return_value = 6
-    existing_flag_group_names = pull_flag_group_names(dummy_flag_group_names=[ObjectId("1A" * 12), ObjectId("2B" * 12)])
+    existing_flag_group_names = [ObjectId("1A" * 12), ObjectId("2B" * 12)]
     flag_group_2_remove = None
     flagging_mongo.return_value.get_flag_dep_by_flag_group_id.return_value = [1, 2]
     flagging_mongo.return_value.remove_specific_flag_dependencies_via_flag_group_id.return_value = [ObjectId("3C"* 12), ObjectId("4D"*12)]
@@ -709,7 +709,7 @@ def test_remove_flag_group_missing_flag_group_name(flagging_mongo, mvrb, mvl):
 def test_remove_flag_group_invalid_id_type(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
     flagging_mongo.return_value.remove_flag_group.return_value = 6
-    existing_flag_group_names = pull_flag_group_names(dummy_flag_group_names=[ObjectId("1A"*12), ObjectId("2B"*12)])
+    existing_flag_group_names = [ObjectId("1A"*12), ObjectId("2B"*12)]
     flag_group_2_remove = "1"*12
     flagging_mongo.return_value.get_flag_dep_by_flag_group_id.return_value = [1, 2]
     flagging_mongo.return_value.remove_specific_flag_dependencies_via_flag_group_id.return_value = [ObjectId("3C"*12), ObjectId("4D"*12)]
@@ -731,7 +731,7 @@ def test_remove_flag_group_invalid_id_type(flagging_mongo, mvrb, mvl):
 def test_remove_flag_group_flag_group_id_does_not_exist(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
     flagging_mongo.return_value.remove_flag_group.return_value = 6
-    existing_flag_group_names = pull_flag_group_names(dummy_flag_group_names=[ObjectId(generate_object_id()), ObjectId(generate_object_id())])
+    existing_flag_group_names = [ObjectId(generate_object_id()), ObjectId(generate_object_id())]
     flag_group_2_remove = ObjectId(generate_object_id())
     while flag_group_2_remove in existing_flag_group_names:
         flag_group_2_remove = ObjectId(generate_object_id())
@@ -756,7 +756,7 @@ def test_duplicate_flag_group(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag_group.return_value = mock_return_value
     mock_flagging_mongo = flagging_mongo()
     flag_group_id = ObjectId(generate_object_id())
-    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=[flag_group_id, ObjectId(generate_object_id())])
+    existing_flag_groups = [flag_group_id, ObjectId(generate_object_id())]
     result, response_code = duplicate_flag_group(original_flag_group_id=str(flag_group_id), existing_flag_groups=existing_flag_groups,
                                                  new_flag_group_name="FlagGroup3C", flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
@@ -775,7 +775,7 @@ def test_duplicate_flag_group_missing_flag_group(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.duplicate_flag_group.return_value = "Flag_Group_7G"
     mock_flagging_mongo = flagging_mongo()
     flag_group_id = None
-    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=["FLAG_GROUP_1A", "FLAG_GROUP_2B"])
+    existing_flag_groups = ["FLAG_GROUP_1A", "FLAG_GROUP_2B"]
     result, response_code = duplicate_flag_group(original_flag_group_id=flag_group_id, existing_flag_groups=existing_flag_groups, new_flag_group_name="NEW_NAME", flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "user must specify flag group id"
@@ -795,7 +795,7 @@ def test_duplicate_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb, mv
     mock_return_value = flagging_mongo.return_value.duplicate_flag_group.return_value
     flagging_mongo.return_value.update_flag_group.return_value = mock_return_value
     mock_flagging_mongo = flagging_mongo()
-    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=[ObjectId(generate_object_id()), ObjectId(generate_object_id())])
+    existing_flag_groups = [ObjectId(generate_object_id()), ObjectId(generate_object_id())]
     flag_group_id = ObjectId(generate_object_id())
     while flag_group_id in existing_flag_groups:
         flag_group_id = ObjectId(generate_object_id())
@@ -1125,7 +1125,7 @@ def test_duplicate_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb, mv
 def test_create_flag_group(flagging_mongo, mvrb):
     mock_flagging_mongo = flagging_mongo
     flagging_mongo.add_flag_group.return_value = "FLAG_GROUP_13M_id"
-    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP_3C"])
+    existing_flag_groups = ["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP_3C"]
     flag_group = "FLAG_GROUP_4D"
     result, response_code = create_flag_group(flag_group_name=flag_group, existing_flag_groups=existing_flag_groups, flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
@@ -1143,7 +1143,7 @@ def test_create_flag_group(flagging_mongo, mvrb):
 def test_create_flag_group_missing_flag_group_new(flagging_mongo, mvrb):
     mock_flagging_mongo = flagging_mongo
     flagging_mongo.add_flag_group.return_value = "FLAG_GROUP_13M_id"
-    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP_3C"])
+    existing_flag_groups = ["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP_3C"]
     flag_group = None
     result, response_code = create_flag_group(flag_group_name=flag_group, existing_flag_groups=existing_flag_groups, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
@@ -1161,7 +1161,7 @@ def test_create_flag_group_non_unique_flag_group_name(flagging_mongo, mvrb):
     mock_flagging_mongo = flagging_mongo
     mock_return_value = ObjectId(generate_object_id())
     flagging_mongo.add_flag_group.return_value = mock_return_value
-    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP_3C"])
+    existing_flag_groups = ["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP_3C"]
     flag_group = "FLAG_GROUP_1A"
     result, response_code = create_flag_group(flag_group_name=flag_group, existing_flag_groups=existing_flag_groups, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
@@ -1277,8 +1277,11 @@ def test_add_flags_to_flag_group_flag_group_does_not_exist(flagging_mongo, mgfd,
                                     flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "flag_group " + str(flag_group_id) + " does not exist"
+    assert result.simple_message == "flag group does not exist"
+    assert result.uuid == None
+    assert result.name == None
+    assert result.logic == None
     assert response_code >= 400
-
 
 #test, add flag to flag_group, flag is not specified
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
@@ -1307,10 +1310,10 @@ def test_add_flags_to_flag_group_missing_flag(flagging_mongo, mgfd, mvrb):
 def test_add_flags_to_flag_group_flag_does_not_exist(flagging_mongo, mgfd, mvrb):
     mock_flagging_mongo = flagging_mongo
     flagging_mongo.update_flag_group.return_value = "FLAG_GROUP_13M_ID"
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
-                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
-    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP_3C", "FLAG_GROUP_4D", "FLAG_GROUP_5E", "FLAG_GROUP_6F",
-                                                       "FLAG_GROUP_7G", "FLAG_GORUP_8H", "FLAG_GROUP_9I", "FLAG_GROUP_10J", "FLAG_GROUP_11K", "FLAG_GROUP_12L"])
+    existing_flags = ["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
+                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"]
+    existing_flag_groups = ["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP_3C", "FLAG_GROUP_4D", "FLAG_GROUP_5E", "FLAG_GROUP_6F",
+                                                       "FLAG_GROUP_7G", "FLAG_GORUP_8H", "FLAG_GROUP_9I", "FLAG_GROUP_10J", "FLAG_GROUP_11K", "FLAG_GROUP_12L"]
     flag_group_name = "FLAG_GROUP_2B"
     new_flags = ["FLAG1A", "FLAG2B", "FLAG_DOES_NOT_EXIST", "FLAG4D", "FLAG_DOES_NOT_EXIST_2"]
     flags_in_flag_group = []
@@ -1489,12 +1492,12 @@ def test_remove_flag_from_flag_group_missing_flag_group(flagging_mongo, mvrb):
 def test_remove_flag_from_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb):
     mock_flagging_mongo = flagging_mongo
     flagging_mongo.update_flag_group.return_value = "FLAG_GROUP_13M_ID"
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
-                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
-    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP_3C",
+    existing_flags = ["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
+                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"]
+    existing_flag_groups = ["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP_3C",
                                                                          "FLAG_GROUP_4D", "FLAG_GROUP_5E", "FLAG_GROUP_6F",
                                                                          "FLAG_GROUP_7G", "FLAG_GROUP_8H", "FLAG_GROUP_9I",
-                                                                         "FLAG_GROUP_10J", "FLAG_GROUP_11K", "FLAG_GROUP_12L"])
+                                                                         "FLAG_GROUP_10J", "FLAG_GROUP_11K", "FLAG_GROUP_12L"]
     flag_group_name = "not_a_real_flag_group"
     flags_in_flag_group = existing_flags
     flags_2_remove = ["FLAG8H", "FLAG9I"]
@@ -1509,12 +1512,12 @@ def test_remove_flag_from_flag_group_flag_group_does_not_exist(flagging_mongo, m
 @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
 def test_remove_flag_from_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb):
     flagging_mongo.update_flag_group.return_value = "FLAG_GROUP_13M_ID"
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
-                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
-    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP_3C",
+    existing_flags = ["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
+                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"]
+    existing_flag_groups = ["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP_3C",
                                                                          "FLAG_GROUP_4D", "FLAG_GROUP_5E", "FLAG_GROUP_6F",
                                                                          "FLAG_GROUP_7G", "FLAG_GROUP_8H", "FLAG_GROUP_9I",
-                                                                         "FLAG_GROUP_10J", "FLAG_GROUP_11K", "FLAG_GROUP_12L"])
+                                                                         "FLAG_GROUP_10J", "FLAG_GROUP_11K", "FLAG_GROUP_12L"]
     flag_group_name = "FLAG_GROUP_7G"
     flags_in_flag_group = existing_flags
     flags_2_remove = []
@@ -1529,12 +1532,12 @@ def test_remove_flag_from_flag_group_flag_group_does_not_exist(flagging_mongo, m
 @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
 def test_remove_flag_from_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb):
     flagging_mongo.update_flag_group.return_value = "FLAG_GROUP_13M_ID"
-    existing_flags = pull_flag_names(dummy_flag_names=["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
-                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"])
-    existing_flag_groups = pull_flag_group_names(dummy_flag_group_names=["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP_3C",
+    existing_flags = ["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
+                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"]
+    existing_flag_groups = ["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP_3C",
                                                                          "FLAG_GROUP_4D", "FLAG_GROUP_5E", "FLAG_GROUP_6F",
                                                                          "FLAG_GROUP_7G", "FLAG_GROUP_8H", "FLAG_GROUP_9I",
-                                                                         "FLAG_GROUP_10J", "FLAG_GROUP_11K", "FLAG_GROUP_12L"])
+                                                                         "FLAG_GROUP_10J", "FLAG_GROUP_11K", "FLAG_GROUP_12L"]
     flag_group_name = "FLAG_GROUP_7G"
     flags_in_flag_group = existing_flags
     flags_2_remove = ["FLAG9I", "FLAG14N"]
