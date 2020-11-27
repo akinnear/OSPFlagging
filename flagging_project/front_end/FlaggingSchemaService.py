@@ -660,7 +660,8 @@ def create_flag_group(flag_group_name: str, existing_flag_groups, flagging_mongo
     elif flag_group_name in existing_flag_groups:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="new flag group name must be unique",
-                                                       simple_message="new flag group name must be unique")
+                                                       simple_message="new flag group name must be unique",
+                                                       name=flag_group_name)
         response_code = 404
     else:
         new_flag_group_id = flagging_mongo.add_flag_group({flag_group_name_col_name: flag_group_name,
