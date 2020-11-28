@@ -1525,45 +1525,28 @@ def test_remove_flag_from_flag_group_flag_group_does_not_exist(flagging_mongo, m
     assert result.logic == None
     assert response_code >= 400
 
-#test, remove flag from flag group, missing flags to remove
-@mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
-def test_remove_flag_from_flag_group_flag_group_missing_flags_2_remove(flagging_mongo, mvrb):
-    flagging_mongo.update_flag_group.return_value = "FLAG_GROUP_13M_ID"
-    existing_flags = ["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
-                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"]
-    existing_flag_groups = ["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP_3C",
-                                                                         "FLAG_GROUP_4D", "FLAG_GROUP_5E", "FLAG_GROUP_6F",
-                                                                         "FLAG_GROUP_7G", "FLAG_GROUP_8H", "FLAG_GROUP_9I",
-                                                                         "FLAG_GROUP_10J", "FLAG_GROUP_11K", "FLAG_GROUP_12L"]
-    flag_group_name = "FLAG_GROUP_7G"
-    flags_in_flag_group = existing_flags
-    flags_2_remove = []
-    result, response_code = remove_flag_from_flag_group(flag_group_name=flag_group_name, del_flags=flags_2_remove, existing_flags=existing_flags,
-                                         existing_flag_groups=existing_flag_groups, flags_in_flag_group=flags_in_flag_group,
-                                         flagging_mongo=flagging_mongo)
-    assert result.valid == False
-    assert result.message == "no flags to remove were specified"
+
 
 #test, remove flag from flag group, flag to remove does not exist
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
 def test_remove_flag_from_flag_group_flag_group_missing_flags_2_remove_2(flagging_mongo, mvrb):
     flagging_mongo.update_flag_group.return_value = "FLAG_GROUP_13M_ID"
-    existing_flags = ["FLAG1A", "FLAG2B", "FLAG3C", "FLAG4D", "FLAG5E", "FLAG6F",
-                                                       "FLAG7G", "FLAG8H", "FLAG9I", "FLAG10J", "FLAG11K", "FLAG12L"]
-    existing_flag_groups = ["FLAG_GROUP_1A", "FLAG_GROUP_2B", "FLAG_GROUP_3C",
-                                                                         "FLAG_GROUP_4D", "FLAG_GROUP_5E", "FLAG_GROUP_6F",
-                                                                         "FLAG_GROUP_7G", "FLAG_GROUP_8H", "FLAG_GROUP_9I",
-                                                                         "FLAG_GROUP_10J", "FLAG_GROUP_11K", "FLAG_GROUP_12L"]
-    flag_group_name = "FLAG_GROUP_7G"
+    existing_flags = [ObjectId("1"*24), ObjectId("2"*24), ObjectId("3"*24)]
+    existing_flag_groups = [ObjectId("4"*24), ObjectId("5"*24), ObjectId("6"*24)]
+    flag_group_id = "4"*24
     flags_in_flag_group = existing_flags
-    flags_2_remove = ["FLAG9I", "FLAG14N"]
-    result, response_code = remove_flag_from_flag_group(flag_group_name=flag_group_name, del_flags=flags_2_remove, existing_flags=existing_flags,
+    flags_2_remove = []
+    result, response_code = remove_flag_from_flag_group(flag_group_id=flag_group_id, del_flags=flags_2_remove, existing_flags=existing_flags,
                                          existing_flag_groups=existing_flag_groups, flags_in_flag_group=flags_in_flag_group,
                                          flagging_mongo=flagging_mongo)
     assert result.valid == False
     assert result.message == "no flags to remove were specified"
+    assert result.simple_message == "missing flags to remove from flag group"
+    assert result.uuid == None
+    assert result.name == None
+    assert result.logic == None
+    assert response_code >= 400
 
 #test, remove flag from flag group, flag to remove is not associted with flag group
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
@@ -1578,11 +1561,16 @@ def test_remove_flag_from_flag_group_flag_group_does_not_exist_2A(flagging_mongo
     flags_2_remove = [ObjectId("A11111111111111111111109")]
     flags_in_flag_group = existing_flags.copy()
     flags_in_flag_group.remove(ObjectId("A11111111111111111111109"))
+    flagging_mongo.get_flag_group_name.return_value = "FlagGroupNameB4"
     result, response_code = remove_flag_from_flag_group(flag_group_id=str(flag_group_id), del_flags=[str(x) for x in flags_2_remove], existing_flags=existing_flags,
                                     existing_flag_groups=existing_flag_groups, flags_in_flag_group=flags_in_flag_group,
                                     flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
     assert result.message == "the following flags are not part of flag group " + str(flag_group_id) + ": " + ("").join([str(x) for x in flags_2_remove])
+    assert result.simple_message == "flag specified for removal is not part of flag group"
+    assert result.uuid == ObjectId("b11111111111111111111104")
+    assert result.name == "FlagGroupNameB4"
+    assert result.logic == None
     assert response_code >= 400
 
 
@@ -1691,7 +1679,10 @@ def test_add_flag_dependencies_to_flag(flagging_mongo, mvrb):
     result, response_code = add_dependencies_to_flag(flag_dep_id, existing_flag_dep_keys, new_deps_2_add, flagging_mongo)
     assert result.valid == True
     assert result.message == "dependencies have been updated"
+    assert result.simple_message == "dependencies have been updated"
     assert result.uuid == "FLAG_ID_DEPS_ADDED_1A"
+    assert result.name == None
+    assert result.logic == None
     assert response_code == 200
 
 #test, add_dependencies_to_flag, flag id not passed
@@ -1705,7 +1696,10 @@ def test_add_flag_dependencies_to_flag_missing_flag_id(flagging_mongo, mvrb):
     result, response_code = add_dependencies_to_flag(flag_dep_id, existing_flag_dep_keys, new_deps_2_add, flagging_mongo)
     assert result.valid == False
     assert result.message == "flag dep id not specified"
+    assert result.simple_message == "flag dep id not specified"
     assert result.uuid == None
+    assert result.name == None
+    assert result.logic == None
     assert response_code >= 400
 
 #tests, add deps to flag, flag_id does not exist as an existing flag dep key
@@ -1719,7 +1713,10 @@ def test_add_flag_dependencies_to_flag_flag_id_does_not_exist(flagging_mongo, mv
     result, response_code = add_dependencies_to_flag(flag_dep_id, existing_flag_dep_keys, new_deps_2_add, flagging_mongo)
     assert result.valid == False
     assert result.message == "flag dep does not exist in flag dependency database"
+    assert result.simple_message == "flag dep does not exist in flag dependency database"
     assert result.uuid == None
+    assert result.name == None
+    assert result.logic == None
     assert response_code >= 400
 
 # #test, remove deps from flag
@@ -1747,7 +1744,10 @@ def test_remove_flag_dependencies_from_flag_missing_flag_id(flagging_mongo, mvrb
     result, response_code = remove_dependencies_from_flag(flag_id, existing_flag_dep_keys, deps_2_remove, flagging_mongo)
     assert result.valid == False
     assert result.message == "flag dep id not specified"
+    assert result.simple_message == "flag dep id not specified"
     assert result.uuid == None
+    assert result.name == None
+    assert result.logic == None
     assert response_code >= 400
 
 #test, remove deps from flag, flag_id does not exist as an existing flag dep key
@@ -1761,7 +1761,10 @@ def test_remove_flag_dependencies_from_flag_flag_id_does_not_exist(flagging_mong
     result, response_code = remove_dependencies_from_flag(flag_id, existing_flag_dep_keys, deps_2_remove, flagging_mongo)
     assert result.valid == False
     assert result.message == "flag dep does not exist in flag dependency database"
+    assert result.simple_message == "flag dep does not exist in flag dependency database"
     assert result.uuid == None
+    assert result.name == None
+    assert result.logic == None
     assert response_code >= 400
 
 #TODO
