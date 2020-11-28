@@ -1053,7 +1053,7 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
     except Exception as e:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="error removing flag " + del_flags[0] + " from flag group " + flag_group_id + ", error converting flag id to proper ObjectId type",
-                                                       simple_message="error removing flag from flag group")
+                                                       simple_message="flag specified for removal is not part of flag group")
         response_code = 405
 
 
@@ -1087,7 +1087,7 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
                 flag_message = "the following flags are not part of flag group " + flag_group_id + ": " + (", ".join([str(x) for x in flags_not_in_group]))
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message=flag_message,
-                                                           simple_message="error removing flags from flag group",
+                                                           simple_message="flag specified for removal is not part of flag group",
                                                            uuid=ObjectId(flag_group_id),
                                                            name=flagging_mongo.get_flag_group_name(ObjectId(flag_group_id)))
             response_code = 405
@@ -1456,7 +1456,7 @@ def remove_dependencies_from_flag(flag_dep_id, existing_flag_dep_keys: [], rm_de
             if ObjectId(flag_dep_id) not in existing_flag_dep_keys:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                                message="flag dep does not exist in flag dependency database",
-                                                               simple_message="flag des does not exist in flag dependency database")
+                                                               simple_message="flag dep does not exist in flag dependency database")
                 response_code = 404
         except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
