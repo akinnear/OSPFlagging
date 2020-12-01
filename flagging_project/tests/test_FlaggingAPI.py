@@ -121,29 +121,30 @@ def test_get_specific_flag_id_valid(mock_get_flag_logic_information, mock_get_fl
     assert response.json["valid"] == True
 
 #create flag, missing flag name
-def test_create_flag_missing_flag_name_1(client):
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
+def test_create_flag_missing_payload(client):
+    url = "flag/create_flag"
+    response = client.post(url)
+    assert response.status_code == 500
+    assert response.json["message"] == "error reading flag data to create flag"
+    assert response.json["simple_message"] == "error flag data to create flag"
+    assert response.json["valid"] == False
 
-    #create flag, no name
-    flag_creation_url = "flag/create_flag"
-    response = client.post(flag_creation_url)
+#TODO
+@mock.patch("handlers.FlaggingAPI._convert_TFLI_to_FLI", return_value=FlagLogicInformation(), autospec=True)
+@mock.patch("handlers.FlaggingAPI.request.get_json", _create_flagging_mongo=_convert_FLI_to_TFLI(FlagLogicInformation()))
+def test_create_flag_missing_name(mock_request, mock_payload, client):
+    url = "flag/create_flag"
+    response = client.post(url)
     assert response.status_code == 400
+    assert response.json["flag_logic"] == None
+    assert response.json["message"] == "flag name not specified"
+    assert response.json["flag_name"] == None
+    assert response.json["simple_message"] == "flag name not specified"
+    assert response.json["uuid"] == "None"
+    assert response.json["valid"] == False
 
-def test_create_flag_missing_flag_name_2(client):
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
-
-    # create flag, no name
-    flag_creation_url = "flag/create_flag/XX/"
-    response = client.post(flag_creation_url)
-    assert response.status_code >= 400
-
-#create flag, valid
+#TODO
+# create flag, valid
 def test_create_flag_valid(client):
     # delete all flags
     flag_deletion_url = "flag/delete_all_flags"
