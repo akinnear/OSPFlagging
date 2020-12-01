@@ -579,7 +579,7 @@ def test_duplicate_flag(flagging_mongo, mvrb, mvl):
     existing_flag_ids = [flag_id, ObjectId(generate_object_id())]
     result, response_code = duplicate_flag(original_flag_id=str(flag_id), existing_flags=existing_flag_ids, flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
-    assert result.message == str(flag_id) + " has be duplicated"
+    assert result.message == str(flag_id) + " has been duplicated"
     assert result.simple_message == "flag has been duplicated"
     assert result.uuid == 4
     assert result.name == "Flag4D"

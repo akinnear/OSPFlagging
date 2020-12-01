@@ -20,6 +20,7 @@ from bson.objectid import ObjectId
 from front_end.ReferencedFlag import ReferencedFlag, _convert_RF_to_TRF
 
 
+
 # def _make_fli_dictionary(fli):
 #     fli_dict = {}
 #     for attr, value in fli.__dict__.items():
@@ -45,7 +46,7 @@ def get_specific_flag(flag_id, existing_flags: [], flagging_mongo: FlaggingMongo
     if flag_schema_object is None:
         if flag_id is None:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag_id not specified",
+                                                           message="flag id not specified",
                                                            simple_message="flag id not specified")
             response_code = 400
     if flag_schema_object is None:
@@ -68,6 +69,7 @@ def get_specific_flag(flag_id, existing_flags: [], flagging_mongo: FlaggingMongo
         specific_flag_name = flagging_mongo.get_flag_name(flag_id_object)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message='found flag id',
+                                                       simple_message="found flag id",
                                                        uuid=str(specific_flag_id),
                                                        name=specific_flag_name,
                                                        logic=specific_flag_logic)
@@ -152,7 +154,7 @@ def duplicate_flag(original_flag_id, existing_flags, flagging_mongo: FlaggingMon
         specific_flag_logic = flagging_mongo.get_flag_logic_information(duplicated_flag_new_id)
         specific_flag_name = flagging_mongo.get_flag_name(duplicated_flag_new_id)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message=str(original_flag_id) + " has be duplicated",
+                                                       message=str(original_flag_id) + " has been duplicated",
                                                        simple_message="flag has been duplicated",
                                                        uuid=duplicated_flag_new_id,
                                                        name=specific_flag_name,
