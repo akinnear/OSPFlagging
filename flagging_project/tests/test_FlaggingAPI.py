@@ -162,110 +162,73 @@ def test_create_flag_valid(client):
     assert response.status_code == 200
 
 #duplicate flag, missing flag id
-def test_duplicate_flag_missing_flag_id(client):
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
-
-    # create flag
-    flag_creation_url = "flag/create_flag/XX/Flag1A"
-    response = client.post(flag_creation_url)
-    assert response.status_code == 200
-
-    flag_duplicate_missing_id_url = "flag/duplicate_flag"
-    response = client.post(flag_duplicate_missing_id_url)
+@mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=([ObjectId("1a"*12)], 200), autospec=True)
+def test_duplicate_flag_missing_flag_id(mock_get_flag_ids, client):
+    url = "flag/duplicate_flag"
+    response = client.post(url)
     assert response.status_code == 400
+    assert response.json["flag_logic"] == None
+    assert response.json["message"] == "flag id must be specified"
+    assert response.json["flag_name"] == None
+    assert response.json["simple_message"] == "flag id must be specified"
+    assert response.json["uuid"] == "None"
+    assert response.json["valid"] == False
 
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
+
 
 #duplicate flag, flag id does not exist
-def test_duplicate_flag_id_does_not_exist(client):
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
-
-    # create flag
-    flag_creation_url = "flag/create_flag/XX/Flag1A"
-    response = client.post(flag_creation_url)
-    assert response.status_code == 200
-
-
-    # get new flag id
-    flag_id_get_url = "flag/get_flag_ids"
-    response = client.get(flag_id_get_url)
-    assert response.status_code == 200
-
-    # unpack flag id
-    x = response.get_data().decode("utf-8")
-    id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
-    new_id = str(generate())
-    while new_id == id:
-        new_id = str(generate())
-
-    url_duplicate_flag_does_not_exist = "flag/duplicate_flag/" + new_id
-    response = client.post(url_duplicate_flag_does_not_exist)
+@mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=([ObjectId("2b"*12)], 200), autospec=True)
+def test_duplicate_flag_id_does_not_exist(mock_get_flag_ids, client):
+    flag_id = "1a"*12
+    url = "flag/duplicate_flag/" + flag_id
+    response = client.post(url)
     assert response.status_code == 404
+    assert response.json["flag_logic"] == None
+    assert response.json["message"] == "flag " + flag_id + " does not exist"
+    assert response.json["flag_name"] == None
+    assert response.json["simple_message"] == "flag does not exist"
+    assert response.json["uuid"] == "None"
+    assert response.json["valid"] == False
 
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
 
 #duplicate flag, invalid flag id
-def test_duplicate_flag_invalid_flag_id(client):
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
-
-    # create flag
-    flag_creation_url = "flag/create_flag/XX/Flag1A"
-    response = client.post(flag_creation_url)
-    assert response.status_code == 200
-
-    url_invalid_duplicate_flag = "flag/duplicate_flag/1A"
-    response = client.post(url_invalid_duplicate_flag)
+@mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=([ObjectId("2b"*12)], 200), autospec=True)
+def test_duplicate_flag_invalid_flag_id(mock_get_flag_ids, client):
+    flag_id = "1b"*10
+    url = "flag/duplicate_flag/" + flag_id
+    response = client.post(url)
     assert response.status_code == 400
+    assert response.json["flag_logic"] == None
+    assert response.json["message"] == "error in duplicating flag: " + flag_id
+    assert response.json["flag_name"] == None
+    assert response.json["simple_message"] == "error in duplicating flag"
+    assert response.json["uuid"] == "None"
+    assert response.json["valid"] == False
 
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
+
 
 #dupplicate flag, valid
-def test_duplicate_flag_id_valid(client):
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
+flag_uuid = ObjectId("1a"*12)
+flag_name = "FlagName1a"
+flag_logic = _convert_FLI_to_TFLI(FlagLogicInformation())
+@mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=([ObjectId("2b"*12)], 200), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.duplicate_flag", return_value=flag_uuid, autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_flag_logic_information", return_value=flag_logic, autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_flag_name", return_value=flag_name, autospec=True)
+def test_duplicate_flag_id_valid(mock_flag_name, mock_flag_logic, mock_duplicated_id, mock_get_flag_ids, client):
+    og_flag_id = "2b"*12
+    dup_flag_id = "1a"*12
+    flag_name = "FlagName1a"
+    url = "flag/duplicate_flag/" + og_flag_id
+    response = client.post(url)
     assert response.status_code == 200
+    assert response.json["flag_logic"] == _convert_FLI_to_TFLI(FlagLogicInformation())
+    assert response.json["message"] == og_flag_id + " has been duplicated"
+    assert response.json["flag_name"] == flag_name
+    assert response.json["simple_message"] == "flag has been duplicated"
+    assert response.json["uuid"] == dup_flag_id
+    assert response.json["valid"] == True
 
-    # create flag
-    flag_creation_url = "flag/create_flag/XX/Flag1A"
-    response = client.post(flag_creation_url)
-    assert response.status_code == 200
-
-    #get new flag id
-    flag_id_get_url = "flag/get_flag_ids"
-    response = client.get(flag_id_get_url)
-    assert response.status_code == 200
-
-    # unpack flag id
-    x = response.get_data().decode("utf-8")
-    id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
-
-
-    url_duplicate_flag_valid = "flag/duplicate_flag/" + id
-    response = client.post(url_duplicate_flag_valid)
-    assert response.status_code == 200
-
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
 
 #update flag name, missing flag id
 def test_update_flag_name_missing_flag_id(client):
