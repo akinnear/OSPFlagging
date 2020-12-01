@@ -17,6 +17,7 @@ from front_end.TransferFlagLogicInformation import _convert_FLI_to_TFLI
 import requests
 import json
 from bson.objectid import ObjectId
+from front_end.FlaggingSchemaInformation import FlaggingSchemaInformation
 
 
 
@@ -40,66 +41,84 @@ def test_flag_home(client):
 
 
 #tets get flag ids
-ids = [ObjectId(x) for x in ["1"*24, "2"*24, "1A"*12]]
+ids = [ObjectId(x) for x in ["1"*24, "2"*24, "1a"*12]]
 @mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=(ids, 200), autospec=True)
 def test_get_flag_ids(mock_call_return, client):
     url = '/flag/get_flag_ids'
     response = client.get(url)
     assert response.status_code == 200
-    assert response.json == {"_ids": ["1"*24, "2"*24, "1A"*12]}
+    assert response.json == {"_ids": ["1"*24, "2"*24, "1a"*12]}
     assert response.status == "200 OK"
 
 
 #get specific flag, id does not exist
-def test_get_specific_flag_does_not_exist(client):
-    url = '/flag/get_specific_flag/111111111111111111111111'
-
+@mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=([], 200), autospec=True)
+def test_get_specific_flag_does_not_exist(mock_get_flag_ids, client):
+    flag_id = "1a" * 12
+    url = '/flag/get_specific_flag/' + flag_id
     response = client.get(url)
     assert response.status_code == 404
+    assert response.json["flag_logic"] == None
+    assert response.json["message"] == "flag: " + flag_id + " does not exist"
+    assert response.json["flag_name"] == None
+    assert response.json["simple_message"] == "flag does not exist"
+    assert response.json["uuid"] == "None"
+    assert response.json["valid"] == False
+
 
 #get specific flag, no id
-def test_get_specific_flag_missing_id(client):
+@mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=([], 200), autospec=True)
+def test_get_specific_flag_missing_id(mock_get_flag_ids, client):
     url = "/flag/get_specific_flag"
-
     response = client.get(url)
     assert response.status_code == 400
+    assert response.json["flag_logic"] == None
+    assert response.json["message"] == "flag id not specified"
+    assert response.json["flag_name"] == None
+    assert response.json["simple_message"] == "flag id not specified"
+    assert response.json["uuid"] == "None"
+    assert response.json["valid"] == False
+
 
 #get specifif flag, id not valid
-def test_get_specific_flag_invalid_id(client):
+@mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=([ObjectId("1a"*12)], 200), autospec=True)
+def test_get_specific_flag_invalid_id(mock_get_flag_ids, client):
     url = "flag/get_specific_flag/123"
-
     response = client.get(url)
     assert response.status_code == 400
+    assert response.json["flag_logic"] == None
+    assert response.json["message"] == "error converting flag id to Object ID type"
+    assert response.json["flag_name"] == None
+    assert response.json["simple_message"] == "error converting flag id to Object ID type"
+    assert response.json["uuid"] == "None"
+    assert response.json["valid"] == False
 
-#get specific flag, valid id, have to create flag first
-def test_get_specific_flag_id_valid(client):
-    #delete all flags first
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
+#get specific flag, valid id
+flag_uuid = ObjectId("1a"*12)
+flag_name = "FlagName1a"
+flag_logic = _convert_FLI_to_TFLI(FlagLogicInformation())
+flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                               message='found flag id',
+                                               simple_message="found flag id",
+                                               uuid=str(flag_uuid),
+                                               name=flag_name,
+                                               logic=flag_logic)
+response_code = 200
+@mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=([ObjectId("1a"*12)], 200), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_specific_flag", return_value=flag_uuid, autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_flag_name", return_value=flag_name, autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_flag_logic_information", return_value=flag_logic, autospec=True)
+def test_get_specific_flag_id_valid(mock_get_flag_logic_information, mock_get_flag_name, mock_get_specific_flag, mock_get_flag_ids, client):
+    flag_id = "1a"*12
+    url = "/flag/get_specific_flag/" + flag_id
+    response = client.get(url)
     assert response.status_code == 200
-
-    #create valid flag first
-    flag_creation_url = "flag/create_flag/XX/Flag1A"
-    response = client.post(flag_creation_url)
-    assert response.status_code == 200
-
-    #get new flag id
-    flag_id_get_url = "flag/get_flag_ids"
-    response = client.get(flag_id_get_url)
-    assert response.status_code == 200
-
-    #unpack flag id
-    x = response.get_data().decode("utf-8")
-    id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
-    #call valid get specific flag
-    specific_flag_url = "flag/get_specific_flag/" + id
-    response = client.get(specific_flag_url)
-    assert response.status_code == 200
-
-    #delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
+    assert response.json["flag_logic"] == _convert_FLI_to_TFLI(FlagLogicInformation())
+    assert response.json["message"] == "found flag id"
+    assert response.json["flag_name"] == "FlagName1a"
+    assert response.json["simple_message"] == "found flag id"
+    assert response.json["uuid"] == flag_id
+    assert response.json["valid"] == True
 
 #create flag, missing flag name
 def test_create_flag_missing_flag_name_1(client):
