@@ -75,16 +75,7 @@ def validate_logic(flag_name, flag_logic_information:FlagLogicInformation(), fla
     # get flag feeders
     flag_feeders = pull_flag_feeders(dummy_flag_feeders={"FF1": int, "FF2": bool, "FF3": str, "FF4": int})
 
-    #TODO
-    # need flag_dependiceis from api call or direct query
-    # only need to look at flags in flag group
 
-
-
-
-    #TODO
-    # perform full validation on user_logic via nodevisitor, mypy, and validation
-    # mypy validation is part of full validation method, do not need explicit mypy validation call
 
 
 
