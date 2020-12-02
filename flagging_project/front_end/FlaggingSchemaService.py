@@ -603,7 +603,7 @@ def get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_mongo):
                 response_code = 404
         except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="error in getting flags for flag group " + flag_group_id,
+                                                           message="error converting flag group id: " + flag_group_id + " to proper Object Id type",
                                                            simple_message="error pulling flags for flag group")
             response_code = 400
     if flag_schema_object is None:
