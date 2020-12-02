@@ -163,8 +163,8 @@ def make_routes(app, flagging_mongo):
                         "message": flag_schema_object.message,
                         "simple_message": flag_schema_object.simple_message,
                         "uuid": str(flag_schema_object.uuid),
-                        "name": flag_schema_object.name,
-                        "logic": flag_schema_object.logic}
+                        "flag_name": flag_schema_object.name,
+                        "flag_logic": flag_schema_object.logic}
                 return data, response_code
 
             if function == "delete_all_flags":
@@ -173,8 +173,8 @@ def make_routes(app, flagging_mongo):
                         "message": flag_schema_object.message,
                         "simple_message": flag_schema_object.simple_message,
                         "uuid": str(flag_schema_object.uuid),
-                        "name": flag_schema_object.name,
-                        "logic": flag_schema_object.logic}
+                        "flag_name": flag_schema_object.name,
+                        "flag_logic": flag_schema_object.logic}
                 return data, response_code
 
             else:
