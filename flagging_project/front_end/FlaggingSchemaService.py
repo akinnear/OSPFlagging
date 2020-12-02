@@ -521,7 +521,7 @@ def move_flag_to_production(flag_id, existing_flags, flagging_mongo):
         if flag_id is None or "":
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="user must specify flag id",
-                                                           simple_message="user must specifiy flag id")
+                                                           simple_message="user must specify flag id")
             response_code = 400
     if flag_schema_object is None:
         try:
@@ -529,8 +529,7 @@ def move_flag_to_production(flag_id, existing_flags, flagging_mongo):
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                                message="flag id: " + flag_id + " does not exist",
                                                                simple_message="flag id does not exist",
-                                                               uuid=ObjectId(flag_id),
-                                                               name=None)
+                                                               uuid=ObjectId(flag_id))
                 response_code = 404
         except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
