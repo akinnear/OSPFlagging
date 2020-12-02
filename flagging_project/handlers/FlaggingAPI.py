@@ -198,13 +198,13 @@ def make_routes(app, flagging_mongo):
             if function == "get_flag_groups":
                 flag_groups, response_code = get_flag_groups(flagging_mongo)
                 flag_groups = [str(x) for x in flag_groups]
-                data = {'flags_groups': flag_groups}
+                data = {'flag_groups': flag_groups}
                 return data, response_code
 
             if function == "get_flag_group_ids":
                 flag_group_ids, response_code = get_flag_group_ids(flagging_mongo)
                 flag_group_ids = [str(x) for x in flag_group_ids]
-                data = {'flags_group_ids': flag_group_ids}
+                data = {'flag_group_ids': flag_group_ids}
                 return data, response_code
 
             if function == "get_flag_group_names":
