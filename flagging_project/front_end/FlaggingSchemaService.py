@@ -597,7 +597,7 @@ def get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_mongo):
         try:
             if ObjectId(flag_group_id) not in existing_flag_groups:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                               message="flag group does not exist",
+                                                               message="flag group: " + flag_group_id + " does not exist",
                                                                simple_message="flag group does not exist",
                                                                uuid=ObjectId(flag_group_id))
                 response_code = 404
