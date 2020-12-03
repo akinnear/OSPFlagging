@@ -237,10 +237,6 @@ def make_routes(app, flagging_mongo):
                 return data, response_code
 
             if function == "create_flag_group":
-                # TODO
-                # need to pull flag logic,
-                # need method and function to return flag logic without direct reference
-                # to mongo db in function
                 flag_groups_names, response_code_name = get_flag_group_names(flagging_mongo)
                 flag_schema_object, response_code = create_flag_group(flag_group_name, flag_groups_names,
                                                                       flagging_mongo)
@@ -249,7 +245,7 @@ def make_routes(app, flagging_mongo):
                         "simple_message": flag_schema_object.simple_message,
                         "uuid": str(flag_schema_object.uuid),
                         "flag_group_name": flag_schema_object.name,
-                        "fso_logic": flag_schema_object.logic}
+                        "flags_in_flag_group": flag_schema_object.logic}
                 return data, response_code
 
             if function == "delete_flag_group":
@@ -259,9 +255,9 @@ def make_routes(app, flagging_mongo):
                 data = {"valid": flag_schema_object.valid,
                         "message": flag_schema_object.message,
                         "simple_message": flag_schema_object.simple_message,
-                        "fso_name": flag_schema_object.name,
+                        "flag_group_name": flag_schema_object.name,
                         "uuid": str(flag_schema_object.uuid),
-                        "fso_logic": flag_schema_object.logic}
+                        "flags_in_flag_group": flag_schema_object.logic}
                 return data, response_code
 
             if function == "add_flag_to_flag_group":
@@ -288,8 +284,8 @@ def make_routes(app, flagging_mongo):
                         "message": flag_schema_object.message,
                         "simple_message": flag_schema_object.simple_message,
                         "uuid": str(flag_schema_object.uuid),
-                        "name": flag_schema_object.name,
-                        "fso_logic": flag_schema_object.logic}
+                        "flag_group_name": flag_schema_object.name,
+                        "flags_in_flag_group": flag_schema_object.logic}
                 return data, response_code
 
             if function == "remove_flag_from_flag_group":
@@ -310,8 +306,8 @@ def make_routes(app, flagging_mongo):
                         "message": flag_schema_object.message,
                         "simple_message": flag_schema_object.simple_message,
                         "uuid": str(flag_schema_object.uuid),
-                        "fso_name": flag_schema_object.name,
-                        "fso_logic": flag_schema_object.logic}
+                        "flag_group_name": flag_schema_object.name,
+                        "flags_in_flag_group": flag_schema_object.logic}
                 return data, response_code
 
             if function == "duplicate_flag_group":
@@ -322,8 +318,8 @@ def make_routes(app, flagging_mongo):
                         "message": flag_schema_object.message,
                         "simple_message": flag_schema_object.simple_message,
                         "uuid": str(flag_schema_object.uuid),
-                        "name": flag_schema_object.name,
-                        "fso_logic": flag_schema_object.logic}
+                        "flag_group_name": flag_schema_object.name,
+                        "flags_in_flag_group": flag_schema_object.logic}
                 return data, response_code
 
             if function == "move_flag_group_to_production":
@@ -334,8 +330,8 @@ def make_routes(app, flagging_mongo):
                         "message": flag_schema_object.message,
                         "simple_message": flag_schema_object.simple_message,
                         "uuid": str(flag_schema_object.uuid),
-                        "name": flag_schema_object.name,
-                        "fso_logic": flag_schema_object.logic}
+                        "flag_group_name": flag_schema_object.name,
+                        "flags_in_flag_group": flag_schema_object.logic}
                 return data, response_code
 
             if function == "delete_all_flag_groups":
@@ -344,8 +340,8 @@ def make_routes(app, flagging_mongo):
                         "message": flag_schema_object.message,
                         "simple_message": flag_schema_object.simple_message,
                         "uuid": str(flag_schema_object.uuid),
-                        "name": flag_schema_object.name,
-                        "fso_logic": flag_schema_object.logic}
+                        "flag_group_name": flag_schema_object.name,
+                        "flags_in_flag_group": flag_schema_object.logic}
                 return data, response_code
             else:
                 return redirect("/flag_group")
