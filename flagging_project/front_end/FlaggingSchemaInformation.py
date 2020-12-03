@@ -1,7 +1,7 @@
 class FlaggingSchemaInformation:
 
 
-    def __init__(self, valid, simple_message="", message="", name=None, uuid=None, logic=None):
+    def __init__(self, valid=False, simple_message="", message="", name=None, uuid=None, logic=None):
         self.valid = valid
         self.simple_message = simple_message
         self.message = message
