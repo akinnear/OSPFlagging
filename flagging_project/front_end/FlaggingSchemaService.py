@@ -609,8 +609,8 @@ def get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_mongo):
     if flag_schema_object is None:
         flags_in_flag_group = flagging_mongo.get_flag_group_flag(ObjectId(flag_group_id))
         flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       logic=flags_in_flag_group,
-                                                       message="return flags for flag group" + flag_group_id,
+                                                       logic=[str(x) for x in flags_in_flag_group],
+                                                       message="return flags for flag group: " + flag_group_id,
                                                        simple_message="return flags for flag group",
                                                        uuid=ObjectId(flag_group_id),
                                                        name=flagging_mongo.get_flag_group_name(ObjectId(flag_group_id)))
@@ -618,7 +618,7 @@ def get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_mongo):
     return flag_schema_object, response_code
 
 #get specific flag_group
-def get_specific_flag_group(flag_group_id: str, existing_flag_groups: [], flagging_mongo: FlaggingMongo):
+def get_specific_flag_group(flag_group_id:str, existing_flag_groups:[], flagging_mongo:FlaggingMongo):
     flag_schema_object = None
     if flag_group_id is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
@@ -629,12 +629,12 @@ def get_specific_flag_group(flag_group_id: str, existing_flag_groups: [], flaggi
         try:
             if ObjectId(flag_group_id) not in existing_flag_groups:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                               message="flag group does not exist",
+                                                               message="flag group: " + flag_group_id + " does not exist",
                                                                simple_message="flag group does not exist")
                 response_code = 404
         except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="error pull flag group " + flag_group_id,
+                                                           message="error converting flag group: " + flag_group_id + " to proper Object Id type",
                                                            simple_message="invalid flag group id type")
             response_code = 400
     if flag_schema_object is None:
@@ -643,8 +643,8 @@ def get_specific_flag_group(flag_group_id: str, existing_flag_groups: [], flaggi
         found_flag_group_name = flagging_mongo.get_flag_group_name(flag_group_id_object)
         flags_in_flag_group = flagging_mongo.get_flag_group_flag(flag_group_id_object)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message="found flag group id",
-                                                       simple_message="flag flag group id",
+                                                       message="found flag group id: " + flag_group_id,
+                                                       simple_message="found flag group id",
                                                        uuid=found_flag_group_id,
                                                        name=found_flag_group_name,
                                                        logic=[str(x) for x in flags_in_flag_group])
@@ -670,7 +670,7 @@ def create_flag_group(flag_group_name: str, existing_flag_groups, flagging_mongo
                                                flag_group_status_col_name: "PRODUCTION_READY",
                                                            flag_group_error_col_name: ""})
         flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message="unique flag group " + flag_group_name + " created",
+                                                       message="unique flag group: " + flag_group_name + " created",
                                                        simple_message="new flag group created",
                                                        uuid=new_flag_group_id,
                                                        name=flag_group_name)
@@ -689,13 +689,13 @@ def delete_flag_group(flag_group_id, existing_flag_groups, flagging_mongo: Flagg
         try:
             if ObjectId(flag_group_id) not in existing_flag_groups:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                               message="could not identify flag group " + flag_group_id + " in database",
+                                                               message="could not identify flag group: " + flag_group_id + " in database",
                                                                simple_message="could not identify flag group in database",
                                                                uuid=ObjectId(flag_group_id))
                 response_code = 404
         except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="could not identify flag group " + flag_group_id + " to delete",
+                                                           message="could not identify flag group: " + flag_group_id + " to delete",
                                                            simple_message="error deleting flag group, invalid id type")
             response_code = 400
     if flag_schema_object is None:
@@ -706,7 +706,7 @@ def delete_flag_group(flag_group_id, existing_flag_groups, flagging_mongo: Flagg
         flag_group_id_object = ObjectId(flag_group_id)
         removed_flag_group = flagging_mongo.remove_flag_group(flag_group_id_object)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message="flag group " + flag_group_id + " deleted from database",
+                                                       message="flag group: " + flag_group_id + " deleted from database",
                                                        simple_message="flag group has been deleted",
                                                        uuid=removed_flag_group)
         response_code = 200
@@ -734,13 +734,13 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
         try:
             if ObjectId(flag_group_id) not in existing_flag_groups:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                               message="flag_group " + flag_group_id + " does not exist",
+                                                               message="flag_group: " + flag_group_id + " does not exist",
                                                                simple_message="flag group does not exist")
 
                 response_code = 404
         except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="error adding flag to flag group " + flag_group_id + ".  Error converting to ObjectId type",
+                                                           message="error adding flag to flag group: " + flag_group_id + ".  Error converting to ObjectId type",
                                                            simple_message="error converting flag group id to ObjectId type")
             response_code = 400
 
@@ -761,7 +761,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
             test_new_flags = [ObjectId(x) for x in new_flags]
         except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="error adding flag to flag group" + flag_group_id + ", error converting flag id to ObjectId type",
+                                                           message="error adding flag to flag group: " + flag_group_id + ", error converting flag id to ObjectId type",
                                                            simple_message="error adding flag to flag group",
                                                            uuid=ObjectId(flag_group_id),
                                                            name=flagging_mongo.get_flag_group_name(ObjectId(flag_group_id)))
@@ -1032,12 +1032,12 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
         try:
             if ObjectId(flag_group_id) not in existing_flag_groups:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                               message="flag group does not exist",
+                                                               message="flag group: " + flag_group_id + " does not exist",
                                                                simple_message="flag group does not exist")
                 response_code = 404
         except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="error removing flag from flag group, error converting flag group id " + flag_group_id + " to ObjectId type",
+                                                           message="error removing flag from flag group, error converting flag group id: " + flag_group_id + " to ObjectId type",
                                                            simple_message="error removing flag from flag group")
             response_code = 400
 
@@ -1053,7 +1053,7 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
         test_flags = [ObjectId(x) for x in del_flags]
     except Exception as e:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="error removing flag " + del_flags[0] + " from flag group " + flag_group_id + ", error converting flag id to proper ObjectId type",
+                                                       message="error removing flag: " + del_flags[0] + " from flag group " + flag_group_id + ", error converting flag id to proper ObjectId type",
                                                        simple_message="flag specified for removal is not part of flag group")
         response_code = 405
 
