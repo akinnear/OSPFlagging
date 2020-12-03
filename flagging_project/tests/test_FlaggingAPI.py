@@ -714,347 +714,215 @@ def test_move_flag_to_production_valid(mock_update_flag, mock_get_flag_name, moc
 
 
 #get flag groups
-def test_get_flag_groups(client):
-    #delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
+flag_group_1 = {"_id": ObjectId("1a"*12),
+                "FLAG_GROUP_NAME": "FlagGroupName1a",
+                "FLAGS_IN_GROUP": [ObjectId("2a"*12), ObjectId("2b"*12)],
+                "FLAG_GROUP_STATUS": "DRAFT"}
+flag_group_2 = {"_id": ObjectId("3a"*12),
+                "FLAG_GROUP_NAME": "FlagGroupName3a",
+                "FLAGS_IN_GROUP": [ObjectId("4a"*12), ObjectId("4b"*12)],
+                "FLAG_GROUP_STATUS": "PRODUCTION"}
+@mock.patch("handlers.FlaggingAPI.get_flag_groups", return_value=([flag_group_1, flag_group_2], 200), autospec=True)
+def test_get_flag_groups(mock_get_flag_groups, client):
+    flag_group_1 = {"_id": ObjectId("1a" * 12),
+                    "FLAG_GROUP_NAME": "FlagGroupName1a",
+                    "FLAGS_IN_GROUP": [ObjectId("2a" * 12), ObjectId("2b" * 12)],
+                    "FLAG_GROUP_STATUS": "DRAFT"}
+    flag_group_2 = {"_id": ObjectId("3a" * 12),
+                    "FLAG_GROUP_NAME": "FlagGroupName3a",
+                    "FLAGS_IN_GROUP": [ObjectId("4a" * 12), ObjectId("4b" * 12)],
+                    "FLAG_GROUP_STATUS": "PRODUCTION"}
+    url = "flag_group/get_flag_groups"
+    response = client.get(url)
     assert response.status_code == 200
+    assert response.json["flag_groups"] == [str(x) for x in [flag_group_1, flag_group_2]]
 
-    #create flag group
-    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
-
-    #get flag group
-    flag_group_get_url = "flag_group/get_flag_groups"
-    response = client.get(flag_group_get_url)
-    assert response.status_code == 200
-
-    #delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
 
 #get flag group ids
-def test_get_flag_group_ids(client):
-    #delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
+@mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("3a"*12)], 200), autospec=True)
+def test_get_flag_group_ids(mock_get_flag_group_ids, client):
+    url = "flag_group/get_flag_group_ids"
+    response = client.get(url)
     assert response.status_code == 200
-
-    #create flag group
-    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
-
-    #get flag group
-    flag_group_get_url = "flag_group/get_flag_group_ids"
-    response = client.get(flag_group_get_url)
-    assert response.status_code == 200
-
-    #delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
+    assert response.json["flag_group_ids"] == [str(x) for x in [ObjectId("1a"*12), ObjectId("3a"*12)]]
 
 #get flag group names
-def test_get_flag_group_names(client):
-    #delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
+@mock.patch("handlers.FlaggingAPI.get_flag_group_names", return_value=(["FlagGroupName1a", "FlagGroupName3a"], 200), autospec=True)
+def test_get_flag_group_names(mock_get_flag_group_names, client):
+    url = "flag_group/get_flag_group_names"
+    response = client.get(url)
     assert response.status_code == 200
-
-    #create flag group
-    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
-
-    #get flag group
-    flag_group_get_url = "flag_group/get_flag_group_names"
-    response = client.get(flag_group_get_url)
-    assert response.status_code == 200
-
-    #delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
+    assert response.json["flag_group_names"] == ["FlagGroupName1a", "FlagGroupName3a"]
 
 #get flag ids in flag group, missing id
-def test_get_flags_in_flag_group_missing_id(client):
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
-
-    # create flag group
-    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
-
-    #get_flag_group_flags_missing_id
-    url_get_flag_group = "flag_group/get_flag_group_flags"
-    response = client.get(url_get_flag_group)
+@mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("3a"*12)], 200), autospec=True)
+def test_get_flags_in_flag_group_missing_id(mock_get_flag_group_ids, client):
+    url = "flag_group/get_flag_group_flags"
+    response = client.get(url)
     assert response.status_code == 400
-
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
+    assert response.json["flag_group_name"] == None
+    assert response.json["flags_in_flag_group"] == None
+    assert response.json["message"] == "flag group id must be specified"
+    assert response.json["simple_message"] == "flag group id must be specified"
+    assert response.json["uuid"] == "None"
+    assert response.json["valid"] == False
 
 #get flag ids in flag group, flag group does not exist
-def test_flags_in_flag_group_id_does_not_exist(client):
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
-
-    # create flag group
-    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
-
-    # get id
-    flag_group_id_get_url = "flag_group/get_flag_group_ids"
-    response = client.get(flag_group_id_get_url)
-    assert response.status_code == 200
-
-    # unpack flag id
-    x = response.get_data().decode("utf-8")
-    id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
-
-    new_id = str(generate())
-    while id == new_id:
-        new_id = str(generate())
-
-    #get flag group flags
-    url_get_flag_group_flags = "flag_group/get_flag_group_flags/" + new_id
-    response = client.get(url_get_flag_group_flags)
+@mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("3a"*12)], 200), autospec=True)
+def test_flags_in_flag_group_id_does_not_exist(mock_get_flag_group_ids, client):
+    flag_group_id = "2a"*12
+    url = "flag_group/get_flag_group_flags/" + flag_group_id
+    response = client.get(url)
     assert response.status_code == 404
-
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
+    assert response.json["flag_group_name"] == None
+    assert response.json["flags_in_flag_group"] == None
+    assert response.json["message"] == "flag group: " + flag_group_id + " does not exist"
+    assert response.json["simple_message"] == "flag group does not exist"
+    assert response.json["uuid"] == flag_group_id
+    assert response.json["valid"] == False
 
 #get flag ids in flag group, invalid flag group id
-def test_get_flags_in_flag_group_invalid_id(client):
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
-
-    # create flag group
-    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
-
-    #get flags
-    flag_group_flags_get_url = "flag_group/get_flag_group_flags/1A1A"
-    response = client.get(flag_group_flags_get_url)
+@mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("3a"*12)], 200), autospec=True)
+def test_get_flags_in_flag_group_invalid_id(mock_get_flag_group_ids, client):
+    flag_group_id = "2b"*10
+    url = "flag_group/get_flag_group_flags/" + flag_group_id
+    response = client.get(url)
     assert response.status_code == 400
+    assert response.json["flag_group_name"] == None
+    assert response.json["flags_in_flag_group"] == None
+    assert response.json["message"] == "error converting flag group id: " + flag_group_id + " to proper Object Id type"
+    assert response.json["simple_message"] == "error pulling flags for flag group"
+    assert response.json["uuid"] == "None"
+    assert response.json["valid"] == False
 
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
 
 #get flag ids in flag group, valid
-def test_get_flags_in_flag_group_valid(client):
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
+@mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("3a"*12)], 200), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_flag_group_name", return_value="FlagGroupName3a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_flag_group_flag", return_value=[ObjectId("2a"*12), ObjectId("2b"*12)], autospec=True)
+def test_get_flags_in_flag_group_valid(mock_get_flag_group_flag, mock_get_flag_group_name, mock_get_flag_group_ids, client):
+    flag_group_id = "3a" * 12
+    flags_in_flag_group = [ObjectId("2a"*12), ObjectId("2b"*12)]
+    url = "flag_group/get_flag_group_flags/" + flag_group_id
+    response = client.get(url)
     assert response.status_code == 200
+    assert response.json["flag_group_name"] == "FlagGroupName3a"
+    assert response.json["flags_in_flag_group"] == [str(x) for x in flags_in_flag_group]
+    assert response.json["message"] == "return flags for flag group: " + flag_group_id
+    assert response.json["simple_message"] == "return flags for flag group"
+    assert response.json["uuid"] == flag_group_id
+    assert response.json["valid"] == True
 
-    # create flag group
-    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
-
-    # get id
-    flag_group_id_get_url = "flag_group/get_flag_group_ids"
-    response = client.get(flag_group_id_get_url)
-    assert response.status_code == 200
-
-    # unpack flag id
-    x = response.get_data().decode("utf-8")
-    id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
-
-    #get flags in flag group
-    flag_in_flag_group_url = "flag_group/get_flag_group_flags/" + id
-    response = client.get(flag_in_flag_group_url)
-    assert response.status_code == 200
-
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
 
 #get specific flag group, missing id
-def test_get_specific_flag_group_missing_id(client):
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
-
-    # create flag group
-    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
-
-    #get flag group
-    flag_group_get_url = "flag_group/get_specific_flag_group"
-    response = client.get(flag_group_get_url)
+@mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("3a"*12)], 200), autospec=True)
+def test_get_specific_flag_group_missing_id(mock_get_flag_group_ids, client):
+    url = "flag_group/get_specific_flag_group"
+    response = client.get(url)
     assert response.status_code == 400
+    assert response.json["flag_group_name"] == None
+    assert response.json["flags_in_flag_group"] == None
+    assert response.json["message"] == "flag group id must be specified"
+    assert response.json["simple_message"] == "flag group id must be specified"
+    assert response.json["uuid"] == "None"
+    assert response.json["valid"] == False
 
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
 
 #get specific flag group, id does not exist
-def test_get_specific_flag_group_id_does_not_exist(client):
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
-
-    # create flag group
-    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
-
-    # get id
-    flag_group_id_get_url = "flag_group/get_flag_group_ids"
-    response = client.get(flag_group_id_get_url)
-    assert response.status_code == 200
-
-    # unpack flag id
-    x = response.get_data().decode("utf-8")
-    id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
-
-    new_id = str(generate())
-    while new_id == id:
-        new_id = str(generate())
-
-    #get specific flag group
-    flag_group_get_url = "flag_group/get_specific_flag_group/" + new_id
-    response = client.get(flag_group_get_url)
+@mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("3a"*12)], 200), autospec=True)
+def test_get_specific_flag_group_id_does_not_exist(mock_get_flag_group_ids, client):
+    flag_group_id = "2a" * 12
+    url = "flag_group/get_specific_flag_group/" + flag_group_id
+    response = client.get(url)
     assert response.status_code == 404
+    assert response.json["flag_group_name"] == None
+    assert response.json["flags_in_flag_group"] == None
+    assert response.json["message"] == "flag group: " + flag_group_id + " does not exist"
+    assert response.json["simple_message"] == "flag group does not exist"
+    assert response.json["uuid"] == "None"
+    assert response.json["valid"] == False
 
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
+
 
 #get specific flag group, invalid id
-def test_get_specific_flag_group_invalid_id(client):
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
-
-    # create flag group
-    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
-
-    # get specific flag group
-    new_id = "1A1A"
-    flag_group_get_url = "flag_group/get_specific_flag_group/" + new_id
-    response = client.get(flag_group_get_url)
+@mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("3a"*12)], 200), autospec=True)
+def test_get_specific_flag_group_invalid_id(mock_get_flag_group_id, client):
+    flag_group_id = "2a" * 10
+    url = "flag_group/get_specific_flag_group/" + flag_group_id
+    response = client.get(url)
     assert response.status_code == 400
+    assert response.json["flag_group_name"] == None
+    assert response.json["flags_in_flag_group"] == None
+    assert response.json["message"] == "error converting flag group: " + flag_group_id + " to proper Object Id type"
+    assert response.json["simple_message"] == "invalid flag group id type"
+    assert response.json["uuid"] == "None"
+    assert response.json["valid"] == False
 
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
 
 #get specific flag group, valid
-def test_get_specific_flag_group_valid(client):
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
+@mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("3a"*12)], 200), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_specific_flag_group", return_value=ObjectId("1a"*12), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_flag_group_flag", return_value=[ObjectId("2a"*12), ObjectId("2b"*12)], autospec=True)
+def test_get_specific_flag_group_valid(mock_get_flag_group_flags, mock_get_flag_group_name, mock_get_specific_fag,
+                                       mock_get_flag_group_ids, client):
+    flag_group_id = "1a" * 12
+    flags_in_flag_group = [ObjectId("2a"*12), ObjectId("2b"*12)]
+    flag_group_name = "FlagGroupName1a"
+    url = "flag_group/get_specific_flag_group/" + flag_group_id
+    response = client.get(url)
     assert response.status_code == 200
-
-    # create flag group
-    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
-
-    # get id
-    flag_group_id_get_url = "flag_group/get_flag_group_ids"
-    response = client.get(flag_group_id_get_url)
-    assert response.status_code == 200
-
-    # unpack flag id
-    x = response.get_data().decode("utf-8")
-    id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
-
-    # get specific flag group
-    flag_group_get_url = "flag_group/get_specific_flag_group/" + id
-    response = client.get(flag_group_get_url)
-    assert response.status_code == 200
-
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
+    assert response.json["flag_group_name"] == flag_group_name
+    assert response.json["flags_in_flag_group"] == [str(x) for x in flags_in_flag_group]
+    assert response.json["message"] == "found flag group id: " + flag_group_id
+    assert response.json["simple_message"] == "found flag group id"
+    assert response.json["uuid"] == flag_group_id
+    assert response.json["valid"] == True
 
 #create flag group, missing name
-def test_create_flag_group_missing_name(client):
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
-
-    # create flag group
-    flag_group_creation_url = "flag_group/create_flag_group/XX"
-    response = client.post(flag_group_creation_url)
+@mock.patch("handlers.FlaggingAPI.get_flag_group_names", return_value=(["FlagGroupName1a", "FlagGroupName2b"], 200), autospec=True)
+def test_create_flag_group_missing_name(mock_get_flag_group_names, client):
+    url = "flag_group/create_flag_group/id_does_not_matter_here"
+    response = client.post(url)
     assert response.status_code == 400
+    assert response.json["flag_group_name"] == None
+    assert response.json["flags_in_flag_group"] == None
+    assert response.json["message"] == "unique flag group name must be specified"
+    assert response.json["simple_message"] == "missing flag group name"
+    assert response.json["uuid"] == "None"
+    assert response.json["valid"] == False
 
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
 
 #create flag group, non unique name
-def test_create_flag_group_non_unique_name(client):
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
-
-    # create flag group
-    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
-
-    #2nd flag group create
-    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
-    response = client.post(flag_group_creation_url)
+@mock.patch("handlers.FlaggingAPI.get_flag_group_names", return_value=(["FlagGroupName1a", "FlagGroupName2b"], 200), autospec=True)
+def test_create_flag_group_non_unique_name(mock_get_flag_group_names, client):
+    flag_group_name = "FlagGroupName1a"
+    url = "flag_group/create_flag_group/id_does_not_matter_here/" + flag_group_name
+    response = client.post(url)
     assert response.status_code == 404
+    assert response.json["flag_group_name"] == flag_group_name
+    assert response.json["flags_in_flag_group"] == None
+    assert response.json["message"] == "new flag group name must be unique"
+    assert response.json["simple_message"] == "new flag group name must be unique"
+    assert response.json["uuid"] == "None"
+    assert response.json["valid"] == False
 
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
 
 #create flag group, valid
-def test_create_flag_group_valid(client):
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
+@mock.patch("handlers.FlaggingAPI.get_flag_group_names", return_value=(["FlagGroupName1a", "FlagGroupName2b"], 200), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.add_flag_group", return_value=ObjectId("2a"*12), autospec=True)
+def test_create_flag_group_valid(mock_add_flag_group, mock_get_flag_group_names, client):
+    flag_group_name = "FlagGroupName2a"
+    url = "flag_group/create_flag_group/id_does_not_matter_here/" + flag_group_name
+    response = client.post(url)
+    new_flag_group_id = "2a"*12
     assert response.status_code == 200
-
-    # create flag group
-    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
-
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
+    assert response.json["flag_group_name"] == flag_group_name
+    assert response.json["flags_in_flag_group"] == None
+    assert response.json["message"] == "unique flag group: " + flag_group_name + " created"
+    assert response.json["simple_message"] == "new flag group created"
+    assert response.json["uuid"] == new_flag_group_id
+    assert response.json["valid"] == True
 
 #delete flag group, no id
 def test_delete_flag_group_no_id(client):
