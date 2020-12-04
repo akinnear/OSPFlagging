@@ -18,6 +18,7 @@ from flagging.ModuleInformation import ModuleInformation
 from flagging.TypeValidationResults import TypeValidationResults
 from flagging.ErrorInformation import ErrorInformation
 from front_end.TransferFlagLogicInformation import _convert_TFLI_to_FLI
+from flagging.FlaggingNodeVisitor import determine_variables
 
 
 def make_routes(app, flagging_mongo):
@@ -70,7 +71,7 @@ def make_routes(app, flagging_mongo):
 
             if function == "create":
                 try:
-                    flag_info_transfer_object = request.get_json(force=True)
+                    flag_payload = request.get_json(force=True)
                 except Exception as e:
                     data = {"valid": False,
                             "message": "error reading flag data to create flag",
@@ -78,7 +79,7 @@ def make_routes(app, flagging_mongo):
                     response_code = 500
                     return data, response_code
                 try:
-                    flag_info = _convert_TFLI_to_FLI(flag_info_transfer_object)
+                    flag_info = determine_variables(flag_payload["FLAG_LOGIC"])
                 except Exception as e:
                     data = {"valid": False,
                             "message": "error converting flag data to proper form to create flag",
@@ -108,7 +109,7 @@ def make_routes(app, flagging_mongo):
 
             if function == "update_logic":
                 try:
-                    flag_info_transfer_object = request.get_json(force=True)
+                    flag_payload = request.get_json(force=True)
                 except Exception as e:
                     data = {"valid": False,
                             "message": "error reading flag data to update flag logic",
@@ -116,7 +117,7 @@ def make_routes(app, flagging_mongo):
                     response_code = 500
                     return data, response_code
                 try:
-                    flag_info = _convert_TFLI_to_FLI(flag_info_transfer_object)
+                    flag_info = determine_variables(flag_payload["FLAG_LOGIC"])
                 except Exception as e:
                     data = {"valid": False,
                             "message": "error converting flag data to proper form to update flag logic",
