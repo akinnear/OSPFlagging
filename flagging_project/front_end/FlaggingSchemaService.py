@@ -695,7 +695,7 @@ def delete_flag_group(flag_group_id, existing_flag_groups, flagging_mongo: Flagg
                 response_code = 404
         except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="could not identify flag group: " + flag_group_id + " to delete",
+                                                           message="error deleting flag group: " + flag_group_id + ", error converting to proper Object Id type",
                                                            simple_message="error deleting flag group, invalid id type")
             response_code = 400
     if flag_schema_object is None:
@@ -735,13 +735,14 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
             if ObjectId(flag_group_id) not in existing_flag_groups:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                                message="flag_group: " + flag_group_id + " does not exist",
-                                                               simple_message="flag group does not exist")
+                                                               simple_message="flag group does not exist",
+                                                               uuid=ObjectId(flag_group_id))
 
                 response_code = 404
         except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="error adding flag to flag group: " + flag_group_id + ".  Error converting to ObjectId type",
-                                                           simple_message="error converting flag group id to ObjectId type")
+                                                           message="error adding flag to flag group: " + flag_group_id + ", error converting to Object Id type",
+                                                           simple_message="error converting flag group id to Object Id type")
             response_code = 400
 
     #check that new flags is not empty
@@ -976,23 +977,24 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
             for x in referenced_flag_names_in_flag_id:
                 referenced_flags.append(ReferencedFlag(flag_name=x, flag_group_id=ObjectId(flag_group_id)))
 
+
             flag_ids, firc = get_all_flag_ids(flagging_mongo)
             existing_flag_dep_keys, efdkrc = get_flag_dep_ids(flagging_mongo)
             flag_name = flagging_mongo.get_flag_name(ObjectId(new_flags[0]))
-            if ObjectId(new_flags[0]) not in existing_flag_dep_keys:
+            flag_dep_id = flagging_mongo.get_specific_flag_dep_id_by_flag_id_and_flag_group_id(ObjectId(new_flags[0]),
+                                                                                               ObjectId(flag_group_id))
+            if flag_dep_id not in existing_flag_dep_keys:
                 flag_dep_schema_object, fdi_rc = create_flag_dependency(flag_id=new_flags[0],
                                                              flag_name=flag_name,
                                                              flag_group_id=flag_group_id,
                                                              existing_flag_ids=flag_ids, existing_flag_dep_keys=existing_flag_dep_keys, flag_dependencies=[], flagging_mongo=flagging_mongo)
-
-
 
             updated_flag_dep_id, ufdirc = add_dependencies_to_flag(flag_dep_id=str(flag_dep_schema_object.uuid), existing_flag_dep_keys=existing_flag_dep_keys, new_dependencies=referenced_flags, flagging_mongo=flagging_mongo)
 
             full_flag_set = new_flags + list(dict.fromkeys(flags_in_flag_group))
             full_flag_set = [ObjectId(x) for x in full_flag_set]
             found_flag_group_name = flagging_mongo.get_flag_group_name(ObjectId(flag_group_id))
-            flag_with_updated_deps_id = flagging_mongo.update_flag_group(flag_group=ObjectId(flag_group_id), update_value=full_flag_set, update_column="FLAGS_IN_GROUP")
+            flag_group_with_updated_deps_id = flagging_mongo.update_flag_group(flag_group=ObjectId(flag_group_id), update_value=full_flag_set, update_column="FLAGS_IN_GROUP")
             if len(cyclical_errors) > 0:
                 flag_group_set_to_draft = flagging_mongo.update_flag_group(flag_group=ObjectId(flag_group_id),
                                                                              update_value="DRAFT",
@@ -1005,7 +1007,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                                    ", ".join(
                                                                        map(str, new_flags))) + "\n" + flagging_message,
                                                                simple_message="flags added to flag group",
-                                                               uuid=flag_with_updated_deps_id,
+                                                               uuid=flag_group_with_updated_deps_id,
                                                                name=found_flag_group_name)
                 response_code = 200
         if flag_schema_object is None:
@@ -1013,7 +1015,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                            message="flag group " + flag_group_id + " has been updated with flag(s) " + (
                                                                ", ".join(map(str, new_flags))) + "\n" + flagging_message,
                                                            simple_message="flags added to flag group",
-                                                           uuid=flag_with_updated_deps_id,
+                                                           uuid=flag_group_with_updated_deps_id,
                                                            name=found_flag_group_name)
             response_code = 200
     return flag_schema_object, response_code
