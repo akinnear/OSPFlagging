@@ -67,31 +67,46 @@ class FlaggingMongo:
     def get_specific_flag(self, flag):
         db = get_db(self)
         flagging = db[FLAGGING_COLLECTION]
-        found_id = flagging.find_one({flag_id: flag})[flag_id]
+        try:
+            found_id = flagging.find_one({flag_id: flag})[flag_id]
+        except Exception as e:
+            found_id = None
         return found_id
 
     def get_specific_flag_error(self, flag):
         db = get_db(self)
         flagging = db[FLAGGING_COLLECTION]
-        flag_error = flagging.find_one({flag_id: flag})[flag_error_col_name]
+        try:
+            flag_error = flagging.find_one({flag_id: flag})[flag_error_col_name]
+        except Exception as e:
+            flag_error = None
         return flag_error
 
     def get_flag_logic_information(self, flag):
         db = get_db(self)
         flagging = db[FLAGGING_COLLECTION]
-        flag_logic = flagging.find_one({flag_id: flag})[flag_logic_col_name]
+        try:
+            flag_logic = flagging.find_one({flag_id: flag})[flag_logic_col_name]
+        except Exception as e:
+            flag_logic = None
         return flag_logic
 
     def get_flag_name(self, flag):
         db = get_db(self)
         flagging = db[FLAGGING_COLLECTION]
-        flag_name = flagging.find_one({flag_id: flag})[flag_name_col_name]
+        try:
+            flag_name = flagging.find_one({flag_id: flag})[flag_name_col_name]
+        except Exception as e:
+            flag_name = None
         return flag_name
 
     def get_flag_status(self, flag):
         db = get_db(self)
         flagging = db[FLAGGING_COLLECTION]
-        flag_status = flagging.find_one({flag_id: flag})[flag_status_col_name]
+        try:
+            flag_status = flagging.find_one({flag_id: flag})[flag_status_col_name]
+        except Exception as e:
+            flag_status = None
         return flag_status
 
     def add_flag(self, flag):
@@ -109,15 +124,21 @@ class FlaggingMongo:
     def update_flag(self, flag, update_value, update_column):
         db = get_db(self)
         flagging = db[FLAGGING_COLLECTION]
-        updated_flag = flagging.find_one_and_update({flag_id: flag}, {"$set": {update_column: update_value}}, upsert=True)[flag_id]
+        try:
+            updated_flag = flagging.find_one_and_update({flag_id: flag}, {"$set": {update_column: update_value}}, upsert=True)[flag_id]
+        except Exception as e:
+            updated_flag = None
         return updated_flag
 
     def duplicate_flag(self, flag):
         db = get_db(self)
         flagging = db[FLAGGING_COLLECTION]
-        flag_2_duplicate = flagging.find_one({flag_id: flag})
-        flag_2_duplicate.pop(flag_id, None)
-        duplicated_flag = flagging.insert_one(flag_2_duplicate).inserted_id
+        try:
+            flag_2_duplicate = flagging.find_one({flag_id: flag})
+            flag_2_duplicate.pop(flag_id, None)
+            duplicated_flag = flagging.insert_one(flag_2_duplicate).inserted_id
+        except Exception as e:
+            duplicated_flag = None
         return duplicated_flag
 
     def delete_all_flags(self):
@@ -156,7 +177,10 @@ class FlaggingMongo:
     def get_flag_group_flag(self, flag_group):
         db = get_db(self)
         flag_groups = db[FLAG_GROUPS]
-        found_flags = flag_groups.find_one({flag_group_id: flag_group})[flag_group_flags_col_name]
+        try:
+            found_flags = flag_groups.find_one({flag_group_id: flag_group})[flag_group_flags_col_name]
+        except Exception as e:
+            found_flags = None
         return list(found_flags)
 
     def get_flag_names_from_flag_group(self, flag_group):
@@ -164,22 +188,31 @@ class FlaggingMongo:
         db = get_db(self)
         flag_groups = db[FLAG_GROUPS]
         flagging = db[FLAGGING_COLLECTION]
-        flags_in_flag_group_ids = flag_groups.find_one({flag_group_id: flag_group})[flag_group_flags_col_name]
-        for flag in flags_in_flag_group_ids:
-            flag_name = flagging.find_one({flag_id: flag})[flag_name_col_name]
-            flag_name_list.append(flag_name)
+        try:
+            flags_in_flag_group_ids = flag_groups.find_one({flag_group_id: flag_group})[flag_group_flags_col_name]
+            for flag in flags_in_flag_group_ids:
+                flag_name = flagging.find_one({flag_id: flag})[flag_name_col_name]
+                flag_name_list.append(flag_name)
+        except Exception as e:
+            flag_name_list = [None]
         return flag_name_list
 
     def get_specific_flag_group(self, flag_group):
         db = get_db(self)
         flag_groups = db[FLAG_GROUPS]
-        found_id = flag_groups.find_one({flag_id: flag_group})[flag_group_id]
+        try:
+            found_id = flag_groups.find_one({flag_id: flag_group})[flag_group_id]
+        except Exception as e:
+            found_id = None
         return found_id
 
     def get_flag_group_name(self, flag_group):
         db = get_db(self)
         flag_groups = db[FLAG_GROUPS]
-        found_name = flag_groups.find_one({flag_group_id: flag_group})[flag_group_name_col_name]
+        try:
+            found_name = flag_groups.find_one({flag_group_id: flag_group})[flag_group_name_col_name]
+        except Exception as e:
+            found_name = None
         return found_name
 
     def add_flag_group(self, flag_group):
@@ -197,21 +230,30 @@ class FlaggingMongo:
     def update_flag_group(self, flag_group, update_value, update_column):
         db = get_db(self)
         flag_groups = db[FLAG_GROUPS]
-        updated_flag_group = flag_groups.find_one_and_update({flag_group_id: flag_group}, {"$set": {update_column: update_value}}, upsert=True)[flag_group_id]
+        try:
+            updated_flag_group = flag_groups.find_one_and_update({flag_group_id: flag_group}, {"$set": {update_column: update_value}}, upsert=True)[flag_group_id]
+        except Exception as e:
+            updated_flag_group = None
         return updated_flag_group
 
     def duplicate_flag_group(self, flag_group):
         db = get_db(self)
         flag_groups = db[FLAG_GROUPS]
-        flag_group_2_duplicate = flag_groups.find_one({flag_group_id: flag_group})
-        flag_group_2_duplicate.pop(flag_group_id, None)
-        duplicated_flag_groups = flag_groups.insert_one(flag_group_2_duplicate).inserted_id
-        return duplicated_flag_groups
+        try:
+            flag_group_2_duplicate = flag_groups.find_one({flag_group_id: flag_group})
+            flag_group_2_duplicate.pop(flag_group_id, None)
+            duplicated_flag_group = flag_groups.insert_one(flag_group_2_duplicate).inserted_id
+        except Exception as e:
+            duplicated_flag_group = None
+        return duplicated_flag_group
 
     def get_flag_group_errors(self, flag_group):
         db = get_db(self)
         flag_groups = db[FLAG_GROUPS]
-        flag_group_error = flag_groups.find_one({flag_id: flag_group})[flag_group_error_col_name]
+        try:
+            flag_group_error = flag_groups.find_one({flag_id: flag_group})[flag_group_error_col_name]
+        except Exception as e:
+            flag_group_error = None
         return flag_group_error
 
     def delete_all_flag_groups(self):
@@ -261,90 +303,120 @@ class FlaggingMongo:
     def get_specific_flag_dependencies(self, flag):
         db = get_db(self)
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        flagging_dependencies = flagging_dependencies.find_one({flag_id: flag})
+        try:
+            flagging_dependencies = flagging_dependencies.find_one({flag_id: flag})
+        except Exception as e:
+            flagging_dependencies = None
         return list(flagging_dependencies)
 
     def get_specific_flag_dep_id_by_flag_id(self, flag):
         db = get_db(self)
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        flag_dep_key = flagging_dependencies.find_one({"FLAG_ID": flag})
+        try:
+            flag_dep_key = flagging_dependencies.find_one({"FLAG_ID": flag})
+        except Exception as e:
+            flag_dep_key = None
         return flag_dep_key
 
     def get_specific_flag_dep_id_by_flag_id_and_flag_group_id(self, flag_id, flag_group_id):
         db = get_db(self)
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        flag_dep_key = flagging_dependencies.find_one({flag_dep_flag_id_col_name: flag_id,
-                                                       flag_dep_flag_group_id_col_name: flag_group_id})
+        try:
+            flag_dep_key = flagging_dependencies.find_one({flag_dep_flag_id_col_name: flag_id,
+                                                           flag_dep_flag_group_id_col_name: flag_group_id})
+        except Exception as e:
+            flag_dep_key = None
         return flag_dep_key
 
     def get_flag_dep_by_flag_group_id(self, flag_group_id):
         db = get_db(self)
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        flag_deps = list(flagging_dependencies.find({flag_dep_flag_group_id_col_name: flag_group_id}))
+        try:
+            flag_deps = list(flagging_dependencies.find({flag_dep_flag_group_id_col_name: flag_group_id}))
+        except Exception as e:
+            flag_deps = None
         return flag_deps
 
     def get_flag_dep_by_flag_id(self, flag_id):
         db = get_db(self)
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        flag_deps = list(flagging_dependencies.find({flag_dep_flag_id_col_name: flag_id}))
+        try:
+            flag_deps = list(flagging_dependencies.find({flag_dep_flag_id_col_name: flag_id}))
+        except Exception as e:
+            flag_deps = None
         return flag_deps
 
     def add_specific_flag_dependencies(self, flag, new_deps: [], dependent_flag_column):
         db = get_db(self)
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        flag_deps_flag = flagging_dependencies.find_one({flag_id: flag})[dependent_flag_column]
-        flag_deps_list = []
-        if isinstance(flag_deps_flag, list):
-            for x in flag_deps_flag:
-                flag_deps_list.append(x)
-        else:
-            flag_deps_list.append(flag_deps_flag)
-        for new_dep in new_deps:
-            if new_dep not in flag_deps_list:
-                flag_deps_list.append(new_dep)
-        updated_id = flagging_dependencies.find_one_and_update({flag_id: flag}, {"$set": {dependent_flag_column: flag_deps_list}}, upsert=True)["_id"]
+        try:
+            flag_deps_flag = flagging_dependencies.find_one({flag_id: flag})[dependent_flag_column]
+            flag_deps_list = []
+            if isinstance(flag_deps_flag, list):
+                for x in flag_deps_flag:
+                    flag_deps_list.append(x)
+            else:
+                flag_deps_list.append(flag_deps_flag)
+            for new_dep in new_deps:
+                if new_dep not in flag_deps_list:
+                    flag_deps_list.append(new_dep)
+            updated_id = flagging_dependencies.find_one_and_update({flag_id: flag}, {"$set": {dependent_flag_column: flag_deps_list}}, upsert=True)["_id"]
+        except Exception as e:
+            updated_id = None
         return updated_id
 
     def remove_specific_flag_dependencies(self, flag, rm_deps: [], dependent_flag_column):
         db = get_db(self)
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        flag_deps_flag = flagging_dependencies.find_one({flag_id: flag})[dependent_flag_column]
-        flag_deps_list = []
-        if isinstance(flag_deps_flag, list):
-            for x in flag_deps_flag:
-                flag_deps_list.append(x)
-        else:
-            flag_deps_list.append(flag_deps_flag)
-        for rm_dep in rm_deps:
-            if rm_dep in flag_deps_list:
-                flag_deps_list.remove(rm_dep)
-        modified_flag = flagging_dependencies.find_one_and_update({flag_id: flag}, {"$set": {dependent_flag_column: flag_deps_list}}, upsert=True)[flag_id]
+        try:
+            flag_deps_flag = flagging_dependencies.find_one({flag_id: flag})[dependent_flag_column]
+            flag_deps_list = []
+            if isinstance(flag_deps_flag, list):
+                for x in flag_deps_flag:
+                    flag_deps_list.append(x)
+            else:
+                flag_deps_list.append(flag_deps_flag)
+            for rm_dep in rm_deps:
+                if rm_dep in flag_deps_list:
+                    flag_deps_list.remove(rm_dep)
+            modified_flag = flagging_dependencies.find_one_and_update({flag_id: flag}, {"$set": {dependent_flag_column: flag_deps_list}}, upsert=True)[flag_id]
+        except Exception as e:
+            modified_flag = None
         return modified_flag
 
 
     def remove_specific_flag_dependencies_via_flag_id_and_flag_group_id(self, flag, flag_group_id):
         db = get_db(self)
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        flag_deps_flag_rm_list = list(flagging_dependencies.find({flag_dep_flag_id_col_name: flag,
-                            flag_dep_flag_group_id_col_name: flag_group_id}))
-        for rm_id in [x["_id"] for x in flag_deps_flag_rm_list]:
-            flagging_dependencies.remove({flag_dep_id: rm_id})
+        try:
+            flag_deps_flag_rm_list = list(flagging_dependencies.find({flag_dep_flag_id_col_name: flag,
+                                flag_dep_flag_group_id_col_name: flag_group_id}))
+            for rm_id in [x["_id"] for x in flag_deps_flag_rm_list]:
+                flagging_dependencies.remove({flag_dep_id: rm_id})
+        except Exception as e:
+            return [None]
         return [x["_id"] for x in flag_deps_flag_rm_list]
 
     def remove_specific_flag_dependencies_via_flag_id(self, flag):
         db = get_db(self)
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        flag_deps_flag_rm_list = list(flagging_dependencies.find({flag_dep_flag_id_col_name: flag}))
-        for rm_id in [x["_id"] for x in flag_deps_flag_rm_list]:
-            flagging_dependencies.remove({flag_dep_id: rm_id})
+        try:
+            flag_deps_flag_rm_list = list(flagging_dependencies.find({flag_dep_flag_id_col_name: flag}))
+            for rm_id in [x["_id"] for x in flag_deps_flag_rm_list]:
+                flagging_dependencies.remove({flag_dep_id: rm_id})
+        except Exception as e:
+            return [None]
         return [x["_id"] for x in flag_deps_flag_rm_list]
 
     def remove_specific_flag_dependencies_via_flag_group_id(self, flag_group_id):
         db = get_db(self)
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        flag_deps_flag_rm_list = list(flagging_dependencies.find({flag_dep_flag_group_id_col_name: flag_group_id}))
-        for rm_id in [x["_id"] for x in flag_deps_flag_rm_list]:
-            flagging_dependencies.remove({flag_dep_id: rm_id})
+        try:
+            flag_deps_flag_rm_list = list(flagging_dependencies.find({flag_dep_flag_group_id_col_name: flag_group_id}))
+            for rm_id in [x["_id"] for x in flag_deps_flag_rm_list]:
+                flagging_dependencies.remove({flag_dep_id: rm_id})
+        except Exception as e:
+            return [None]
         return [x["_id"] for x in flag_deps_flag_rm_list]
 
 
@@ -353,7 +425,10 @@ class FlaggingMongo:
     def update_flag_dependencies(self, flag, dependent_flag_value: [], dependent_flag_column: str):
         db = get_db(self)
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        matching_flag = flagging_dependencies.find_one({flag_id: flag})[flag_id]
+        try:
+            matching_flag = flagging_dependencies.find_one({flag_id: flag})[flag_id]
+        except Exception as e:
+            matching_flag = None
         modified_flag = None
         if matching_flag:
             modified_flag = flagging_dependencies.find_one_and_update({flag_id: flag}, {"$set": {dependent_flag_column: dependent_flag_value}}, upsert=True)[flag_id]
@@ -362,7 +437,10 @@ class FlaggingMongo:
     def get_specific_flag_dependency_flags(self, flag):
         db = get_db(self)
         flagging_dependencies = db[FLAG_DEPENDENCIES]
-        flag_deps = flagging_dependencies.find_one({flag_id: flag})[flag_dep_dep_flags_col_name]
+        try:
+            flag_deps = flagging_dependencies.find_one({flag_id: flag})[flag_dep_dep_flags_col_name]
+        except Exception as e:
+            flag_deps = None
         return flag_deps
 
     def delete_all_flag_dependencies(self):
