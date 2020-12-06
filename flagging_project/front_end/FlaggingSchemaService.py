@@ -751,7 +751,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="no new flags were specified",
                                                            simple_message="missing flags to add to flag group")
-            response_code = 404
+            response_code = 400
         else:
             new_flags = list(dict.fromkeys(new_flags))
             # new_flags = [ObjectId(x) for x in new_flags]
@@ -1035,7 +1035,8 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
             if ObjectId(flag_group_id) not in existing_flag_groups:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                                message="flag group: " + flag_group_id + " does not exist",
-                                                               simple_message="flag group does not exist")
+                                                               simple_message="flag group does not exist",
+                                                               uuid=ObjectId(flag_group_id))
                 response_code = 404
         except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
@@ -1051,13 +1052,14 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
             response_code = 400
 
     #verify flag id is object id compatible
-    try:
-        test_flags = [ObjectId(x) for x in del_flags]
-    except Exception as e:
-        flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="error removing flag: " + del_flags[0] + " from flag group " + flag_group_id + ", error converting flag id to proper ObjectId type",
-                                                       simple_message="flag specified for removal is not part of flag group")
-        response_code = 405
+    if flag_schema_object is None:
+        try:
+            test_flags = [ObjectId(x) for x in del_flags]
+        except Exception as e:
+            flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                           message="error removing flag: " + del_flags[0] + " from flag group " + flag_group_id + ", error converting flag id to proper ObjectId type",
+                                                           simple_message="flag specified for removal is not part of flag group")
+            response_code = 405
 
 
     if flag_schema_object is None:
@@ -1084,7 +1086,7 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
                                                            name=flagging_mongo.get_flag_group_name(ObjectId(flag_group_id)))
             response_code = 405
         if flag_schema_object is None and len(flags_not_in_group) > 0:
-            if len(flags_not_in_group) == 0:
+            if len(flags_not_in_group) == 1:
                 flag_message = "the following flag is not part of flag group " + flag_group_id + ": " + str(flags_not_in_group[0])
             else:
                 flag_message = "the following flags are not part of flag group " + flag_group_id + ": " + (", ".join([str(x) for x in flags_not_in_group]))
