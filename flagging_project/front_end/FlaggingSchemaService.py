@@ -939,7 +939,8 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                                message="flag: " + str(new_flags[0]) + " is in DRAFT status but was added to flag group: " + str(flag_group_id) + "\n" + flagging_message,
                                                                simple_message="flag added to flag group",
                                                                name=flagging_mongo.get_flag_group_name(ObjectId(flag_group_id)),
-                                                               uuid=ObjectId(flag_group_id))
+                                                               uuid=ObjectId(flag_group_id),
+                                                               logic=[str(x) for x in flagging_mongo.get_flag_group_flag(ObjectId(flag_group_id))])
                 response_code = 200
 
         if flag_schema_object is None:
@@ -1008,7 +1009,8 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                                        map(str, new_flags))) + "\n" + flagging_message,
                                                                simple_message="flags added to flag group",
                                                                uuid=flag_group_with_updated_deps_id,
-                                                               name=found_flag_group_name)
+                                                               name=found_flag_group_name,
+                                                               logic=[str(x) for x in flagging_mongo.get_flag_group_flag(ObjectId(flag_group_id))])
                 response_code = 200
         if flag_schema_object is None:
             flag_schema_object = FlaggingSchemaInformation(valid=True,
@@ -1016,7 +1018,8 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                                ", ".join(map(str, new_flags))) + "\n" + flagging_message,
                                                            simple_message="flags added to flag group",
                                                            uuid=flag_group_with_updated_deps_id,
-                                                           name=found_flag_group_name)
+                                                           name=found_flag_group_name,
+                                                           logic=[str(x) for x in flagging_mongo.get_flag_group_flag(ObjectId(flag_group_id))])
             response_code = 200
     return flag_schema_object, response_code
 
@@ -1058,7 +1061,7 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
         except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="error removing flag: " + del_flags[0] + " from flag group " + flag_group_id + ", error converting flag id to proper ObjectId type",
-                                                           simple_message="flag specified for removal is not part of flag group")
+                                                           simple_message="invalid flag id type")
             response_code = 405
 
 
@@ -1106,14 +1109,15 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
         new_flag_set = (list(list(set(del_flags)-set(flags_in_flag_group)) + list(set(flags_in_flag_group)-set(del_flags))))
         new_flag_set = [ObjectId(x) for x in new_flag_set]
         #method to remove flag(s) from flag group
-        flag_with_updated_deps_id = flagging_mongo.update_flag_group(flag_group=ObjectId(flag_group_id),
+        flag_group_with_updated_deps_id = flagging_mongo.update_flag_group(flag_group=ObjectId(flag_group_id),
                                                                      update_value=new_flag_set,
                                                                      update_column="FLAGS_IN_GROUP")
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="Flag(s) " + ", ".join(map(str, del_flags)) + " removed from " + flag_group_id,
                                                        simple_message="flags removed from flag group",
-                                                       name=flagging_mongo.get_flag_group_name(flag_with_updated_deps_id),
-                                                       uuid=flag_with_updated_deps_id)
+                                                       name=flagging_mongo.get_flag_group_name(flag_group_with_updated_deps_id),
+                                                       uuid=flag_group_with_updated_deps_id,
+                                                       logic=[str(x) for x in flagging_mongo.get_flag_group_flag(flag_group_with_updated_deps_id)])
 
         #check if new flag set contains any cyclical flag errors
         # flag dependency check here
