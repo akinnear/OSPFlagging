@@ -1499,261 +1499,104 @@ def test_duplicate_flag_group_valid(mock_get_flag_group_ids, mock_get_flag_group
     assert response.json["valid"] == True
 
 #move flag group to production, missing flag group id
-def test_move_flag_group_to_production_missing_flag_group_id(client):
-    # delete all flag group
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
-
-    # create flag group
-    flag_group_name = "FlagGroup1A"
-    flag_group_creation_url = "flag_group/create_flag_group/XX/" + flag_group_name
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
-
-    # get flag group id
-    flag_group_id_get_url = "flag_group/get_flag_group_ids"
-    response = client.get(flag_group_id_get_url)
-    assert response.status_code == 200
-
-    # unpack flag group id
-    x = response.get_data().decode("utf-8")
-    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
-    
-    #move flag group to production
-    move_flag_group_to_production_url = "flag_group/move_flag_group_to_production"
-    response = client.put(move_flag_group_to_production_url)
+@mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("1b"*12)], 200), autospec=True)
+def test_move_flag_group_to_production_missing_flag_group_id(mock_get_flag_group_ids, client):
+    flag_group_id = "1a" * 12
+    url = "flag_group/move_to_production"
+    response = client.put(url)
     assert response.status_code == 400
+    assert response.json["flag_group_name"] == None
+    assert response.json["flags_in_flag_group"] == None
+    assert response.json["message"] == "flag group id must be specified"
+    assert response.json["simple_message"] == "flag group id must be specified"
+    assert response.json["uuid"] == "None"
+    assert response.json["valid"] == False
 
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
-    
 #move flag group to production, flag group does not exist
-def test_move_flag_group_to_production_flag_group_no_exist(client):
-    # delete all flag group
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
-
-    # create flag group
-    flag_group_name = "FlagGroup1A"
-    flag_group_creation_url = "flag_group/create_flag_group/XX/" + flag_group_name
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
-
-    # get flag group id
-    flag_group_id_get_url = "flag_group/get_flag_group_ids"
-    response = client.get(flag_group_id_get_url)
-    assert response.status_code == 200
-
-    # unpack flag group id
-    x = response.get_data().decode("utf-8")
-    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
-    
-    #create new unique flag group id
-    new_flag_group_id = str(generate())
-    while flag_group_id == new_flag_group_id:
-        new_flag_group_id = str(generate())
-
-    # move flag group to production
-    move_flag_group_to_production_url = "flag_group/move_flag_group_to_production/" + new_flag_group_id
-    response = client.put(move_flag_group_to_production_url)
+@mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("1b"*12)], 200), autospec=True)
+def test_move_flag_group_to_production_flag_group_no_exist(mocK_get_flag_group_ids, client):
+    flag_group_id = "1c" * 12
+    url = "flag_group/move_to_production/" + flag_group_id
+    response = client.put(url)
     assert response.status_code == 404
+    assert response.json["flag_group_name"] == None
+    assert response.json["flags_in_flag_group"] == None
+    assert response.json["message"] == "flag group: " + flag_group_id + " does not exist"
+    assert response.json["simple_message"] == "flag group does not exist"
+    assert response.json["uuid"] == flag_group_id
+    assert response.json["valid"] == False
 
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
-    
 #move flag group to production, invalid flag group id
-def test_move_flag_group_to_production_invalid_flag_group_id(client):
-    # delete all flag group
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
-
-    # create flag group
-    flag_group_name = "FlagGroup1A"
-    flag_group_creation_url = "flag_group/create_flag_group/XX/" + flag_group_name
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
-
-    # get flag group id
-    flag_group_id_get_url = "flag_group/get_flag_group_ids"
-    response = client.get(flag_group_id_get_url)
-    assert response.status_code == 200
-
-    # unpack flag group id
-    x = response.get_data().decode("utf-8")
-    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
-
-    # move flag group to production
-    move_flag_group_to_production_url = "flag_group/move_flag_group_to_production/" + "1A1A"
-    response = client.put(move_flag_group_to_production_url)
+@mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("1b"*12)], 200), autospec=True)
+def test_move_flag_group_to_production_invalid_flag_group_id(mock_get_flag_group_ids, client):
+    flag_group_id = "1a" * 2
+    url = "flag_group/move_to_production/" + flag_group_id
+    response = client.put(url)
     assert response.status_code == 400
+    assert response.json["flag_group_name"] == None
+    assert response.json["flags_in_flag_group"] == None
+    assert response.json["message"] == "error moving flag group: " + flag_group_id + " to production, error converting flag group id to proper ObjectId type"
+    assert response.json["simple_message"] == "error moving flag group to production"
+    assert response.json["uuid"] == "None"
+    assert response.json["valid"] == False
 
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
 
 #move flag group to production, error in flag group
-unique_dummy_flag = FlagLogicInformation(
-    used_variables={VariableInformation("ff1"): {CodeLocation(4, 11)},
-                    VariableInformation("ff2"): {CodeLocation(6, 11)},
-                    VariableInformation("a"): {CodeLocation(2, 16), CodeLocation(2, 22)},
-                    VariableInformation("b"): {CodeLocation(2, 26), CodeLocation(2, 34)},
-                    VariableInformation("f"): {CodeLocation(3, 10), CodeLocation(4, 24),
-                                               CodeLocation(6, 24)}},
-    assigned_variables={VariableInformation("f"): {CodeLocation(2, 0)},
-                        VariableInformation("a"): {CodeLocation(2, 11)},
-                        VariableInformation('b'): {CodeLocation(2, 13)}},
-    referenced_functions={
-        VariableInformation("reduce"): {CodeLocation(3, 3), CodeLocation(4, 17), CodeLocation(6, 17)}},
-    defined_functions={VariableInformation("my_add"): {CodeLocation(2, 4)}},
-    defined_classes={VariableInformation("my_class"): {CodeLocation(1, 1)}},
-    referenced_modules={ModuleInformation("wtforms"): {CodeLocation(2, 5)},
-                        ModuleInformation("functools", "my_funky_tools"): {CodeLocation(1, 7)}},
-    referenced_flags={"Flag5": {CodeLocation(5, 10), CodeLocation(6, 10)},
-                      "Flag6": {CodeLocation(7, 10)}},
-    return_points={CodeLocation(4, 4), CodeLocation(6, 4)},
-    used_lambdas={"LAMBDA": {CodeLocation(2, 4)}},
-    errors=[ErrorInformation(cl=CodeLocation(3, 5),
-                             msg="invalid syntax",
-                             text="x = =  f\n"),
-            ErrorInformation(cl=CodeLocation(5, 5),
-                             msg="invalid syntax",
-                             text="y = = =  q2@\n")],
-    flag_logic="""
-    f = lambda a,b: a if (a > b) else b
-    if reduce(f, [47,11,42,102,13]) > 100:
-    return ff1 > reduce(f, [47,11,42,102,13])
-    else:
-    return ff2 < reduce(f, [47,11,42,102,13])""",
-    validation_results=TypeValidationResults())
-error_flag = pull_flag_logic_information(unique_dummy_flag=unique_dummy_flag)
-@mock.patch("handlers.FlaggingAPI.get_valid_dummy_flag", return_value=error_flag, autospec=True)
-def test_move_flag_group_to_production_error_error_in_flag_group(mock_error_flag, client):
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
-
-    # delete all flag group
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
-
-    # delete all dependency entries
-    flag_dep_deletion_url = "flag_dependency/delete_all_flag_dependencies"
-    response = client.delete(flag_dep_deletion_url)
-    assert response.status_code == 200
-
-    # create flag group
-    flag_group_name = "FlagGroup1A"
-    flag_group_creation_url = "flag_group/create_flag_group/XX/" + flag_group_name
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
-
-    # get flag group id
-    flag_group_id_get_url = "flag_group/get_flag_group_ids"
-    response = client.get(flag_group_id_get_url)
-    assert response.status_code == 200
-
-    # unpack flag group id
-    x = response.get_data().decode("utf-8")
-    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
-
-    # create flag
-    flag_creation_url = "flag/create_flag/XX/Flag1A"
-    response = client.post(flag_creation_url)
-    assert response.status_code == 200
-
-    # get id
-    flag_id_get_url = "flag/get_flag_ids"
-    response = client.get(flag_id_get_url)
-    assert response.status_code == 200
-
-    # unpack flag id
-    x = response.get_data().decode("utf-8")
-    flag_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
-    
-    #add flag to flag group, flag has error, thereby flag group will have error
-    add_flag_url = "flag_group/add_flag_to_flag_group/" + flag_group_id + "/x/" + flag_id
-    response = client.put(add_flag_url)
-    assert response.status_code == 200
-
-    # move flag group to production
-    move_flag_group_to_production_url = "flag_group/move_flag_group_to_production/" + flag_group_id
-    response = client.put(move_flag_group_to_production_url)
+@mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("1b"*12)], 200), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_flag_group_errors", return_value="HAS ERROR HERE", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_flag_group_flag", return_value=[ObjectId("1f"*12), ObjectId("2f"*12), ObjectId("3f"*12)], autospec=True)
+def test_move_flag_group_to_production_error_error_in_flag_group(mock_get_flag_group_ids, mock_get_flag_group_error,
+                                                                 mock_get_flag_group_name, mock_get_flag_group_flags, client):
+    flag_group_id = "1a" * 12
+    url = "flag_group/move_to_production/" + flag_group_id
+    response = client.put(url)
     assert response.status_code == 405
+    assert response.json["flag_group_name"] == "FlagGroupName1a"
+    assert response.json["flags_in_flag_group"] == ["1f"*12, "2f"*12, "3f"*12]
+    assert response.json["message"] == "flag group: " + flag_group_id + " can not be moved to production due to errors in flag group"
+    assert response.json["simple_message"] == "flag group can not be moved to production due to errors in flag group"
+    assert response.json["uuid"] == flag_group_id
+    assert response.json["valid"] == False
 
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
+@mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("1b"*12)], 200), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_flag_group_errors", return_value="", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_flag_group_flag", return_value=[ObjectId("1f"*12), ObjectId("2f"*12), ObjectId("3f"*12)], autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_specific_flag_error", return_value="HAS FLAG ERROR HERE", autospec=True)
+def test_move_flag_group_to_production_error_in_flag_in_flag_group(mock_get_flag_group_ids, mock_get_flag_group_errors, mock_get_flag_group_name,
+                                                                   mock_get_flag_group_flags, mock_get_specific_flag_error, client):
+    flag_group_id = "1a" * 12
+    url = "flag_group/move_to_production/" + flag_group_id
+    response = client.put(url)
+    assert response.status_code == 405
+    assert response.json["flag_group_name"] == "FlagGroupName1a"
+    assert response.json["flags_in_flag_group"] == ["1f"*12, "2f"*12, "3f"*12]
+    assert response.json["message"] == "flag group: " + flag_group_id + " can not be moved to production due to errors in flags found in flag group"
+    assert response.json["simple_message"] == "flag group can not be moved to production due to error in flag in flag group"
+    assert response.json["uuid"] == flag_group_id
+    assert response.json["valid"] == False
+
+@mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("1b"*12)], 200), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_flag_group_errors", return_value="", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_flag_group_flag", return_value=[ObjectId("1f"*12), ObjectId("2f"*12), ObjectId("3f"*12)], autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_specific_flag_error", return_value="", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.update_flag_group", return_value=ObjectId("1a"*12), autospec=True)
+def test_move_flag_group_to_production_valid(mock_get_flag_group_ids, mock_get_flag_group_errors, mock_get_flag_group_name,
+                                             mock_get_flag_group_flags, mock_get_specific_flag_error, mock_update_flag_group,
+                                             client):
+    flag_group_id = "1a" * 12
+    url = "flag_group/move_to_production/" + flag_group_id
+    response = client.put(url)
     assert response.status_code == 200
+    assert response.json["flag_group_name"] == "FlagGroupName1a"
+    assert response.json["flags_in_flag_group"] == ["1f"*12, "2f"*12, "3f"*12]
+    assert response.json["message"] == "flag group: " + flag_group_id + " has been moved to production"
+    assert response.json["simple_message"] == "flag group has been moved to production"
+    assert response.json["uuid"] == flag_group_id
+    assert response.json["valid"] == True
 
-def test_move_flag_group_to_production_valid(client):
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
-
-    # delete all flag group
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
-
-    # delete all dependency entries
-    flag_dep_deletion_url = "flag_dependency/delete_all_flag_dependencies"
-    response = client.delete(flag_dep_deletion_url)
-    assert response.status_code == 200
-
-    # create flag group
-    flag_group_name = "FlagGroup1A"
-    flag_group_creation_url = "flag_group/create_flag_group/XX/" + flag_group_name
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
-
-    # get flag group id
-    flag_group_id_get_url = "flag_group/get_flag_group_ids"
-    response = client.get(flag_group_id_get_url)
-    assert response.status_code == 200
-
-    # unpack flag group id
-    x = response.get_data().decode("utf-8")
-    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
-
-    # create flag
-    flag_creation_url = "flag/create_flag/XX/Flag1A"
-    response = client.post(flag_creation_url)
-    assert response.status_code == 200
-
-    # get id
-    flag_id_get_url = "flag/get_flag_ids"
-    response = client.get(flag_id_get_url)
-    assert response.status_code == 200
-
-    # unpack flag id
-    x = response.get_data().decode("utf-8")
-    flag_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
-
-    # add flag to flag group, flag has error, thereby flag group will have error
-    add_flag_url = "flag_group/add_flag_to_flag_group/" + flag_group_id + "/x/" + flag_id
-    response = client.put(add_flag_url)
-    assert response.status_code == 200
-
-    # move flag group to production
-    move_flag_group_to_production_url = "flag_group/move_flag_group_to_production/" + flag_group_id
-    response = client.put(move_flag_group_to_production_url)
-    assert response.status_code == 200
-
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
 
 
 
