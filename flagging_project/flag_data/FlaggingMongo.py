@@ -179,9 +179,10 @@ class FlaggingMongo:
         flag_groups = db[FLAG_GROUPS]
         try:
             found_flags = flag_groups.find_one({flag_group_id: flag_group})[flag_group_flags_col_name]
+            found_flags = list(found_flags)
         except Exception as e:
-            found_flags = None
-        return list(found_flags)
+            found_flags = [None]
+        return found_flags
 
     def get_flag_names_from_flag_group(self, flag_group):
         flag_name_list = []

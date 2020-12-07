@@ -1157,8 +1157,9 @@ def duplicate_flag_group(original_flag_group_id: str, existing_flag_groups, new_
         try:
             if ObjectId(original_flag_group_id) not in existing_flag_groups:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                               message="flag group " + str(original_flag_group_id) + " does not exist",
-                                                               simple_message="flag group does not exist")
+                                                               message="flag group: " + str(original_flag_group_id) + " does not exist",
+                                                               simple_message="flag group does not exist",
+                                                               uuid=ObjectId(original_flag_group_id))
                 response_code = 404
         except Exception as e:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
@@ -1169,7 +1170,7 @@ def duplicate_flag_group(original_flag_group_id: str, existing_flag_groups, new_
     if flag_schema_object is None:
         if new_flag_group_name is None:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="error duplicating flag group " + original_flag_group_id + ", missing new flag group name",
+                                                           message="error duplicating flag group: " + original_flag_group_id + ", missing new flag group name",
                                                            simple_message="error duplicating flag group",
                                                            uuid=ObjectId(original_flag_group_id),
                                                            name=flagging_mongo.get_flag_group_name(ObjectId(original_flag_group_id)))
@@ -1193,7 +1194,8 @@ def duplicate_flag_group(original_flag_group_id: str, existing_flag_groups, new_
                                                        message="new flag group " + str(new_flag_group_id)+ " created off of " + str(original_flag_group_id),
                                                        simple_message="new flag group created",
                                                        uuid=new_flag_group_id,
-                                                       name=new_flag_group_name)
+                                                       name=new_flag_group_name,
+                                                       logic=[str(x) for x in flagging_mongo.get_flag_group_flag(ObjectId(new_flag_group_id))])
         response_code = 200
     return flag_schema_object, response_code
 
