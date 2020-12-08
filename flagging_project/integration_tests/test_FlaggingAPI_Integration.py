@@ -123,12 +123,26 @@ def test_simple(client):
 
 # test flag home page
 def test_flag_home(client):
-    url = '/flag'
-    response = client.get(url)
-    data = response.get_data()
-    str_data = data.decode("utf-8")
-    assert str_data == 'flag home page to go here'
-    assert response.status_code == 200
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_mongo(container) as flagging_mongo:
+        make_routes(app, flagging_mongo)
+        client = app.test_client()
+        flag_deletion_url = "flag/delete_all"
+        response = client.delete(flag_deletion_url)
+        assert response.status_code == 200
+
+        #confirm no flags
+        flag_get_url = "flag/get_ids"
+        response = client.get(flag_get_url)
+
+        print("hello")
+
+        flag_home_url = "flag"
+        response = client.get(flag_home_url)
+
+        print('hello')
 
 
 # test get flags no flags
