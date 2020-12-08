@@ -675,7 +675,7 @@ def test_remove_flag_group_1(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.remove_specific_flag_dependencies_via_flag_group_id.return_value = [ObjectId("3C"*12), ObjectId("4D"*12)]
     result, response_code = delete_flag_group(flag_group_id=flag_group_2_remove, existing_flag_groups=existing_flag_group_names, flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
-    assert result.message == "flag group " + flag_group_2_remove + " deleted from database"
+    assert result.message == "flag group: " + flag_group_2_remove + " deleted from database"
     assert result.simple_message == "flag group has been deleted"
     assert result.uuid == 6
     assert result.name == None
@@ -717,7 +717,7 @@ def test_remove_flag_group_invalid_id_type(flagging_mongo, mvrb, mvl):
                                               existing_flag_groups=existing_flag_group_names,
                                               flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
-    assert result.message == "could not identify flag group " + flag_group_2_remove + " to delete"
+    assert result.message == 'error deleting flag group: ' + flag_group_2_remove + ', error converting to proper Object Id type'
     assert result.simple_message == "error deleting flag group, invalid id type"
     assert result.uuid == None
     assert result.name == None
@@ -737,7 +737,7 @@ def test_remove_flag_group_flag_group_id_does_not_exist(flagging_mongo, mvrb, mv
         flag_group_2_remove = ObjectId(generate_object_id())
     result, response_code = delete_flag_group(flag_group_id=str(flag_group_2_remove), existing_flag_groups=existing_flag_group_names, flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
-    assert result.message == "could not identify flag group " + str(flag_group_2_remove) + " in database"
+    assert result.message == "could not identify flag group: " + str(flag_group_2_remove) + " in database"
     assert result.simple_message == "could not identify flag group in database"
     assert result.uuid == flag_group_2_remove
     assert result.name == None
@@ -801,9 +801,9 @@ def test_duplicate_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb, mv
         flag_group_id = ObjectId(generate_object_id())
     result, response_code = duplicate_flag_group(original_flag_group_id=str(flag_group_id), existing_flag_groups=existing_flag_groups, new_flag_group_name="new_name", flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
-    assert result.message == "flag group " + str(flag_group_id) + " does not exist"
+    assert result.message == "flag group: " + str(flag_group_id) + " does not exist"
     assert result.simple_message == "flag group does not exist"
-    assert result.uuid == None
+    assert result.uuid == flag_group_id
     assert result.name == None
     assert result.logic == None
     assert response_code >= 400
@@ -1129,7 +1129,7 @@ def test_create_flag_group(flagging_mongo, mvrb):
     flag_group = "FLAG_GROUP_4D"
     result, response_code = create_flag_group(flag_group_name=flag_group, existing_flag_groups=existing_flag_groups, flagging_mongo=mock_flagging_mongo)
     assert result.valid == True
-    assert result.message == "unique flag group " + flag_group + " created"
+    assert result.message == "unique flag group: " + flag_group + " created"
     assert result.simple_message == "new flag group created"
     assert result.uuid == "FLAG_GROUP_13M_id"
     assert result.name == "FLAG_GROUP_4D"
@@ -1276,9 +1276,9 @@ def test_add_flags_to_flag_group_flag_group_does_not_exist(flagging_mongo, mgfd,
                                     existing_flag_groups=existing_flag_groups, flags_in_flag_group=flags_in_flag_group,
                                     flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
-    assert result.message == "flag_group " + str(flag_group_id) + " does not exist"
+    assert result.message == "flag_group: " + str(flag_group_id) + " does not exist"
     assert result.simple_message == "flag group does not exist"
-    assert result.uuid == None
+    assert result.uuid == flag_group_id
     assert result.name == None
     assert result.logic == None
     assert response_code >= 400
@@ -1511,16 +1511,16 @@ def test_remove_flag_from_flag_group_flag_group_does_not_exist(flagging_mongo, m
     flagging_mongo.update_flag_group.return_value = "FLAG_GROUP_13M_ID"
     existing_flags = [ObjectId("f01a"*6), ObjectId("f02b"*6)]
     existing_flag_groups = [ObjectId("f11a"*6), ObjectId("f12b"*6)]
-    flag_group_name = "f31a"*6
+    flag_group_id = "f31a"*6
     flags_in_flag_group = existing_flags
     flags_2_remove = [ObjectId("f01a"*6)]
-    result, response_code = remove_flag_from_flag_group(flag_group_id=flag_group_name, del_flags=flags_2_remove, existing_flags=existing_flags,
+    result, response_code = remove_flag_from_flag_group(flag_group_id=flag_group_id, del_flags=flags_2_remove, existing_flags=existing_flags,
                                          existing_flag_groups=existing_flag_groups, flags_in_flag_group=flags_in_flag_group,
                                          flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
-    assert result.message == "flag group does not exist"
+    assert result.message == "flag group: " + flag_group_id + " does not exist"
     assert result.simple_message == "flag group does not exist"
-    assert result.uuid == None
+    assert result.uuid == ObjectId(flag_group_id)
     assert result.name == None
     assert result.logic == None
     assert response_code >= 400
@@ -1566,7 +1566,7 @@ def test_remove_flag_from_flag_group_flag_group_does_not_exist_2A(flagging_mongo
                                     existing_flag_groups=existing_flag_groups, flags_in_flag_group=flags_in_flag_group,
                                     flagging_mongo=mock_flagging_mongo)
     assert result.valid == False
-    assert result.message == "the following flags are not part of flag group " + str(flag_group_id) + ": " + ("").join([str(x) for x in flags_2_remove])
+    assert result.message == "the following flag is not part of flag group " + str(flag_group_id) + ": " + ("").join([str(x) for x in flags_2_remove])
     assert result.simple_message == "flag specified for removal is not part of flag group"
     assert result.uuid == ObjectId("b11111111111111111111104")
     assert result.name == "FlagGroupNameB4"
