@@ -2703,6 +2703,15 @@ def test_equality_any_var():
     assert test_output.referenced_modules.keys() == set()
     assert test_output.referenced_flags.keys() == set()
     assert test_output.errors == []
+
+def test_simple_flag():
+    logic = """\
+if FF1 > 10:
+    return True
+else:
+    return False"""
+    test_output = determine_variables(logic)
+    print('hello')
     
     
 

@@ -1,8 +1,4 @@
-from typing import Callable
-
 from pymongo import MongoClient
-import datetime
-import pandas as pd
 from flag_data.FlaggingColumnNames import flag_name_col_name, flag_logic_col_name, \
     referenced_flag_col_name, flag_status_col_name, flag_group_name_col_name, \
     flag_group_flags_col_name, flag_group_status_col_name, flag_dep_dep_flags_col_name, \
@@ -23,7 +19,7 @@ flag_dep_id = "_id"
 
 
 
-class FlaggingMongo:
+class FlaggingDOA:
 
     def __init__(self, connection_url: str):
         self.connection_url = connection_url
@@ -35,11 +31,6 @@ class FlaggingMongo:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.client.close()
-
-    #TODO
-    # set up index on flag name
-
-
 
 
     #flags

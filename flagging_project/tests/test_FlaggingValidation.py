@@ -1385,3 +1385,16 @@ def test_module_overwrite_error_asname(mock_determine_variables, mock_validate_r
     assert result.warnings == {}
     assert result.mypy_errors == {}
     assert result.mypy_warnings == {}
+
+def test_simple_flag():
+    logic = """\
+if FF1 > 10:
+    return True
+else:
+    return False"""
+    flag_name = "Flag1A"
+    flag_feeders = {"FF1": int}
+    flag_dependencies = {}
+    flag_logic_information = determine_variables(logic)
+    result = validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, flag_logic_information)
+    print("hello")
