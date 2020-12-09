@@ -15,9 +15,6 @@ def validate_cyclical_logic(flag_id, flag_group_id, flag_logic_information:FlagL
     # get flag feeders
     flag_feeders = pull_flag_feeders(dummy_flag_feeders={"FF1": int, "FF2": bool, "FF3": str, "FF4": int})
 
-    #TODO
-    # need flag_dependiceis from api call or direct query
-    # only need to look at flags in flag group
 
     #dependenceis via name
     flag_deps_for_flag_group = flagging_mongo.get_flag_dep_by_flag_group_id(flag_group_id)
@@ -33,34 +30,6 @@ def validate_cyclical_logic(flag_id, flag_group_id, flag_logic_information:FlagL
 
         flag_dependencies[rf_key] = rf_value
 
-    # depndenceis via RF object,
-    # flag_deps_for_flag_group = flagging_mongo.get_flag_dep_by_flag_group_id(flag_group_id)
-    # flag_dependencies = {}
-    # flag_dependencies[ReferencedFlag(flag_name=flag_id, flag_group_id=flag_group_id)] = {x for x in flag_logic_information.referenced_flags}
-    # for i in range(len(flag_deps_for_flag_group)):
-    #     rf_key = ReferencedFlag(flag_name=flag_deps_for_flag_group[i]["FLAG_NAME"],
-    #                        flag_group_id=flag_deps_for_flag_group[i]["FLAG_GROUP_ID"])
-    #     rf_value = set()
-    #     for j in range(len(flag_deps_for_flag_group[i]["DEPENDENT_FLAGS"])):
-    #         rf_value.add(ReferencedFlag(flag_name=flag_deps_for_flag_group[i]["DEPENDENT_FLAGS"][j]["FLAG_NAME"],
-    #                                    flag_group_id=flag_deps_for_flag_group[i]["DEPENDENT_FLAGS"][j]["FLAG_GROUP_ID"]))
-    #         if j == 0:
-    #             rf_value.add(ReferencedFlag(flag_name="Flag1M",
-    #             flag_group_id=flag_deps_for_flag_group[i]["DEPENDENT_FLAGS"][j]["FLAG_GROUP_ID"]))
-    #
-    #     flag_dependencies[rf_key] = rf_value
-
-    #flag dependences becomes {RF(orgiinal_flag_name, flag_group_id): {RF(reference_flag_name, flag_grop_id), .... )},
-    #                         {RF (flag_names from flag_deps_for_flag_group, flag_group_id)}
-    #                         ...
-    #                         {RF (flag_name from flag_deps_for_flag_group, flag_group_id)}}
-
-
-    #TODO
-    # perform full validation on user_logic via nodevisitor, mypy, and validation
-    # mypy validation is part of full validation method, do not need explicit mypy validation call
-
-
 
     #validation
     validation_result = validate_flag_logic_information(flag_id, flag_feeders, flag_dependencies, flag_logic_information,
@@ -74,9 +43,6 @@ def validate_logic(flag_name, flag_logic_information:FlagLogicInformation(), fla
     #TODO
     # get flag feeders
     flag_feeders = pull_flag_feeders(dummy_flag_feeders={"FF1": int, "FF2": bool, "FF3": str, "FF4": int})
-
-
-
 
 
     #validation
