@@ -1428,6 +1428,7 @@ def test_add_flags_to_flag_group_cyclical_flag_not_referenced(flagging_doa, mgfd
     flag_group_id = ObjectId("B11111111111111111111102")
     new_flags = [ObjectId("A11111111111111111111105"), ObjectId("A11111111111111111111106")]
     flags_in_flag_group = [ObjectId("A11111111111111111111111")]
+    flagging_doa.get_flag_group_flag.return_value = new_flags + flags_in_flag_group
     result, response_code = add_flag_to_flag_group(flag_group_id=str(flag_group_id), new_flags=[str(x) for x in new_flags], existing_flags=existing_flags,
                                     existing_flag_groups=existing_flag_groups, flags_in_flag_group=flags_in_flag_group,
                                     flagging_doa=mock_flagging_doa)
@@ -1436,7 +1437,7 @@ def test_add_flags_to_flag_group_cyclical_flag_not_referenced(flagging_doa, mgfd
     assert result.simple_message == "flags added to flag group"
     assert result.uuid == mock_return_value
     assert result.name == "FlagGroupNameB1"
-    assert result.logic == None
+    assert result.logic == [str(x) for x in new_flags + flags_in_flag_group]
     assert response_code == 200
 
 
