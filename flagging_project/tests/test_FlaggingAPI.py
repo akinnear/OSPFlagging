@@ -978,10 +978,10 @@ def test_delete_flag_group_valid(mock_remove_flag_group, mock_delete_flag_depend
     assert response.status_code == 200
     assert response.json["flag_group_name"] == None
     assert response.json["flags_in_flag_group"] == None
-    assert response.json["message"] == "error deleting flag group: " + flag_group_id + ", error converting to proper Object Id type"
-    assert response.json["simple_message"] == "error deleting flag group, invalid id type"
+    assert response.json["message"] == "flag group: " + flag_group_id + " deleted from database"
+    assert response.json["simple_message"] == "flag group has been deleted"
     assert response.json["uuid"] == "None"
-    assert response.json["valid"] == False
+    assert response.json["valid"] == True
 
 
 #add flag to flag group, missing flag group id
