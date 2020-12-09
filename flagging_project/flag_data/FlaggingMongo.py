@@ -10,7 +10,7 @@ from flag_data.FlaggingColumnNames import flag_name_col_name, flag_logic_col_nam
     flag_group_error_col_name
 
 
-FLAGGING_DATABASE = 'flagging_test'
+FLAGGING_DATABASE = 'flagging_db'
 FLAGGING_COLLECTION = 'flagging'
 FLAG_DEPENDENCIES = "flag_dependencies"
 FLAG_GROUPS = "flag_groups"
@@ -54,7 +54,6 @@ class FlaggingMongo:
     def get_flags(self):
         db = get_db(self)
         flagging = db[FLAGGING_COLLECTION]
-        print(list(flagging.find()))
         return list(flagging.find())
 
     def get_flag_ids(self):
@@ -450,5 +449,4 @@ class FlaggingMongo:
         flagging_dependencies.delete_many({})
 
 def get_db(flagging_mongo):
-    print('in get_db')
     return flagging_mongo.client[FLAGGING_DATABASE]
