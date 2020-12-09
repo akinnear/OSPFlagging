@@ -14,8 +14,6 @@ from flagging.FlagErrorInformation import FlagErrorInformation
 from flag_names.FlagService import pull_flag_names, \
     pull_flag_names_in_flag_group, pull_flag_ids
 from flag_names.FlagGroupService import pull_flag_group_names, pull_flag_group_ids
-# from front_end.FlaggingDependencies import add_flag_dependencies, remove_flag_dependencies
-from flag_data.FlaggingDAO import FlaggingDAO
 from random_object_id import generate as generate_object_id
 from bson.objectid import ObjectId
 from front_end.ReferencedFlag import ReferencedFlag
