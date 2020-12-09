@@ -15,7 +15,7 @@ from flag_names.FlagService import pull_flag_names, \
     pull_flag_names_in_flag_group, pull_flag_ids
 from flag_names.FlagGroupService import pull_flag_group_names, pull_flag_group_ids
 # from front_end.FlaggingDependencies import add_flag_dependencies, remove_flag_dependencies
-from flag_data.FlaggingMongo import FlaggingMongo
+from flag_data.FlaggingDOA import FlaggingDOA
 from random_object_id import generate as generate_object_id
 from bson.objectid import ObjectId
 from front_end.ReferencedFlag import ReferencedFlag
@@ -33,12 +33,12 @@ from front_end.TransferFlagLogicInformation import _convert_FLI_to_TFLI
 #validate_logic should return a FlaggingValidationResults() object
 
 #creae a mock instance of flagging_data
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_simple(flagging_mongo):
     print("hello")
 
 
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_mock_simple_class(flagging_mongo):
     flagging_mongo.return_value.add_flag.return_value = 1
     mock_flagging_mongo = flagging_mongo()
@@ -47,7 +47,7 @@ def test_mock_simple_class(flagging_mongo):
 
 
 
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_mock_simple_add(flagging_mongo):
     flagging_mongo.return_value.add_flag.return_value = 1
     mock_flagging_mongo = flagging_mongo()
@@ -57,7 +57,7 @@ def test_mock_simple_add(flagging_mongo):
 
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_create_flag(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.add_flag.return_value = 1
     mock_flagging_mongo = flagging_mongo()
@@ -95,7 +95,7 @@ def test_create_flag(flagging_mongo, mvrb, mvl):
 
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_create_flag_missing_name(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.add_flag.return_value = 1
     mock_flagging_mongo = flagging_mongo()
@@ -134,7 +134,7 @@ def test_create_flag_missing_name(flagging_mongo, mvrb, mvl):
                                                            err_info="cyclical_flag",
                                                            cl={CodeLocation(1, 10)})}), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_create_flag_error(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.add_flag.return_value = 1
     mock_flagging_mongo = flagging_mongo()
@@ -173,7 +173,7 @@ def test_create_flag_error(flagging_mongo, mvrb, mvl):
 
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(mypy_errors={"mypyerror": "does not matter"}), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_create_flag_myerror(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.add_flag.return_value = 1
     mock_flagging_mongo = flagging_mongo()
@@ -214,7 +214,7 @@ def test_create_flag_myerror(flagging_mongo, mvrb, mvl):
 
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_update_flag_name(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 2
     mock_flagging_mongo = flagging_mongo()
@@ -233,7 +233,7 @@ def test_update_flag_name(flagging_mongo, mvrb, mvl):
 
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_update_flag_name_missing_og_flag(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 2
     mock_flagging_mongo = flagging_mongo()
@@ -251,7 +251,7 @@ def test_update_flag_name_missing_og_flag(flagging_mongo, mvrb, mvl):
 
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_update_flag_name_missing_new_flag(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 2
     og_flag_id = "FlagID1"
@@ -269,7 +269,7 @@ def test_update_flag_name_missing_new_flag(flagging_mongo, mvrb, mvl):
 
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_update_flag_name_og_flag_not_found(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 2
     mock_flagging_mongo = flagging_mongo()
@@ -288,7 +288,7 @@ def test_update_flag_name_og_flag_not_found(flagging_mongo, mvrb, mvl):
 #test update flag name, new name same as old name
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_update_flag_name_og_name_same_as_nw_name(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 2
     mock_flagging_mongo = flagging_mongo()
@@ -308,7 +308,7 @@ def test_update_flag_name_og_name_same_as_nw_name(flagging_mongo, mvrb, mvl):
 #test update flag logic informatio
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_update_flag_logic(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 3
     mock_flagging_mongo = flagging_mongo()
@@ -349,7 +349,7 @@ def test_update_flag_logic(flagging_mongo, mvrb, mvl):
 #update flag logic, flag id not specified
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_update_flag_logic_missing_flag_1(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 3
     mock_flagging_mongo = flagging_mongo()
@@ -388,7 +388,7 @@ def test_update_flag_logic_missing_flag_1(flagging_mongo, mvrb, mvl):
 #update flag logic, flag id does not exists
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_update_flag_logic_missing_flag_2(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 3
     mock_flagging_mongo = flagging_mongo()
@@ -431,7 +431,7 @@ def test_update_flag_logic_missing_flag_2(flagging_mongo, mvrb, mvl):
 #update flag logic, error in result
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(errors={"some_error": {"some_code_location"}}), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_update_flag_logic_errors(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 3
     flagging_mongo.return_value.get_flag_name.return_value = "Flag3C"
@@ -472,7 +472,7 @@ def test_update_flag_logic_errors(flagging_mongo, mvrb, mvl):
 #update flag lgoic, mypy_error in result
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(mypy_errors={"some_mypy_error": {"some_code_location"}}), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_update_flag_logic_mypy_errors(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.update_flag.return_value = 3
     mock_flagging_mongo = flagging_mongo()
@@ -514,7 +514,7 @@ def test_update_flag_logic_mypy_errors(flagging_mongo, mvrb, mvl):
 #test to delete flag, valid
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_update_delete_flag(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
     rfrv = ObjectId(generate_object_id())
@@ -534,7 +534,7 @@ def test_update_delete_flag(flagging_mongo, mvrb, mvl):
 #test to delete flag, missign flag id
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_update_delete_flag_missing_flag_id(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
     existing_flags = ["FLAGID1", "FLAGID2"]
@@ -551,7 +551,7 @@ def test_update_delete_flag_missing_flag_id(flagging_mongo, mvrb, mvl):
 #test to delete flag, flag does not exist
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_update_delete_flag_flag_does_not_exist(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
     existing_flags = [ObjectId(generate_object_id()), ObjectId(generate_object_id())]
@@ -569,7 +569,7 @@ def test_update_delete_flag_flag_does_not_exist(flagging_mongo, mvrb, mvl):
 #test, duplicate flag
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_duplicate_flag(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo
     flagging_mongo.duplicate_flag.return_value = 4
@@ -589,7 +589,7 @@ def test_duplicate_flag(flagging_mongo, mvrb, mvl):
 #test, duplicate flag, flag name not specified
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_duplicate_flag_missing_flag_id(flagging_mongo, mvrb, mvl):
     flagging_mongo.duplicate_flag.return_value = 4
     mock_flagging_mongo = flagging_mongo
@@ -607,7 +607,7 @@ def test_duplicate_flag_missing_flag_id(flagging_mongo, mvrb, mvl):
 #test, duplicate flag, flag name does not exist
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_duplicate_flag_flag_does_not_exist(flagging_mongo, mvrb, mvl):
     flagging_mongo.duplicate_flag.return_value = 4
     mock_flagging_mongo = flagging_mongo
@@ -628,7 +628,7 @@ def test_duplicate_flag_flag_does_not_exist(flagging_mongo, mvrb, mvl):
 #test, create new flag group, flag group name not specifed
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_create_flag_group_name_not_specified(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.add_flag_group.return_value = 5
     mock_flagging_mongo = flagging_mongo()
@@ -646,7 +646,7 @@ def test_create_flag_group_name_not_specified(flagging_mongo, mvrb, mvl):
 #test, create new flag group, flag group name is not unique
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_create_flag_group_name_not_unique(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.add_flag_group.return_value = 5
     mock_flagging_mongo = flagging_mongo()
@@ -665,7 +665,7 @@ def test_create_flag_group_name_not_unique(flagging_mongo, mvrb, mvl):
 #test remove flag group
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_remove_flag_group_1(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
     flagging_mongo.return_value.remove_flag_group.return_value = 6
@@ -685,7 +685,7 @@ def test_remove_flag_group_1(flagging_mongo, mvrb, mvl):
 #test remove flag group, name not specified
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_remove_flag_group_missing_flag_group_name(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
     flagging_mongo.return_value.remove_flag_group.return_value = 6
@@ -705,7 +705,7 @@ def test_remove_flag_group_missing_flag_group_name(flagging_mongo, mvrb, mvl):
 #test remove flag group, invalid id type
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_remove_flag_group_invalid_id_type(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
     flagging_mongo.return_value.remove_flag_group.return_value = 6
@@ -727,7 +727,7 @@ def test_remove_flag_group_invalid_id_type(flagging_mongo, mvrb, mvl):
 #test remove flag group, flag group name does not exist
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_remove_flag_group_flag_group_id_does_not_exist(flagging_mongo, mvrb, mvl):
     mock_flagging_mongo = flagging_mongo()
     flagging_mongo.return_value.remove_flag_group.return_value = 6
@@ -748,7 +748,7 @@ def test_remove_flag_group_flag_group_id_does_not_exist(flagging_mongo, mvrb, mv
 #test, duplicate flag_group
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_duplicate_flag_group(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.get_flag_group_name.return_value = "FlagName1A"
     flagging_mongo.return_value.duplicate_flag_group.return_value = ObjectId(generate_object_id())
@@ -770,7 +770,7 @@ def test_duplicate_flag_group(flagging_mongo, mvrb, mvl):
 #test, duplicate flag_group, flag_group_id not specified
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_duplicate_flag_group_missing_flag_group(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.duplicate_flag_group.return_value = "Flag_Group_7G"
     mock_flagging_mongo = flagging_mongo()
@@ -788,7 +788,7 @@ def test_duplicate_flag_group_missing_flag_group(flagging_mongo, mvrb, mvl):
 #test, duplicate flag_group, flag_group_id does not exist
 @mock.patch("front_end.FlaggingSchemaService.validate_logic", return_value=FlaggingValidationResults(), autospec=True)
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_duplicate_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb, mvl):
     flagging_mongo.return_value.get_flag_group_name.return_value = "FlagName1A"
     flagging_mongo.return_value.duplicate_flag_group.return_value = ObjectId(generate_object_id())
@@ -813,7 +813,7 @@ def test_duplicate_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb, mv
 
 # #test, add new dependency to flag
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_add_new_flag_dependency(flagging_mongo, mvrb):
 #     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
 #     new_deps = ["FLAG5E", "FLAG6F"]
@@ -842,7 +842,7 @@ def test_duplicate_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb, mv
 
 # #test, add new dependency to flag, missing flag_name/id (flag being modified)
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_add_new_flag_dependency_missing_flag(flagging_mongo, mvrb):
 #     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
 #     new_deps = ["FLAG5E", "FLAG6F"]
@@ -870,7 +870,7 @@ def test_duplicate_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb, mv
 
 # #test, add new depdendnecy to flag, flag_name/id does not exist (flag being modified)
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_add_new_flag_dependency_flag_does_not_exist(flagging_mongo, mvrb):
 #     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
 #     new_deps = ["FLAG5E", "FLAG6F"]
@@ -898,7 +898,7 @@ def test_duplicate_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb, mv
 
 # #test, add new dependency to flag, missing flag_name/id (flag dependency being added)
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_add_new_flag_dependency_missing_new_deps(flagging_mongo, mvrb):
 #     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
 #     new_deps = []
@@ -926,7 +926,7 @@ def test_duplicate_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb, mv
 
 # #test, add new dependeny to flag, flag_name/id does not exist (flag dependency being added)
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_add_new_flag_dependency_new_dep_does_not_exist(flagging_mongo, mvrb):
 #     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
 #     new_deps = ["FLAG5E", "FLAG16P"]
@@ -954,7 +954,7 @@ def test_duplicate_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb, mv
 
 # #test, add new dependeny to flag, flag is already dependent on flag dependency being added
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_add_new_flag_dependency_flag_already_contains_dep(flagging_mongo, mvrb):
 #     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
 #     new_deps = ["FLAG5E", "FLAG2B"]
@@ -982,7 +982,7 @@ def test_duplicate_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb, mv
 
 # #test, add new dependency to flag, new depdendency being added results in cyclical flag
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_add_new_flag_dependency_results_in_cyclical_flag_dep(flagging_mongo, mvrb):
 #     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
 #     new_deps = ["FLAG5E", "FLAG12L"]
@@ -1010,7 +1010,7 @@ def test_duplicate_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb, mv
 
 # #test, remove flag deps
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_remove_flag_dependencies(flagging_mongo, mvrb):
 #     mock_flagging_mongo = flagging_mongo
 #     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
@@ -1039,7 +1039,7 @@ def test_duplicate_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb, mv
 
 #test, remove flag deps, missing original flag
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_remove_flag_dependencies_missing_original_flag(flagging_mongo, mvrb):
 #     mock_flagging_mongo = flagging_mongo
 #     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
@@ -1055,7 +1055,7 @@ def test_duplicate_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb, mv
 
 # #test, remove flag deps, original flag does not exist
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_remove_flag_dependencies_orginal_flag_does_not_exist(flagging_mongo, mvrb):
 #     mock_flagging_mongo = flagging_mongo
 #     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
@@ -1071,7 +1071,7 @@ def test_duplicate_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb, mv
 
 # #test, remove flag deps, missing deps 2 remove
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_remove_flag_dependencies_missing_dependencies_to_remove(flagging_mongo, mvrb):
 #     mock_flagging_mongo = flagging_mongo
 #     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
@@ -1087,7 +1087,7 @@ def test_duplicate_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb, mv
 
 # #test, remove flag deps, deps 2 remove do not exist
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_remove_flag_dependencies_deps_to_remove_do_not_exist(flagging_mongo, mvrb):
 #     mock_flagging_mongo = flagging_mongo
 #     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
@@ -1103,7 +1103,7 @@ def test_duplicate_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb, mv
 
 # #test, remove flag deps, deps 2 remove do not exist as current deps
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_remove_flag_dependencies_deps_to_remove_do_not_exist_as_current_dependencies(flagging_mongo, mvrb):
 #     mock_flagging_mongo = flagging_mongo
 #     current_flag_deps = ["FLAG2B", "FLAG3C", "FLAG4D"]
@@ -1121,7 +1121,7 @@ def test_duplicate_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb, mv
 
 #test, create flag group
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_create_flag_group(flagging_mongo, mvrb):
     mock_flagging_mongo = flagging_mongo
     flagging_mongo.add_flag_group.return_value = "FLAG_GROUP_13M_id"
@@ -1139,7 +1139,7 @@ def test_create_flag_group(flagging_mongo, mvrb):
 
 #test, create flag group, missing flag group name
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_create_flag_group_missing_flag_group_new(flagging_mongo, mvrb):
     mock_flagging_mongo = flagging_mongo
     flagging_mongo.add_flag_group.return_value = "FLAG_GROUP_13M_id"
@@ -1156,7 +1156,7 @@ def test_create_flag_group_missing_flag_group_new(flagging_mongo, mvrb):
 
 #test, create flag group, flag group name already exists
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_create_flag_group_non_unique_flag_group_name(flagging_mongo, mvrb):
     mock_flagging_mongo = flagging_mongo
     mock_return_value = ObjectId(generate_object_id())
@@ -1189,7 +1189,7 @@ mock_flag_dependencies = {"FLAG1A": {"FLAG2B", "FLAG3C"},
                      "FLAG12L": {"FLAG3C"}}
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 @mock.patch("front_end.FlaggingValidateLogic.get_flag_dependencies", return_value=mock_flag_dependencies, autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_add_flags_to_flag_group(flagging_mongo, mgfd, mvrb):
     mock_flagging_mongo = flagging_mongo
     mock_return_value = ObjectId("B11111111111111111111113")
@@ -1214,7 +1214,7 @@ def test_add_flags_to_flag_group(flagging_mongo, mgfd, mvrb):
 
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 @mock.patch("front_end.FlaggingValidateLogic.get_flag_dependencies", return_value=mock_flag_dependencies, autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_add_flags_to_flag_group_2(flagging_mongo, mgfd, mvrb):
     mock_flagging_mongo = flagging_mongo
     mock_return_value = ObjectId("B11111111111111111111113")
@@ -1239,7 +1239,7 @@ def test_add_flags_to_flag_group_2(flagging_mongo, mgfd, mvrb):
 #test, add flag to flag_group, flag group_name/id not passed
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 @mock.patch("front_end.FlaggingValidateLogic.get_flag_dependencies", return_value=mock_flag_dependencies, autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_add_flags_to_flag_group_missing_flag_group_name(flagging_mongo, mgfd, mvrb):
     mock_flagging_mongo = flagging_mongo
     mock_return_value = ObjectId("B11111111111111111111113")
@@ -1262,7 +1262,7 @@ def test_add_flags_to_flag_group_missing_flag_group_name(flagging_mongo, mgfd, m
 #test, add flag to flag_gropu, flag_group_name/id does not exist
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 @mock.patch("front_end.FlaggingValidateLogic.get_flag_dependencies", return_value=mock_flag_dependencies, autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_add_flags_to_flag_group_flag_group_does_not_exist(flagging_mongo, mgfd, mvrb):
     mock_flagging_mongo = flagging_mongo
     mock_return_value = ObjectId("B11111111111111111111113")
@@ -1286,7 +1286,7 @@ def test_add_flags_to_flag_group_flag_group_does_not_exist(flagging_mongo, mgfd,
 #test, add flag to flag_group, flag is not specified
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 @mock.patch("front_end.FlaggingValidateLogic.get_flag_dependencies", return_value=mock_flag_dependencies, autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_add_flags_to_flag_group_missing_flag(flagging_mongo, mgfd, mvrb):
     mock_flagging_mongo = flagging_mongo
     mock_return_value = ObjectId("B11111111111111111111113")
@@ -1310,7 +1310,7 @@ def test_add_flags_to_flag_group_missing_flag(flagging_mongo, mgfd, mvrb):
 #test, add flag to flag_group, flag does not exist
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 @mock.patch("front_end.FlaggingValidateLogic.get_flag_dependencies", return_value=mock_flag_dependencies, autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_add_flags_to_flag_group_flag_does_not_exist(flagging_mongo, mgfd, mvrb):
     mock_flagging_mongo = flagging_mongo
     flagging_mongo.update_flag_group.return_value = "FLAG_GROUP_13M_ID"
@@ -1334,7 +1334,7 @@ def test_add_flags_to_flag_group_flag_does_not_exist(flagging_mongo, mgfd, mvrb)
 #test, add flag to flag_group, flag already exists in flag group
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 @mock.patch("front_end.FlaggingValidateLogic.get_flag_dependencies", return_value=mock_flag_dependencies, autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_add_flags_to_flag_group_flag_already_in_flag_group(flagging_mongo, mgfd, mvrb):
     mock_flagging_mongo = flagging_mongo
     mock_return_value = ObjectId("B11111111111111111111113")
@@ -1416,7 +1416,7 @@ mock_flag_dependencies = {flag_1a_object_id: {flag_2b_object_id, flag_3c_object_
                      flag_12l_object_id: {flag_3c_object_id}}
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 @mock.patch("front_end.FlaggingValidateLogic.get_flag_dependencies", return_value=mock_flag_dependencies, autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_add_flags_to_flag_group_cyclical_flag_not_referenced(flagging_mongo, mgfd, mvrb):
     mock_flagging_mongo = flagging_mongo
     mock_return_value = ObjectId("B11111111111111111111113")
@@ -1442,7 +1442,7 @@ def test_add_flags_to_flag_group_cyclical_flag_not_referenced(flagging_mongo, mg
 
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 # @mock.patch("front_end.FlaggingValidateLogic.get_flag_dependencies", return_value=mock_flag_dependencies, autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_add_flags_to_flag_group_cyclical_flag_referenced(flagging_mongo, mgfd, mvrb):
 #     mock_flagging_mongo = flagging_mongo
 #     mock_return_value = ObjectId("B11111111111111111111113")
@@ -1462,7 +1462,7 @@ def test_add_flags_to_flag_group_cyclical_flag_not_referenced(flagging_mongo, mg
 
 #test, remove flag from flag group
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_remove_flag_from_flag_group(flagging_mongo, mvrb):
     mock_flagging_mongo = flagging_mongo
     mock_return_value = ObjectId("B11111111111111111111113")
@@ -1484,7 +1484,7 @@ def test_remove_flag_from_flag_group(flagging_mongo, mvrb):
 
 #test, remove flag from flag group, missing flag group name
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_remove_flag_from_flag_group_missing_flag_group(flagging_mongo, mvrb):
     mock_flagging_mongo = flagging_mongo
     mock_return_value = ObjectId("B11111111111111111111113")
@@ -1505,7 +1505,7 @@ def test_remove_flag_from_flag_group_missing_flag_group(flagging_mongo, mvrb):
 
 #test, remove flag from flag group, flag group does not exist
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_remove_flag_from_flag_group_flag_group_does_not_exist(flagging_mongo, mvrb):
     mock_flagging_mongo = flagging_mongo
     flagging_mongo.update_flag_group.return_value = "FLAG_GROUP_13M_ID"
@@ -1529,7 +1529,7 @@ def test_remove_flag_from_flag_group_flag_group_does_not_exist(flagging_mongo, m
 
 #test, remove flag from flag group, flag to remove does not exist
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_remove_flag_from_flag_group_flag_group_missing_flags_2_remove_2(flagging_mongo, mvrb):
     flagging_mongo.update_flag_group.return_value = "FLAG_GROUP_13M_ID"
     existing_flags = [ObjectId("1"*24), ObjectId("2"*24), ObjectId("3"*24)]
@@ -1550,7 +1550,7 @@ def test_remove_flag_from_flag_group_flag_group_missing_flags_2_remove_2(flaggin
 
 #test, remove flag from flag group, flag to remove is not associted with flag group
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_remove_flag_from_flag_group_flag_group_does_not_exist_2A(flagging_mongo, mvrb):
     mock_flagging_mongo = flagging_mongo
     mock_return_value = ObjectId("B11111111111111111111113")
@@ -1593,7 +1593,7 @@ def test_remove_flag_from_flag_group_flag_group_does_not_exist_2A(flagging_mongo
 
 # #test, create flag dependency
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_create_flag_dependency(flagging_mongo, mvrb):
 #     flagging_mongo.add_flag_dependencies.return_value = "flag_dep_key_1A"
 #     existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
@@ -1606,7 +1606,7 @@ def test_remove_flag_from_flag_group_flag_group_does_not_exist_2A(flagging_mongo
 
 # #test, create flag dependency, flag name not passed
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_create_flag_dependency_no_flag_name(flagging_mongo, mvrb):
 #     flagging_mongo.add_flag_dependencies.return_value = "flag_dep_key_1A"
 #     existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
@@ -1620,7 +1620,7 @@ def test_remove_flag_from_flag_group_flag_group_does_not_exist_2A(flagging_mongo
 
 # #test, create flag dependency, flag name already in existing flag set
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_create_flag_dependency_flag_already_exists(flagging_mongo, mvrb):
 #     flagging_mongo.add_flag_dependencies.return_value = "flag_dep_key_1A"
 #     existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
@@ -1634,7 +1634,7 @@ def test_remove_flag_from_flag_group_flag_group_does_not_exist_2A(flagging_mongo
 
 # #test, delete flag dependnecy
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_delete_flag_dependency(flagging_mongo, mvrb):
 #     flagging_mongo.remove_flag_dependencies.return_value = "Flag_ID_XX_RM"
 #     existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
@@ -1646,7 +1646,7 @@ def test_remove_flag_from_flag_group_flag_group_does_not_exist_2A(flagging_mongo
 
 # #test, delete flag dependency, flag id not passed
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_delete_flag_dependency_flag_id_not_passed(flagging_mongo, mvrb):
 #     flagging_mongo.remove_flag_dependencies.return_value = "Flag_ID_XX_RM"
 #     existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
@@ -1658,7 +1658,7 @@ def test_remove_flag_from_flag_group_flag_group_does_not_exist_2A(flagging_mongo
 
 # #test, delete flag dependnecy, flag id not in existing flag dependency database
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_delete_flag_dependency_flag_id_does_not_exist(flagging_mongo, mvrb):
 #     flagging_mongo.remove_flag_dependencies.return_value = "Flag_ID_XX_RM"
 #     existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
@@ -1670,7 +1670,7 @@ def test_remove_flag_from_flag_group_flag_group_does_not_exist_2A(flagging_mongo
 
 #test, add_dependencies_to_flag
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_add_flag_dependencies_to_flag(flagging_mongo, mvrb):
     flagging_mongo.add_specific_flag_dependencies.return_value = "FLAG_ID_DEPS_ADDED_1A"
     existing_flag_dep_keys = [ObjectId("1"*21 + "1AD"), ObjectId("1"*21 + "2BD"), ObjectId("1"*21 + "3CD")]
@@ -1687,7 +1687,7 @@ def test_add_flag_dependencies_to_flag(flagging_mongo, mvrb):
 
 #test, add_dependencies_to_flag, flag id not passed
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_add_flag_dependencies_to_flag_missing_flag_id(flagging_mongo, mvrb):
     flagging_mongo.add_specific_flag_dependencies.return_value = "FLAG_ID_DEPS_ADDED_1A"
     existing_flag_dep_keys = ["FLAG1A", "FLAG2B", "FLAG3C"]
@@ -1704,7 +1704,7 @@ def test_add_flag_dependencies_to_flag_missing_flag_id(flagging_mongo, mvrb):
 
 #tests, add deps to flag, flag_id does not exist as an existing flag dep key
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_add_flag_dependencies_to_flag_flag_id_does_not_exist(flagging_mongo, mvrb):
     flagging_mongo.add_specific_flag_dependencies.return_value = "FLAG_ID_DEPS_ADDED_1A"
     existing_flag_dep_keys = [ObjectId("1"*21 + "1AD"), ObjectId("1"*21 + "2BD"), ObjectId("1"*21 + "3CD")]
@@ -1721,7 +1721,7 @@ def test_add_flag_dependencies_to_flag_flag_id_does_not_exist(flagging_mongo, mv
 
 # #test, remove deps from flag
 # @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-# @mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+# @mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 # def test_remove_flag_dependencies_from_flag(flagging_mongo, mvrb):
 #     flagging_mongo.remove_specific_flag_dependencies.return_value = "FLAG_ID_DEP_RM_1A"
 #     existing_flag_dep_keys = [ObjectId("1"*21 + "1AD"), ObjectId("1"*21 + "2BD"), ObjectId("1"*21 + "3CD")]
@@ -1735,7 +1735,7 @@ def test_add_flag_dependencies_to_flag_flag_id_does_not_exist(flagging_mongo, mv
 
 #test, remove deps from flag, flag id not passed
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_remove_flag_dependencies_from_flag_missing_flag_id(flagging_mongo, mvrb):
     flagging_mongo.remove_specific_flag_dependencies.return_value = "FLAG_ID_DEP_RM_1A"
     flag_id = None
@@ -1752,7 +1752,7 @@ def test_remove_flag_dependencies_from_flag_missing_flag_id(flagging_mongo, mvrb
 
 #test, remove deps from flag, flag_id does not exist as an existing flag dep key
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("flag_data.FlaggingMongo.FlaggingMongo")
+@mock.patch("flag_data.FlaggingDOA.FlaggingDOA")
 def test_remove_flag_dependencies_from_flag_flag_id_does_not_exist(flagging_mongo, mvrb):
     flagging_mongo.remove_specific_flag_dependencies.return_value = "FLAG_ID_DEP_RM_1A"
     flag_id = "1"*22 + "4D"
