@@ -668,6 +668,7 @@ def test_remove_flag_group_1(flagging_doa, mvrb, mvl):
     flagging_doa.return_value.remove_flag_group.return_value = 6
     existing_flag_group_names = [ObjectId("1A"*12), ObjectId("2B"*12)]
     flag_group_2_remove = "1A"*12
+    flagging_doa.return_value.get_flag_group_name.return_value = "FlagGroupName1a"
     flagging_doa.return_value.get_flag_dep_by_flag_group_id.return_value = [1, 2]
     flagging_doa.return_value.remove_specific_flag_dependencies_via_flag_group_id.return_value = [ObjectId("3C"*12), ObjectId("4D"*12)]
     result, response_code = delete_flag_group(flag_group_id=flag_group_2_remove, existing_flag_groups=existing_flag_group_names, flagging_doa=mock_flagging_doa)
@@ -675,7 +676,7 @@ def test_remove_flag_group_1(flagging_doa, mvrb, mvl):
     assert result.message == "flag group: " + flag_group_2_remove + " deleted from database"
     assert result.simple_message == "flag group has been deleted"
     assert result.uuid == 6
-    assert result.name == None
+    assert result.name == "FlagGroupName1a"
     assert result.logic == None
     assert response_code == 200
 
@@ -761,7 +762,7 @@ def test_duplicate_flag_group(flagging_doa, mvrb, mvl):
     assert result.simple_message == "new flag group created"
     assert result.uuid == mock_return_value
     assert result.name == "FlagGroup3C"
-    assert result.logic == None
+    assert result.logic == []
     assert response_code == 200
 
 #test, duplicate flag_group, flag_group_id not specified
@@ -1197,6 +1198,8 @@ def test_add_flags_to_flag_group(flagging_doa, mgfd, mvrb):
     flag_group_id = ObjectId("B11111111111111111111101")
     new_flags = [ObjectId("A11111111111111111111103")]
     flags_in_flag_group = [ObjectId("A11111111111111111111101"), ObjectId("A11111111111111111111102")]
+    final_flag_groups = flags_in_flag_group + new_flags
+    flagging_doa.get_flag_group_flag.return_value = final_flag_groups
     result, response_code = add_flag_to_flag_group(flag_group_id=str(flag_group_id), new_flags=[str(x) for x in new_flags], existing_flags=existing_flags,
                                     existing_flag_groups=existing_flag_groups, flags_in_flag_group=flags_in_flag_group,
                                     flagging_doa=mock_flagging_doa)
@@ -1205,7 +1208,7 @@ def test_add_flags_to_flag_group(flagging_doa, mgfd, mvrb):
     assert result.simple_message == "flags added to flag group"
     assert result.uuid == mock_return_value
     assert result.name == "FlagGroupName1A"
-    assert result.logic == None
+    assert result.logic == [str(x) for x in final_flag_groups]
     assert response_code == 200
 
 
@@ -1221,6 +1224,7 @@ def test_add_flags_to_flag_group_2(flagging_doa, mgfd, mvrb):
     existing_flag_groups = pull_flag_group_ids()
     flag_group_id = ObjectId("B11111111111111111111101")
     new_flags = [ObjectId("A11111111111111111111103"), ObjectId("A11111111111111111111104")]
+    flagging_doa.get_flag_group_flag.return_value = new_flags
     flags_in_flag_group = []
     result, response_code = add_flag_to_flag_group(flag_group_id=str(flag_group_id), new_flags=[str(x) for x in new_flags], existing_flags=existing_flags,
                                     existing_flag_groups=existing_flag_groups, flags_in_flag_group=flags_in_flag_group,
@@ -1230,7 +1234,7 @@ def test_add_flags_to_flag_group_2(flagging_doa, mgfd, mvrb):
     assert result.simple_message == "flags added to flag group"
     assert result.uuid == mock_return_value
     assert result.name == "FlagGroupName2B"
-    assert result.logic == None
+    assert result.logic == [str(x) for x in new_flags]
     assert response_code == 200
 
 #test, add flag to flag_group, flag group_name/id not passed

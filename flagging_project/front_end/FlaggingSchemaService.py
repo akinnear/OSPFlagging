@@ -6,7 +6,7 @@ from flag_names.FlagService import pull_flag_names
 from flag_names.FlagGroupService import pull_flag_group_names
 from flagging.FlaggingValidation import FlaggingValidationResults
 from flagging.FlaggingNodeVisitor import CodeLocation
-from flag_data.FlaggingMongo import FlaggingMongo
+from flag_data.FlaggingDOA import FlaggingDOA
 from front_end.FlaggingValidateLogic import validate_logic, validate_cyclical_logic
 from flagging.FlagErrorInformation import FlagErrorInformation
 from flagging.TypeValidationResults import TypeValidationResults
@@ -35,13 +35,13 @@ from front_end.ReferencedFlag import ReferencedFlag, _convert_RF_to_TRF
 
 
 #FLAG
-def get_all_flags(flagging_doa: FlaggingMongo):
+def get_all_flags(flagging_doa: FlaggingDOA):
     return flagging_doa.get_flags(), 200
 
-def get_all_flag_ids(flagging_doa: FlaggingMongo):
+def get_all_flag_ids(flagging_doa: FlaggingDOA):
     return flagging_doa.get_flag_ids(), 200
 
-def get_specific_flag(flag_id, existing_flags: [], flagging_doa: FlaggingMongo):
+def get_specific_flag(flag_id, existing_flags: [], flagging_doa: FlaggingDOA):
     flag_schema_object = None
     if flag_schema_object is None:
         if flag_id is None:
@@ -76,7 +76,7 @@ def get_specific_flag(flag_id, existing_flags: [], flagging_doa: FlaggingMongo):
         response_code = 200
     return flag_schema_object, response_code
 
-def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, flagging_doa:FlaggingMongo):
+def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, flagging_doa:FlaggingDOA):
     flag_schema_object = None
     #store flag name and flag logic in db
 
@@ -126,7 +126,7 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
     return flag_schema_object, response_code
 
 #A call to duplicate a flag provided a new name and UUID
-def duplicate_flag(original_flag_id, existing_flags, flagging_doa: FlaggingMongo):
+def duplicate_flag(original_flag_id, existing_flags, flagging_doa: FlaggingDOA):
     flag_schema_object = None
     #check that original flag already exists
     if original_flag_id is None:
@@ -163,7 +163,7 @@ def duplicate_flag(original_flag_id, existing_flags, flagging_doa: FlaggingMongo
     return flag_schema_object, response_code
 
 #One call for flag name
-def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, flagging_doa: FlaggingMongo):
+def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, flagging_doa: FlaggingDOA):
     flag_schema_object = None
     if original_flag_id is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
@@ -232,7 +232,7 @@ def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, 
     return flag_schema_object, response_code
 
 #Another call for flag logic
-def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation(), existing_flags, flagging_doa:FlaggingMongo):
+def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation(), existing_flags, flagging_doa:FlaggingDOA):
     flag_schema_object = None
     if flag_schema_object is None:
         if flag_id is None:
@@ -457,7 +457,7 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
     return flag_schema_object, response_code
 
 #A call to delete a flag provided a UUID, return true/false
-def delete_flag(flag_id, existing_flags, flagging_doa: FlaggingMongo):
+def delete_flag(flag_id, existing_flags, flagging_doa: FlaggingDOA):
     flag_schema_object = None
     if flag_id is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
@@ -571,13 +571,13 @@ def delete_all_flags(flagging_doa):
 
 #FLAG_GROUP
 #get flag_groups
-def get_flag_groups(flagging_doa: FlaggingMongo):
+def get_flag_groups(flagging_doa: FlaggingDOA):
     return flagging_doa.get_flag_groups(), 200
 
-def get_flag_group_ids(flagging_doa: FlaggingMongo):
+def get_flag_group_ids(flagging_doa: FlaggingDOA):
     return flagging_doa.get_flag_group_ids(), 200
 
-def get_flag_group_names(flagging_doa: FlaggingMongo):
+def get_flag_group_names(flagging_doa: FlaggingDOA):
     return flagging_doa.get_flag_group_names(), 200
 
 def get_flag_names_in_flag_group(flag_group_id, flagging_doa):
@@ -618,7 +618,7 @@ def get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_doa):
     return flag_schema_object, response_code
 
 #get specific flag_group
-def get_specific_flag_group(flag_group_id:str, existing_flag_groups:[], flagging_doa:FlaggingMongo):
+def get_specific_flag_group(flag_group_id:str, existing_flag_groups:[], flagging_doa:FlaggingDOA):
     flag_schema_object = None
     if flag_group_id is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
@@ -652,7 +652,7 @@ def get_specific_flag_group(flag_group_id:str, existing_flag_groups:[], flagging
     return flag_schema_object, response_code
 
 #A call to create a named flag group, returns a UUID, name cannot be empty if so error
-def create_flag_group(flag_group_name: str, existing_flag_groups, flagging_doa: FlaggingMongo):
+def create_flag_group(flag_group_name: str, existing_flag_groups, flagging_doa: FlaggingDOA):
     if flag_group_name is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="unique flag group name must be specified",
@@ -678,7 +678,7 @@ def create_flag_group(flag_group_name: str, existing_flag_groups, flagging_doa: 
     return flag_schema_object, response_code
 
 #A call to delete a flag group provided a UUID, return true/false
-def delete_flag_group(flag_group_id, existing_flag_groups, flagging_doa: FlaggingMongo):
+def delete_flag_group(flag_group_id, existing_flag_groups, flagging_doa: FlaggingDOA):
     flag_schema_object = None
     if flag_group_id is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
@@ -719,7 +719,7 @@ def delete_flag_group(flag_group_id, existing_flag_groups, flagging_doa: Flaggin
 # in the group such as missing and cyclic flags
 
 #A call to add flags to a group provided a UUID for the group and UUIDs for the flags to add
-def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], existing_flag_groups, flags_in_flag_group, flagging_doa: FlaggingMongo):
+def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], existing_flag_groups, flags_in_flag_group, flagging_doa: FlaggingDOA):
     #for each new_flag in new_flags, check to see if flag exists already
     #if flag does not exist, call add method
 
@@ -818,7 +818,8 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                                    message=flagging_message,
                                                                    simple_message="flags in flag group has been updated",
                                                                    uuid=flag_with_updated_deps_id,
-                                                                   name=flagging_doa.get_flag_group_name(flag_with_updated_deps_id))
+                                                                   name=flagging_doa.get_flag_group_name(flag_with_updated_deps_id),
+                                                                   logic=flagging_doa.get_flag_group_flag(ObjectId(flag_group_id)))
                     response_code = 200
 
         elif len(missing_flags) != 0:
@@ -1026,7 +1027,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
     return flag_schema_object, response_code
 
 #A call to remove flags from a group provided a UUID for the group and UUIDs for the flags to remove
-def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: [], existing_flag_groups: [], flags_in_flag_group:[], flagging_doa: FlaggingMongo):
+def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: [], existing_flag_groups: [], flags_in_flag_group:[], flagging_doa: FlaggingDOA):
     flag_schema_object = None
     if flag_schema_object is None:
         if flag_group_id is None:
@@ -1146,7 +1147,7 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
     return flag_schema_object, response_code
 
 #A call to duplicate a flag group provided a new name and UUID
-def duplicate_flag_group(original_flag_group_id: str, existing_flag_groups, new_flag_group_name, flagging_doa: FlaggingMongo):
+def duplicate_flag_group(original_flag_group_id: str, existing_flag_groups, new_flag_group_name, flagging_doa: FlaggingDOA):
     flag_schema_object = None
     #make sure ids are past
     if original_flag_group_id is None:
@@ -1271,11 +1272,11 @@ def delete_all_flag_groups(flagging_doa):
 
 #FLAG DEPENDENCY
 #get flag dependenceis
-def get_flag_dependencies(flagging_doa: FlaggingMongo):
+def get_flag_dependencies(flagging_doa: FlaggingDOA):
     return flagging_doa.get_flag_dependencies(), 200
 
 #get specifi flag depedency
-def get_specific_flag_dependency(flag_dep_id, existing_flag_deps: [], flagging_doa: FlaggingMongo):
+def get_specific_flag_dependency(flag_dep_id, existing_flag_deps: [], flagging_doa: FlaggingDOA):
     flag_schema_object = None
     if flag_schema_object is None:
         if flag_dep_id is None:
@@ -1300,11 +1301,11 @@ def get_specific_flag_dependency(flag_dep_id, existing_flag_deps: [], flagging_d
     return flag_schema_object, response_code
 
 #get all flag dep ids
-def get_flag_dep_ids(flagging_doa: FlaggingMongo):
+def get_flag_dep_ids(flagging_doa: FlaggingDOA):
     return flagging_doa.get_flag_dependencies_ids(), 200
 
 #call to create flag dependnecy
-def create_flag_dependency(flag_id: str, flag_name:str, flag_group_id, existing_flag_ids: [], existing_flag_dep_keys: [], flag_dependencies: [], flagging_doa: FlaggingMongo):
+def create_flag_dependency(flag_id: str, flag_name:str, flag_group_id, existing_flag_ids: [], existing_flag_dep_keys: [], flag_dependencies: [], flagging_doa: FlaggingDOA):
     flag_schema_object = None
     if flag_schema_object is None:
         if flag_id is None:
@@ -1353,7 +1354,7 @@ def create_flag_dependency(flag_id: str, flag_name:str, flag_group_id, existing_
     return flag_schema_object, response_code
 
 #call to delete flag dependnecy
-def delete_flag_dependency(flag_id, flag_group_id, flagging_doa: FlaggingMongo):
+def delete_flag_dependency(flag_id, flag_group_id, flagging_doa: FlaggingDOA):
     flag_schema_object = None
     if flag_schema_object is None:
         if flag_id is None and flag_group_id is None:
@@ -1418,7 +1419,7 @@ def delete_flag_dependency(flag_id, flag_group_id, flagging_doa: FlaggingMongo):
     return flag_schema_object, response_code
 
 #call to add deps to flag dependencies set
-def add_dependencies_to_flag(flag_dep_id, existing_flag_dep_keys: [], new_dependencies: [], flagging_doa: FlaggingMongo):
+def add_dependencies_to_flag(flag_dep_id, existing_flag_dep_keys: [], new_dependencies: [], flagging_doa: FlaggingDOA):
     flag_schema_object = None
     if flag_schema_object is None:
         if flag_dep_id is None:
@@ -1459,7 +1460,7 @@ def add_dependencies_to_flag(flag_dep_id, existing_flag_dep_keys: [], new_depend
     return flag_schema_object, response_code
 
 #call to remove dependencies from flag
-def remove_dependencies_from_flag(flag_dep_id, existing_flag_dep_keys: [], rm_dependencies: [], flagging_doa: FlaggingMongo):
+def remove_dependencies_from_flag(flag_dep_id, existing_flag_dep_keys: [], rm_dependencies: [], flagging_doa: FlaggingDOA):
     flag_schema_object = None
     if flag_schema_object is None:
         if flag_dep_id is None:
