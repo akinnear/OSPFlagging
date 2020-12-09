@@ -704,11 +704,12 @@ def delete_flag_group(flag_group_id, existing_flag_groups, flagging_doa: Flaggin
                                                                        flag_group_id=flag_group_id,
                                                                        flagging_doa=flagging_doa)
         flag_group_id_object = ObjectId(flag_group_id)
+        flag_group_name = flagging_doa.get_flag_group_name(flag_group_id_object)
         removed_flag_group = flagging_doa.remove_flag_group(flag_group_id_object)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="flag group: " + flag_group_id + " deleted from database",
                                                        simple_message="flag group has been deleted",
-                                                       name=flagging_doa.get_flag_group_name(ObjectId(flag_group_id)),
+                                                       name=flag_group_name,
                                                        uuid=removed_flag_group)
         response_code = 200
     return flag_schema_object, response_code
