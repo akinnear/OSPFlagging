@@ -1,7 +1,7 @@
 import pytest
 from flask import Flask
 from handlers.FlaggingAPI import make_routes
-from app import _create_flagging_mongo
+from app import _create_flagging_doa
 import re
 from random_object_id import generate
 from flag_names.FlagService import pull_flag_logic_information
@@ -16,7 +16,7 @@ import requests
 from flagging.FlaggingNodeVisitor import determine_variables
 from pymongo import MongoClient
 from testcontainers.mongodb import MongoDbContainer
-from flag_data.FlaggingMongo import FlaggingMongo
+from flag_data.FlaggingDOA import FlaggingDOA
 from integration_tests import MONGO_DOCKER_IMAGE
 from front_end.TransferFlagLogicInformation import TransferFlagLogicInformation, _convert_FLI_to_TFLI, \
     _convert_TFLI_to_FLI
@@ -26,8 +26,8 @@ def _get_connection_string(container):
     return "mongodb://test:test@localhost:"+container.get_exposed_port(27017)
 
 
-def _create_flagging_mongo(container):
-    return FlaggingMongo(_get_connection_string(container))
+def _create_flagging_doa(container):
+    return FlaggingDOA(_get_connection_string(container))
 
 
 def _create_mongo_client(container):
@@ -98,8 +98,8 @@ else:
 def client():
     app = Flask(__name__)
     app.config["TESTING"] = True
-    flagging_mongo = _create_flagging_mongo()
-    make_routes(app, flagging_mongo)
+    flagging_doa = _create_flagging_doa()
+    make_routes(app, flagging_doa)
     client = app.test_client()
     return client
 
@@ -126,8 +126,8 @@ def test_flag_home(client):
     app = Flask(__name__)
     app.config["TESTING"] = True
     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
-            _create_flagging_mongo(container) as flagging_mongo:
-        make_routes(app, flagging_mongo)
+            _create_flagging_doa(container) as flagging_doa:
+        make_routes(app, flagging_doa)
         client = app.test_client()
         flag_deletion_url = "flag/delete_all"
         response = client.delete(flag_deletion_url)
@@ -3513,15 +3513,15 @@ def _get_connection_string(container):
     return "mongodb://test:test@localhost:"+container.get_exposed_port(27017)
 
 
-def _create_flagging_mongo(container):
+def _create_flagging_doa(container):
     return FlaggingMongo(_get_connection_string(container))
 
 def test_simple_create():
     app = Flask(__name__)
     app.config["TESTING"] = True
     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
-            _create_flagging_mongo(container) as flagging_mongo:
-        make_routes(app, flagging_mongo)
+            _create_flagging_doa(container) as flagging_doa:
+        make_routes(app, flagging_doa)
         client = app.test_client()
         flag_deletion_url = "flag/delete_all"
         response = client.delete(flag_deletion_url)

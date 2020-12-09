@@ -1,7 +1,7 @@
 import pytest
 from flask import Flask
 from handlers.FlaggingAPI import make_routes
-from app import _create_flagging_mongo
+from app import _create_flagging_doa
 import re
 from random_object_id import generate
 from flag_names.FlagService import pull_flag_logic_information
@@ -25,8 +25,8 @@ from front_end.FlaggingSchemaInformation import FlaggingSchemaInformation
 def client():
     app = Flask(__name__)
     app.config["TESTING"] = True
-    flagging_mongo = _create_flagging_mongo()
-    make_routes(app, flagging_mongo)
+    flagging_doa = _create_flagging_doa()
+    make_routes(app, flagging_doa)
     client = app.test_client()
     return client
 
@@ -131,7 +131,7 @@ def test_create_flag_missing_payload(client):
 
 #TODO
 @mock.patch("handlers.FlaggingAPI._convert_TFLI_to_FLI", return_value=FlagLogicInformation(), autospec=True)
-@mock.patch("handlers.FlaggingAPI.request.get_json", _create_flagging_mongo=_convert_FLI_to_TFLI(FlagLogicInformation()))
+@mock.patch("handlers.FlaggingAPI.request.get_json", _create_flagging_doa=_convert_FLI_to_TFLI(FlagLogicInformation()))
 def test_create_flag_missing_name(mock_request, mock_payload, client):
     url = "flag/create"
     response = client.post(url)
