@@ -2,20 +2,10 @@ import pytest
 from flask import Flask
 from handlers.FlaggingAPI import make_routes
 from app import _create_flagging_dao
-import re
-from random_object_id import generate
-from flag_names.FlagService import pull_flag_logic_information
 from flagging.FlagLogicInformation import FlagLogicInformation
-from flagging.FlaggingNodeVisitor import CodeLocation
-from flagging.VariableInformation import VariableInformation
-from flagging.ModuleInformation import ModuleInformation
 from flagging.TypeValidationResults import TypeValidationResults
-from flagging.ErrorInformation import ErrorInformation
 from unittest import mock
-from flagging.FlaggingNodeVisitor import determine_variables
 from front_end.TransferFlagLogicInformation import _convert_FLI_to_TFLI
-import requests
-import json
 from bson.objectid import ObjectId
 from front_end.FlaggingSchemaInformation import FlaggingSchemaInformation
 
