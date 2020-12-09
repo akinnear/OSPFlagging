@@ -135,7 +135,7 @@ docs = ["sphinx", "pallets-sphinx-themes", "sphinxcontrib-log-cabinet", "sphinx-
 dotenv = ["python-dotenv"]
 
 [[package]]
-category = "main"
+category = "dev"
 description = "PyMongo support for Flask applications"
 name = "flask-pymongo"
 optional = false
@@ -379,7 +379,7 @@ python-versions = "*"
 version = "227"
 
 [[package]]
-category = "main"
+category = "dev"
 description = "Generate a random MongoDB ObjectId."
 name = "random-object-id"
 optional = false
@@ -543,7 +543,7 @@ test = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 
 [metadata]
-content-hash = "4fd99868f51f870fa4226ba83303378c08796b896573be84b6bd31c3d2879360"
+content-hash = "042593f26eea9c4506dc107aa5b628e06391f1fa19871835a47cf3a93526e320"
 python-versions = "^3.8.3"
 
 [metadata.files]
