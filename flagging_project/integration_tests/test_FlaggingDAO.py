@@ -8,7 +8,6 @@ from flagging.VariableInformation import VariableInformation
 from flagging.ModuleInformation import ModuleInformation
 from flagging.ErrorInformation import ErrorInformation
 import datetime
-import json
 import pandas as pd
 
 

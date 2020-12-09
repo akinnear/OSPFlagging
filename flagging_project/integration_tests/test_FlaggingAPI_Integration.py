@@ -34,44 +34,7 @@ def _create_mongo_client(container):
     return MongoClient(_get_connection_string(container))
 
 
-##################
-# do not need to use requests module, just used test client
-# json payload can be sent with test client as such
-#
-#     flag_logic ="""\
-# if FF1 > 10:
-#     return True
-# else:
-#     return False"""
-#     flag_logic_info = determine_variables(flag_logic)
-#     payload = _convert_FLI_to_TFLI(flag_logic_info)
-#     response = client.post("flag/create_flag/x/Flag1A", data=json.dumps(payload),
-#                            content_type='application/json')
 
-# see below example for full content
-# def test_simple_request_post(client):
-#     # delete all flags
-#     flag_deletion_url = "flag/delete_all_flags"
-#     response = client.delete(flag_deletion_url)
-#     assert response.status_code == 200
-#
-#     flag_logic ="""\
-# if FF1 > 10:
-#     return True
-# else:
-#     return False"""
-#     flag_logic_info = determine_variables(flag_logic)
-#     payload = _convert_FLI_to_TFLI(flag_logic_info)
-#     response = client.post("flag/create_flag/x/Flag1A", data=json.dumps(payload),
-#                            content_type='application/json')
-#     # url = "http://localhost:5000/flag/create_flag/x/Flag1A"
-#     #
-#     # r = requests.post(url, data=json.dumps(payload))
-#
-#     unpack = client.get("flag/get_flags")
-#     print("hello")
-#
-###################################################
 
 def test_simple_request_post(client):
     # delete all flags
