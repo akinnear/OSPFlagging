@@ -6,7 +6,7 @@ from flag_names.FlagService import pull_flag_names
 from flag_names.FlagGroupService import pull_flag_group_names
 from flagging.FlaggingValidation import FlaggingValidationResults
 from flagging.FlaggingNodeVisitor import CodeLocation
-from flag_data.FlaggingDOA import FlaggingDOA
+from flag_data.FlaggingDAO import FlaggingDAO
 from front_end.FlaggingValidateLogic import validate_logic, validate_cyclical_logic
 from flagging.FlagErrorInformation import FlagErrorInformation
 from flagging.TypeValidationResults import TypeValidationResults
@@ -35,13 +35,13 @@ from front_end.ReferencedFlag import ReferencedFlag, _convert_RF_to_TRF
 
 
 #FLAG
-def get_all_flags(flagging_doa: FlaggingDOA):
-    return flagging_doa.get_flags(), 200
+def get_all_flags(flagging_dao: FlaggingDAO):
+    return flagging_dao.get_flags(), 200
 
-def get_all_flag_ids(flagging_doa: FlaggingDOA):
-    return flagging_doa.get_flag_ids(), 200
+def get_all_flag_ids(flagging_dao: FlaggingDAO):
+    return flagging_dao.get_flag_ids(), 200
 
-def get_specific_flag(flag_id, existing_flags: [], flagging_doa: FlaggingDOA):
+def get_specific_flag(flag_id, existing_flags: [], flagging_dao: FlaggingDAO):
     flag_schema_object = None
     if flag_schema_object is None:
         if flag_id is None:
@@ -64,9 +64,9 @@ def get_specific_flag(flag_id, existing_flags: [], flagging_doa: FlaggingDOA):
             response_code = 400
     if flag_schema_object is None:
         flag_id_object = ObjectId(flag_id)
-        specific_flag_id = flagging_doa.get_specific_flag(flag_id_object)
-        specific_flag_logic = flagging_doa.get_flag_logic_information(flag_id_object)
-        specific_flag_name = flagging_doa.get_flag_name(flag_id_object)
+        specific_flag_id = flagging_dao.get_specific_flag(flag_id_object)
+        specific_flag_logic = flagging_dao.get_flag_logic_information(flag_id_object)
+        specific_flag_name = flagging_dao.get_flag_name(flag_id_object)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message='found flag id',
                                                        simple_message="found flag id",
@@ -76,7 +76,7 @@ def get_specific_flag(flag_id, existing_flags: [], flagging_doa: FlaggingDOA):
         response_code = 200
     return flag_schema_object, response_code
 
-def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, flagging_doa:FlaggingDOA):
+def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, flagging_dao:FlaggingDAO):
     flag_schema_object = None
     #store flag name and flag logic in db
 
@@ -88,18 +88,18 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
                                                            simple_message="flag name not specified")
             response_code = 400
     if flag_schema_object is None:
-        flag_validation = validate_logic(flag_name, flag_logic_information, flagging_doa)
+        flag_validation = validate_logic(flag_name, flag_logic_information, flagging_dao)
         if flag_validation.errors != {} or flag_validation.mypy_errors != {}:
             
             #test for transfer
             transfer_flag_logic_information = _convert_FLI_to_TFLI(flag_logic_information)
-            add_flag_id = flagging_doa.add_flag({flag_name_col_name: flag_name,
+            add_flag_id = flagging_dao.add_flag({flag_name_col_name: flag_name,
                                                    flag_logic_col_name: transfer_flag_logic_information,
                                                    referenced_flag_col_name: transfer_flag_logic_information["referenced_flags"],
                                                    flag_status_col_name: "DRAFT",
                                                    flag_error_col_name: "ERROR"})
-            specific_flag_logic = flagging_doa.get_flag_logic_information(add_flag_id)
-            specific_flag_name = flagging_doa.get_flag_name(add_flag_id)
+            specific_flag_logic = flagging_dao.get_flag_logic_information(add_flag_id)
+            specific_flag_name = flagging_dao.get_flag_name(add_flag_id)
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="error in flag logic",
                                                            simple_message="error in flag logic",
@@ -109,13 +109,13 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
             response_code = 200
     if flag_schema_object is None:
         transfer_flag_logic_information = _convert_FLI_to_TFLI(flag_logic_information)
-        add_flag_id = flagging_doa.add_flag({flag_name_col_name: flag_name,
+        add_flag_id = flagging_dao.add_flag({flag_name_col_name: flag_name,
                                                flag_logic_col_name: transfer_flag_logic_information,
                                                referenced_flag_col_name: transfer_flag_logic_information["referenced_flags"],
                                                flag_status_col_name: "PRODUCTION_READY",
                                                flag_error_col_name: ""})
-        specific_flag_logic = flagging_doa.get_flag_logic_information(add_flag_id)
-        specific_flag_name = flagging_doa.get_flag_name(add_flag_id)
+        specific_flag_logic = flagging_dao.get_flag_logic_information(add_flag_id)
+        specific_flag_name = flagging_dao.get_flag_name(add_flag_id)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="new flag created",
                                                        simple_message="new flag created",
@@ -126,7 +126,7 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
     return flag_schema_object, response_code
 
 #A call to duplicate a flag provided a new name and UUID
-def duplicate_flag(original_flag_id, existing_flags, flagging_doa: FlaggingDOA):
+def duplicate_flag(original_flag_id, existing_flags, flagging_dao: FlaggingDAO):
     flag_schema_object = None
     #check that original flag already exists
     if original_flag_id is None:
@@ -150,9 +150,9 @@ def duplicate_flag(original_flag_id, existing_flags, flagging_doa: FlaggingDOA):
             response_code = 400
     if flag_schema_object is None:
         flag_id_object = ObjectId(original_flag_id)
-        duplicated_flag_new_id = flagging_doa.duplicate_flag(flag_id_object)
-        specific_flag_logic = flagging_doa.get_flag_logic_information(duplicated_flag_new_id)
-        specific_flag_name = flagging_doa.get_flag_name(duplicated_flag_new_id)
+        duplicated_flag_new_id = flagging_dao.duplicate_flag(flag_id_object)
+        specific_flag_logic = flagging_dao.get_flag_logic_information(duplicated_flag_new_id)
+        specific_flag_name = flagging_dao.get_flag_name(duplicated_flag_new_id)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message=str(original_flag_id) + " has been duplicated",
                                                        simple_message="flag has been duplicated",
@@ -163,7 +163,7 @@ def duplicate_flag(original_flag_id, existing_flags, flagging_doa: FlaggingDOA):
     return flag_schema_object, response_code
 
 #One call for flag name
-def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, flagging_doa: FlaggingDOA):
+def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, flagging_dao: FlaggingDAO):
     flag_schema_object = None
     if original_flag_id is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
@@ -193,11 +193,11 @@ def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, 
                                                            simple_message="error updating flag name")
             response_code = 400
     if flag_schema_object is None:
-        flag_group_ids = flagging_doa.get_flag_group_ids()
+        flag_group_ids = flagging_dao.get_flag_group_ids()
         flags_in_flag_group = dict()
         if len(flag_group_ids) > 0:
             for flag_group_id in flag_group_ids:
-                flags_in_flag_group_schema, response_code_get_flags = get_flag_group_flags(str(flag_group_id), flag_group_ids, flagging_doa)
+                flags_in_flag_group_schema, response_code_get_flags = get_flag_group_flags(str(flag_group_id), flag_group_ids, flagging_dao)
                 flags_in_flag_group_x = flags_in_flag_group_schema.logic
                 if ObjectId(original_flag_id) in flags_in_flag_group_x:
                     flags_in_flag_group[flag_group_id] = flags_in_flag_group_x
@@ -208,7 +208,7 @@ def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, 
                                                                uuid=original_flag_id)
                 response_code = 405
     if flag_schema_object is None:
-        og_flag_name = flagging_doa.get_flag_name(ObjectId(original_flag_id))
+        og_flag_name = flagging_dao.get_flag_name(ObjectId(original_flag_id))
         if og_flag_name == new_flag_name:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="flag id: " + original_flag_id + " with name: " + og_flag_name + " must be given a new unique name",
@@ -218,10 +218,10 @@ def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, 
             response_code = 405
     if flag_schema_object is None:
         original_flag_id_object = ObjectId(original_flag_id)
-        new_flag_id = flagging_doa.update_flag(flag=original_flag_id_object, update_value=new_flag_name,
+        new_flag_id = flagging_dao.update_flag(flag=original_flag_id_object, update_value=new_flag_name,
                                                  update_column="FLAG_NAME")
-        specific_flag_logic = flagging_doa.get_flag_logic_information(new_flag_id)
-        specific_flag_name = flagging_doa.get_flag_name(new_flag_id)
+        specific_flag_logic = flagging_dao.get_flag_logic_information(new_flag_id)
+        specific_flag_name = flagging_dao.get_flag_name(new_flag_id)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="original flag " + str(original_flag_id) + " has been renamed " + new_flag_name,
                                                        simple_message="flag has been renamed",
@@ -232,7 +232,7 @@ def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, 
     return flag_schema_object, response_code
 
 #Another call for flag logic
-def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation(), existing_flags, flagging_doa:FlaggingDOA):
+def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation(), existing_flags, flagging_dao:FlaggingDAO):
     flag_schema_object = None
     if flag_schema_object is None:
         if flag_id is None:
@@ -254,12 +254,12 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                                                            simple_message="error in updating flag logic")
             response_code = 400
     if flag_schema_object is None:
-        flag_group_ids = flagging_doa.get_flag_group_ids()
+        flag_group_ids = flagging_dao.get_flag_group_ids()
         flags_in_flag_group = dict()
         if len(flag_group_ids) > 0:
             for flag_group_id in flag_group_ids:
                 flags_in_flag_group_schema, response_code_get_flags = get_flag_group_flags(str(flag_group_id),
-                                                                                           flag_group_ids, flagging_doa)
+                                                                                           flag_group_ids, flagging_dao)
                 flags_in_flag_group_x = flags_in_flag_group_schema.logic
                 if ObjectId(flag_id) in flags_in_flag_group_x:
                     flags_in_flag_group[flag_group_id] = flags_in_flag_group_x
@@ -272,45 +272,45 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                 response_code = 405
 
     if flag_schema_object is None:
-        validation_results = validate_logic(flag_id, new_flag_logic_information, flagging_doa)
+        validation_results = validate_logic(flag_id, new_flag_logic_information, flagging_dao)
         if validation_results.errors != {} or validation_results.mypy_errors != {}:
             #check if flag is part of flag group
-            flag_group_ids = flagging_doa.get_flag_group_ids()
+            flag_group_ids = flagging_dao.get_flag_group_ids()
             flag_in_flag_group_bool = False
             if len(flag_group_ids) > 0:
                 for flag_group_idx in flag_group_ids:
-                    flags_in_flag_group_idx = flagging_doa.get_flag_group_flag(flag_group_idx)
+                    flags_in_flag_group_idx = flagging_dao.get_flag_group_flag(flag_group_idx)
                     if ObjectId(flag_id) in flags_in_flag_group_x:
                         flag_in_flag_group_bool = True
                         flag_group_id = flag_group_idx
                         # delete previous dep entry
-                        flagging_doa.remove_specific_flag_dependencies_via_flag_id_and_flag_group_id(ObjectId(flag_id),ObjectId(flag_group_id))
+                        flagging_dao.remove_specific_flag_dependencies_via_flag_id_and_flag_group_id(ObjectId(flag_id),ObjectId(flag_group_id))
 
             if flag_in_flag_group_bool:
                 #create new entry flag dep entry for flag_id in flag_group_id
-                flag_name = flagging_doa.get_flag_name(ObjectId(flag_group_id))
-                flag_ids = flagging_doa.get_flag_ids()
-                existing_flag_dep_keys = flagging_doa.get_flag_dependencies_ids()
+                flag_name = flagging_dao.get_flag_name(ObjectId(flag_group_id))
+                flag_ids = flagging_dao.get_flag_ids()
+                existing_flag_dep_keys = flagging_dao.get_flag_dependencies_ids()
                 flag_schema_object_flag_dep, fdi_rc = create_flag_dependency(flag_id=flag_id,
                                                                              flag_name=flag_name,
                                                                              flag_group_id=flag_group_id,
                                                                              existing_flag_ids=flag_ids,
                                                                              existing_flag_dep_keys=existing_flag_dep_keys,
                                                                              flag_dependencies=[],
-                                                                             flagging_doa=flagging_doa)
+                                                                             flagging_dao=flagging_dao)
 
                 #add new referenced flags to flag dependeny entry
                 #check for cyclical errors
-                flag_set = flagging_doa.get_flag_group_flag()
+                flag_set = flagging_dao.get_flag_group_flag()
                 ref_flag_dict = {}
                 for flag in flag_set:
                     ref_flag_dict[flag] = {CodeLocation(None, None)}
-                referenced_flags_names = [x["name"] for x in flagging_doa.get_flag_logic_information(ObjectId(flag_id))]
+                referenced_flags_names = [x["name"] for x in flagging_dao.get_flag_logic_information(ObjectId(flag_id))]
                 ref_flag_dict = {}
                 for rf_name in referenced_flags_names:
                     ref_flag_dict[rf_name] = {CodeLocation(None, None)}
                 flag_logic_cyclical_check = FlagLogicInformation(referenced_flags=ref_flag_dict)
-                validation_results = validate_cyclical_logic(ObjectId(flag_id), flag_group_id, flag_logic_cyclical_check, flagging_doa)
+                validation_results = validate_cyclical_logic(ObjectId(flag_id), flag_group_id, flag_logic_cyclical_check, flagging_dao)
                 flagging_message = ""
                 if len(validation_results.errors) != 0:
                     cyclical_errors = []
@@ -325,7 +325,7 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                             flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
                                 ", ".join(str(x) for x in cyclical_errors))
                         #update flag group that flag is part of with cyclcial error
-                        flagging_doa.update_flag_group(ObjectId(flag_group_id), "CYCLICAL ERROR", flag_group_error_col_name)
+                        flagging_dao.update_flag_group(ObjectId(flag_group_id), "CYCLICAL ERROR", flag_group_error_col_name)
 
                 # get referenced flags from flag logic information, only have to do if flag in flag group
                 if len(new_flag_logic_information.referenced_flags) > 0:
@@ -335,25 +335,25 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                         referenced_flags.append(ReferencedFlag(flag_name=x, flag_group_id=flag_group_id))
 
                     #update existing flag dep keys
-                    existing_flag_dep_keys = flagging_doa.get_flag_dependencies_ids()
+                    existing_flag_dep_keys = flagging_dao.get_flag_dependencies_ids()
                     updated_flag_dep_id, ufdi_rc = add_dependencies_to_flag(flag_dep_id=str(flag_schema_object_flag_dep.uuid),
                                                                                existing_flag_dep_keys=existing_flag_dep_keys,
                                                                                new_dependencies=referenced_flags,
-                                                                               flagging_doa=flagging_doa)
+                                                                               flagging_dao=flagging_dao)
 
             #update flag
             new_transfer_flag_logic_information = _convert_FLI_to_TFLI(new_flag_logic_information)
             flag_id_object = ObjectId(flag_id)
-            updated_flag_id = flagging_doa.update_flag(flag=flag_id_object, update_value=new_transfer_flag_logic_information,
+            updated_flag_id = flagging_dao.update_flag(flag=flag_id_object, update_value=new_transfer_flag_logic_information,
                                                          update_column=flag_logic_col_name)
-            updated_flag_id = flagging_doa.update_flag(flag=flag_id_object,
+            updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
                                                          update_value="DRAFT",
                                                          update_column=flag_status_col_name)
-            updated_flag_id = flagging_doa.update_flag(flag=flag_id_object,
+            updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
                                                          update_value="ERROR",
                                                          update_column=flag_error_col_name)
-            specific_flag_name = flagging_doa.get_flag_name(updated_flag_id)
-            specific_flag_logic = flagging_doa.get_flag_logic_information(updated_flag_id)
+            specific_flag_name = flagging_dao.get_flag_name(updated_flag_id)
+            specific_flag_logic = flagging_dao.get_flag_logic_information(updated_flag_id)
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="error in flag logic",
                                                            simple_message="new logic updated but has errors",
@@ -363,44 +363,44 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
             response_code = 200
         else:
             # check if flag is part of flag group
-            flag_group_ids = flagging_doa.get_flag_group_ids()
+            flag_group_ids = flagging_dao.get_flag_group_ids()
             flag_in_flag_group_bool = False
             if len(flag_group_ids) > 0:
                 for flag_group_idx in flag_group_ids:
-                    flags_in_flag_group_idx = flagging_doa.get_flag_group_flag(flag_group_idx)
+                    flags_in_flag_group_idx = flagging_dao.get_flag_group_flag(flag_group_idx)
                     if ObjectId(flag_id) in flags_in_flag_group_x:
                         flag_in_flag_group_bool = True
                         flag_group_id = flag_group_idx
                         # delete previous dep entry
-                        flagging_doa.remove_specific_flag_dependencies_via_flag_id_and_flag_group_id(ObjectId(flag_id),ObjectId(flag_group_id))
+                        flagging_dao.remove_specific_flag_dependencies_via_flag_id_and_flag_group_id(ObjectId(flag_id),ObjectId(flag_group_id))
 
             if flag_in_flag_group_bool:
                 # create new entry flag dep entry for flag_id in flag_group_id
-                flag_name = flagging_doa.get_flag_name(ObjectId(flag_group_id))
-                flag_ids = flagging_doa.get_flag_ids()
-                existing_flag_dep_keys = flagging_doa.get_flag_dependencies_ids()
+                flag_name = flagging_dao.get_flag_name(ObjectId(flag_group_id))
+                flag_ids = flagging_dao.get_flag_ids()
+                existing_flag_dep_keys = flagging_dao.get_flag_dependencies_ids()
                 flag_schema_object_flag_dep, fdi_rc = create_flag_dependency(flag_id=flag_id,
                                                                              flag_name=flag_name,
                                                                              flag_group_id=flag_group_id,
                                                                              existing_flag_ids=flag_ids,
                                                                              existing_flag_dep_keys=existing_flag_dep_keys,
                                                                              flag_dependencies=[],
-                                                                             flagging_doa=flagging_doa)
+                                                                             flagging_dao=flagging_dao)
 
                 # add new referenced flags to flag dependeny entry
                 # check for cyclical errors
-                flag_set = flagging_doa.get_flag_group_flag()
+                flag_set = flagging_dao.get_flag_group_flag()
                 ref_flag_dict = {}
                 for flag in flag_set:
                     ref_flag_dict[flag] = {CodeLocation(None, None)}
                 referenced_flags_names = [x["name"] for x in
-                                          flagging_doa.get_flag_logic_information(ObjectId(flag_id))]
+                                          flagging_dao.get_flag_logic_information(ObjectId(flag_id))]
                 ref_flag_dict = {}
                 for rf_name in referenced_flags_names:
                     ref_flag_dict[rf_name] = {CodeLocation(None, None)}
                 flag_logic_cyclical_check = FlagLogicInformation(referenced_flags=ref_flag_dict)
                 validation_results = validate_cyclical_logic(ObjectId(flag_id), flag_group_id,
-                                                             flag_logic_cyclical_check, flagging_doa)
+                                                             flag_logic_cyclical_check, flagging_dao)
                 flagging_message = ""
                 if len(validation_results.errors) != 0:
                     cyclical_errors = []
@@ -415,7 +415,7 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                             flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
                                 ", ".join(str(x) for x in cyclical_errors))
                         # update flag group that flag is part of with cyclcial error
-                        flagging_doa.update_flag_group(ObjectId(flag_group_id), "CYCLICAL ERROR",
+                        flagging_dao.update_flag_group(ObjectId(flag_group_id), "CYCLICAL ERROR",
                                                          flag_group_error_col_name)
 
                 # get referenced flags from flag logic information
@@ -426,26 +426,26 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                         referenced_flags.append(ReferencedFlag(flag_name=x, flag_group_id=flag_group_id))
 
                     # update existing flag dep keys
-                    existing_flag_dep_keys = flagging_doa.get_flag_dependencies_ids()
+                    existing_flag_dep_keys = flagging_dao.get_flag_dependencies_ids()
                     updated_flag_dep_id, ufdi_rc = add_dependencies_to_flag(
                         flag_dep_id=str(flag_schema_object_flag_dep.uuid),
                         existing_flag_dep_keys=existing_flag_dep_keys,
                         new_dependencies=referenced_flags,
-                        flagging_doa=flagging_doa)
+                        flagging_dao=flagging_dao)
 
             # update flag
             new_transfer_flag_logic_information = _convert_FLI_to_TFLI(new_flag_logic_information)
-            updated_flag_id = flagging_doa.update_flag(flag=flag_id, update_value=new_transfer_flag_logic_information,
+            updated_flag_id = flagging_dao.update_flag(flag=flag_id, update_value=new_transfer_flag_logic_information,
                                                          update_column=flag_logic_col_name)
             flag_id_object = ObjectId(flag_id)
-            updated_flag_id = flagging_doa.update_flag(flag=flag_id_object,
+            updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
                                                          update_value="PRODUCTION READY",
                                                          update_column=flag_status_col_name)
-            updated_flag_id = flagging_doa.update_flag(flag=flag_id_object,
+            updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
                                                          update_value="",
                                                          update_column=flag_error_col_name)
-            specific_flag_logic = flagging_doa.get_flag_logic_information(updated_flag_id)
-            specific_flag_name = flagging_doa.get_flag_name(updated_flag_id)
+            specific_flag_logic = flagging_dao.get_flag_logic_information(updated_flag_id)
+            specific_flag_name = flagging_dao.get_flag_name(updated_flag_id)
             flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                            message="logic for flag " + str(
                                                                updated_flag_id) + " has been updated",
@@ -457,7 +457,7 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
     return flag_schema_object, response_code
 
 #A call to delete a flag provided a UUID, return true/false
-def delete_flag(flag_id, existing_flags, flagging_doa: FlaggingDOA):
+def delete_flag(flag_id, existing_flags, flagging_dao: FlaggingDAO):
     flag_schema_object = None
     if flag_id is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
@@ -482,12 +482,12 @@ def delete_flag(flag_id, existing_flags, flagging_doa: FlaggingDOA):
 
 
     if flag_schema_object is None:
-        flag_group_ids = flagging_doa.get_flag_group_ids()
+        flag_group_ids = flagging_dao.get_flag_group_ids()
         flags_in_flag_group = dict()
         if len(flag_group_ids) > 0:
             for flag_group_id in flag_group_ids:
                 flags_in_flag_group_schema, response_code_get_flags = get_flag_group_flags(str(flag_group_id),
-                                                                                           flag_group_ids, flagging_doa)
+                                                                                           flag_group_ids, flagging_dao)
                 flags_in_flag_group_x = flags_in_flag_group_schema.logic
                 if ObjectId(flag_id) in flags_in_flag_group_x:
                     flags_in_flag_group[flag_group_id] = flags_in_flag_group_x
@@ -502,10 +502,10 @@ def delete_flag(flag_id, existing_flags, flagging_doa: FlaggingDOA):
         #delete flag from flag dependency set
         flag_schema_object_flag_dep, fsofd_rc = delete_flag_dependency(flag_id=flag_id,
                                                                        flag_group_id=None,
-                                                                       flagging_doa=flagging_doa)
+                                                                       flagging_dao=flagging_dao)
         flag_id_object = ObjectId(flag_id)
-        specific_flag_name = flagging_doa.get_flag_name(flag_id_object)
-        removed_flag = flagging_doa.remove_flag(flag=flag_id_object)
+        specific_flag_name = flagging_dao.get_flag_name(flag_id_object)
+        removed_flag = flagging_dao.remove_flag(flag=flag_id_object)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message=str(flag_id) + " has been deleted",
                                                        simple_message="flag has been deleted",
@@ -515,7 +515,7 @@ def delete_flag(flag_id, existing_flags, flagging_doa: FlaggingDOA):
     return flag_schema_object, response_code
 
 #A call to move a flag to production, must not have any errors
-def move_flag_to_production(flag_id, existing_flags, flagging_doa):
+def move_flag_to_production(flag_id, existing_flags, flagging_dao):
     flag_schema_object = None
     if flag_schema_object is None:
         if flag_id is None or "":
@@ -540,30 +540,30 @@ def move_flag_to_production(flag_id, existing_flags, flagging_doa):
 
     if flag_schema_object is None:
         #only flags with no errors can be moved to production
-        flag_error = flagging_doa.get_specific_flag_error(ObjectId(flag_id))
+        flag_error = flagging_dao.get_specific_flag_error(ObjectId(flag_id))
         if flag_error != "":
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="flag can not be moved to production due to flag errors",
                                                            simple_message="flag can not be moved to production due to flag errors",
                                                            uuid=ObjectId(flag_id),
-                                                           name=flagging_doa.get_flag_name(ObjectId(flag_id)))
+                                                           name=flagging_dao.get_flag_name(ObjectId(flag_id)))
 
             response_code = 405
     if flag_schema_object is None:
-        updated_flag_id = flagging_doa.update_flag(flag=ObjectId(flag_id),
+        updated_flag_id = flagging_dao.update_flag(flag=ObjectId(flag_id),
                                                      update_value="PRODUCTION",
                                                      update_column=flag_status_col_name)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="flag has been moved to production",
                                                        simple_message="flag has been moved to production",
                                                        uuid=ObjectId(flag_id),
-                                                       name=flagging_doa.get_flag_name(ObjectId(flag_id)))
+                                                       name=flagging_dao.get_flag_name(ObjectId(flag_id)))
         response_code = 200
     return flag_schema_object, response_code
 
 #A call to delete all
-def delete_all_flags(flagging_doa):
-    flagging_doa.delete_all_flags()
+def delete_all_flags(flagging_dao):
+    flagging_dao.delete_all_flags()
     flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                    message="all flags have been deleted",
                                                    simple_message="all flags have been deleted")
@@ -571,22 +571,22 @@ def delete_all_flags(flagging_doa):
 
 #FLAG_GROUP
 #get flag_groups
-def get_flag_groups(flagging_doa: FlaggingDOA):
-    return flagging_doa.get_flag_groups(), 200
+def get_flag_groups(flagging_dao: FlaggingDAO):
+    return flagging_dao.get_flag_groups(), 200
 
-def get_flag_group_ids(flagging_doa: FlaggingDOA):
-    return flagging_doa.get_flag_group_ids(), 200
+def get_flag_group_ids(flagging_dao: FlaggingDAO):
+    return flagging_dao.get_flag_group_ids(), 200
 
-def get_flag_group_names(flagging_doa: FlaggingDOA):
-    return flagging_doa.get_flag_group_names(), 200
+def get_flag_group_names(flagging_dao: FlaggingDAO):
+    return flagging_dao.get_flag_group_names(), 200
 
-def get_flag_names_in_flag_group(flag_group_id, flagging_doa):
-    return flagging_doa.get_flag_names_from_flag_group(flag_group_id), 200
+def get_flag_names_in_flag_group(flag_group_id, flagging_dao):
+    return flagging_dao.get_flag_names_from_flag_group(flag_group_id), 200
 
-# def get_flag_ids_in_flag_group(flag_group_id, flagging_doa):
-#     return flagging_doa.get_flag_group_flag(flag_group_id), 200
+# def get_flag_ids_in_flag_group(flag_group_id, flagging_dao):
+#     return flagging_dao.get_flag_group_flag(flag_group_id), 200
 
-def get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_doa):
+def get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_dao):
     flag_schema_object = None
     if flag_group_id is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
@@ -607,18 +607,18 @@ def get_flag_group_flags(flag_group_id, existing_flag_groups, flagging_doa):
                                                            simple_message="error pulling flags for flag group")
             response_code = 400
     if flag_schema_object is None:
-        flags_in_flag_group = flagging_doa.get_flag_group_flag(ObjectId(flag_group_id))
+        flags_in_flag_group = flagging_dao.get_flag_group_flag(ObjectId(flag_group_id))
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        logic=[str(x) for x in flags_in_flag_group],
                                                        message="return flags for flag group: " + flag_group_id,
                                                        simple_message="return flags for flag group",
                                                        uuid=ObjectId(flag_group_id),
-                                                       name=flagging_doa.get_flag_group_name(ObjectId(flag_group_id)))
+                                                       name=flagging_dao.get_flag_group_name(ObjectId(flag_group_id)))
         response_code = 200
     return flag_schema_object, response_code
 
 #get specific flag_group
-def get_specific_flag_group(flag_group_id:str, existing_flag_groups:[], flagging_doa:FlaggingDOA):
+def get_specific_flag_group(flag_group_id:str, existing_flag_groups:[], flagging_dao:FlaggingDAO):
     flag_schema_object = None
     if flag_group_id is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
@@ -639,9 +639,9 @@ def get_specific_flag_group(flag_group_id:str, existing_flag_groups:[], flagging
             response_code = 400
     if flag_schema_object is None:
         flag_group_id_object = ObjectId(flag_group_id)
-        found_flag_group_id = flagging_doa.get_specific_flag_group(flag_group_id_object)
-        found_flag_group_name = flagging_doa.get_flag_group_name(flag_group_id_object)
-        flags_in_flag_group = flagging_doa.get_flag_group_flag(flag_group_id_object)
+        found_flag_group_id = flagging_dao.get_specific_flag_group(flag_group_id_object)
+        found_flag_group_name = flagging_dao.get_flag_group_name(flag_group_id_object)
+        flags_in_flag_group = flagging_dao.get_flag_group_flag(flag_group_id_object)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="found flag group id: " + flag_group_id,
                                                        simple_message="found flag group id",
@@ -652,7 +652,7 @@ def get_specific_flag_group(flag_group_id:str, existing_flag_groups:[], flagging
     return flag_schema_object, response_code
 
 #A call to create a named flag group, returns a UUID, name cannot be empty if so error
-def create_flag_group(flag_group_name: str, existing_flag_groups, flagging_doa: FlaggingDOA):
+def create_flag_group(flag_group_name: str, existing_flag_groups, flagging_dao: FlaggingDAO):
     if flag_group_name is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="unique flag group name must be specified",
@@ -665,7 +665,7 @@ def create_flag_group(flag_group_name: str, existing_flag_groups, flagging_doa: 
                                                        name=flag_group_name)
         response_code = 404
     else:
-        new_flag_group_id = flagging_doa.add_flag_group({flag_group_name_col_name: flag_group_name,
+        new_flag_group_id = flagging_dao.add_flag_group({flag_group_name_col_name: flag_group_name,
                                                flag_group_flags_col_name: dict(),
                                                flag_group_status_col_name: "PRODUCTION_READY",
                                                            flag_group_error_col_name: ""})
@@ -678,7 +678,7 @@ def create_flag_group(flag_group_name: str, existing_flag_groups, flagging_doa: 
     return flag_schema_object, response_code
 
 #A call to delete a flag group provided a UUID, return true/false
-def delete_flag_group(flag_group_id, existing_flag_groups, flagging_doa: FlaggingDOA):
+def delete_flag_group(flag_group_id, existing_flag_groups, flagging_dao: FlaggingDAO):
     flag_schema_object = None
     if flag_group_id is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
@@ -702,10 +702,10 @@ def delete_flag_group(flag_group_id, existing_flag_groups, flagging_doa: Flaggin
         #remove flag deps for group
         flag_schema_object_flag_dep, fsofd_rc = delete_flag_dependency(flag_id=None,
                                                                        flag_group_id=flag_group_id,
-                                                                       flagging_doa=flagging_doa)
+                                                                       flagging_dao=flagging_dao)
         flag_group_id_object = ObjectId(flag_group_id)
-        flag_group_name = flagging_doa.get_flag_group_name(flag_group_id_object)
-        removed_flag_group = flagging_doa.remove_flag_group(flag_group_id_object)
+        flag_group_name = flagging_dao.get_flag_group_name(flag_group_id_object)
+        removed_flag_group = flagging_dao.remove_flag_group(flag_group_id_object)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="flag group: " + flag_group_id + " deleted from database",
                                                        simple_message="flag group has been deleted",
@@ -719,7 +719,7 @@ def delete_flag_group(flag_group_id, existing_flag_groups, flagging_doa: Flaggin
 # in the group such as missing and cyclic flags
 
 #A call to add flags to a group provided a UUID for the group and UUIDs for the flags to add
-def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], existing_flag_groups, flags_in_flag_group, flagging_doa: FlaggingDOA):
+def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], existing_flag_groups, flags_in_flag_group, flagging_dao: FlaggingDAO):
     #for each new_flag in new_flags, check to see if flag exists already
     #if flag does not exist, call add method
 
@@ -767,7 +767,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                            message="error adding flag to flag group: " + flag_group_id + ", error converting flag id to ObjectId type",
                                                            simple_message="error adding flag to flag group",
                                                            uuid=ObjectId(flag_group_id),
-                                                           name=flagging_doa.get_flag_group_name(ObjectId(flag_group_id)))
+                                                           name=flagging_dao.get_flag_group_name(ObjectId(flag_group_id)))
             response_code = 400
     if flag_schema_object is None:
         missing_flags = []
@@ -788,13 +788,13 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
             for flag in flag_set:
                 ref_flag_dict[flag] = {CodeLocation(None, None)}
 
-            referenced_flags_names = [x["name"] for x in flagging_doa.get_flag_logic_information(new_flag)["referenced_flags"]]
+            referenced_flags_names = [x["name"] for x in flagging_dao.get_flag_logic_information(new_flag)["referenced_flags"]]
             ref_flag_dict = {}
             for rf_name in referenced_flags_names:
                 ref_flag_dict[rf_name] = {CodeLocation(None, None)}
             flag_logic_cyclical_check = FlagLogicInformation(referenced_flags=ref_flag_dict)
             validation_results = validate_cyclical_logic(ObjectId(new_flags[0]),
-                                                ObjectId(flag_group_id), flag_logic_cyclical_check, flagging_doa)
+                                                ObjectId(flag_group_id), flag_logic_cyclical_check, flagging_dao)
             if len(validation_results.errors) != 0:
                 cyclical_errors = []
                 for k, v in validation_results.errors.items():
@@ -808,18 +808,18 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                         flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
                             ", ".join(str(x) for x in cyclical_errors))
                     full_flag_set = new_flags + list(dict.fromkeys(existing_flags))
-                    flag_with_updated_deps_id = flagging_doa.update_flag_group(flag_group=ObjectId(flag_group_id),
+                    flag_with_updated_deps_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
                                                                                  update_value=full_flag_set,
                                                                                  update_column="FLAGS_IN_GROUP")
-                    flag_with_updated_deps_id = flagging_doa.update_flag_group(flag_group=ObjectId(flag_group_id),
+                    flag_with_updated_deps_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
                                                                                  update_value=flag_group_error_col_name,
                                                                                  update_column="CYCLICAL FLAG ERROR")
                     flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                                    message=flagging_message,
                                                                    simple_message="flags in flag group has been updated",
                                                                    uuid=flag_with_updated_deps_id,
-                                                                   name=flagging_doa.get_flag_group_name(flag_with_updated_deps_id),
-                                                                   logic=flagging_doa.get_flag_group_flag(ObjectId(flag_group_id)))
+                                                                   name=flagging_dao.get_flag_group_name(flag_with_updated_deps_id),
+                                                                   logic=flagging_dao.get_flag_group_flag(ObjectId(flag_group_id)))
                     response_code = 200
 
         elif len(missing_flags) != 0:
@@ -828,7 +828,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                            message="Flag(s) " + ", ".join(map(str, missing_flags)) + " do not exist",
                                                            simple_message="flag does not exist",
                                                            uuid=ObjectId(flag_group_id),
-                                                           name=flagging_doa.get_flag_group_name(ObjectId(flag_group_id)))
+                                                           name=flagging_dao.get_flag_group_name(ObjectId(flag_group_id)))
             response_code = 404
 
         elif len(duplicate_flags) != 0:
@@ -836,15 +836,15 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                            message="Flag(s) " + ", ".join(map(str, duplicate_flags)) + " already exist in flag group",
                                                            simple_message='flag already in flag group',
                                                            uuid=ObjectId(flag_group_id),
-                                                           name=flagging_doa.get_flag_group_name(ObjectId(flag_group_id)))
+                                                           name=flagging_dao.get_flag_group_name(ObjectId(flag_group_id)))
             response_code = 405
 
         if flag_schema_object is None:
             #get names of flags in flag group
             #get name of flag being added
-            flag_names_in_flag_group = flagging_doa.get_flag_names_from_flag_group(ObjectId(flag_group_id))
-            flag_name_being_added = flagging_doa.get_flag_name(ObjectId(new_flags[0]))
-            found_flag_group_name = flagging_doa.get_flag_group_name(ObjectId(flag_group_id))
+            flag_names_in_flag_group = flagging_dao.get_flag_names_from_flag_group(ObjectId(flag_group_id))
+            flag_name_being_added = flagging_dao.get_flag_name(ObjectId(new_flags[0]))
+            found_flag_group_name = flagging_dao.get_flag_group_name(ObjectId(flag_group_id))
             if flag_name_being_added in flag_names_in_flag_group:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                                message="flag: " + str(new_flags[0]) + " with name: " + flag_name_being_added + " already exists in flag group: " + flag_group_id,
@@ -855,7 +855,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
 
         if flag_schema_object is None:
             #create full valid flag logic information object
-            flag_status = flagging_doa.get_flag_status(ObjectId(new_flags[0]))
+            flag_status = flagging_dao.get_flag_status(ObjectId(new_flags[0]))
             if flag_status == "DRAFT":
 
                 #flag dependency check here
@@ -864,13 +864,13 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                     ref_flag_dict[flag] = {CodeLocation(None, None)}
 
                 referenced_flags_names = [x["name"] for x in
-                                          flagging_doa.get_flag_logic_information(new_flag)["referenced_flags"]]
+                                          flagging_dao.get_flag_logic_information(new_flag)["referenced_flags"]]
                 ref_flag_dict = {}
                 for rf_name in referenced_flags_names:
                     ref_flag_dict[rf_name] = {CodeLocation(None, None)}
                 flag_logic_cyclical_check = FlagLogicInformation(referenced_flags=ref_flag_dict)
                 validation_results = validate_cyclical_logic(ObjectId(new_flags[0]),
-                                                    ObjectId(flag_group_id), flag_logic_cyclical_check, flagging_doa)
+                                                    ObjectId(flag_group_id), flag_logic_cyclical_check, flagging_dao)
                 flagging_message = ""
                 if len(validation_results.errors) != 0:
                     cyclical_errors = []
@@ -885,7 +885,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                             flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
                                 ", ".join(str(x) for x in cyclical_errors))
                         # full_flag_set = new_flags + list(dict.fromkeys(existing_flags))
-                        # flag_with_updated_deps_id = flagging_doa.update_flag_group(flag_group=ObjectId(flag_group_id),
+                        # flag_with_updated_deps_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
                         #                                                              update_value=full_flag_set,
                         #                                                              update_column="FLAGS_IN_GROUP")
                         # flag_schema_object = FlaggingSchemaInformation(valid=False,
@@ -896,54 +896,54 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                 #
 
                 # create flag dependency data based on flag_names + flag group id
-                existing_flag_ids, rc = get_all_flag_ids(flagging_doa)
+                existing_flag_ids, rc = get_all_flag_ids(flagging_dao)
                 flag_schema_object, fli_rc = get_specific_flag(flag_id=new_flags[0],
                                                                    existing_flags=existing_flag_ids,
-                                                                   flagging_doa=flagging_doa)
+                                                                   flagging_dao=flagging_dao)
                 if len(flag_schema_object.logic["referenced_flags"]) > 0:
                     referenced_flag_names_in_flag_id = [x["name"] for x in flag_schema_object.logic["referenced_flags"]]
                     referenced_flags = []
                     for x in referenced_flag_names_in_flag_id:
                         referenced_flags.append(ReferencedFlag(flag_name=x, flag_group_id=ObjectId(flag_group_id)))
 
-                    flag_ids, firc = get_all_flag_ids(flagging_doa)
-                    existing_flag_dep_keys, efdkrc = get_flag_dep_ids(flagging_doa)
-                    flag_name = flagging_doa.get_flag_name(ObjectId(new_flags[0]))
-                    flag_dep_id = flagging_doa.get_specific_flag_dep_id_by_flag_id_and_flag_group_id(ObjectId(new_flags[0]), ObjectId(flag_group_id))
+                    flag_ids, firc = get_all_flag_ids(flagging_dao)
+                    existing_flag_dep_keys, efdkrc = get_flag_dep_ids(flagging_dao)
+                    flag_name = flagging_dao.get_flag_name(ObjectId(new_flags[0]))
+                    flag_dep_id = flagging_dao.get_specific_flag_dep_id_by_flag_id_and_flag_group_id(ObjectId(new_flags[0]), ObjectId(flag_group_id))
                     if flag_dep_id is None:
                         flag_schema_object_flag_dep, fdi_rc = create_flag_dependency(flag_id=new_flags[0],
                                                                             flag_name=flag_name,
                                                                             flag_group_id=flag_group_id,
                                                                             existing_flag_ids=flag_ids,
                                                                      existing_flag_dep_keys=existing_flag_dep_keys,
-                                                                     flag_dependencies=[], flagging_doa=flagging_doa)
+                                                                     flag_dependencies=[], flagging_dao=flagging_dao)
                         flag_dep_id = flag_schema_object_flag_dep.uuid
-                        existing_flag_dep_keys, efdkrc = get_flag_dep_ids(flagging_doa)
+                        existing_flag_dep_keys, efdkrc = get_flag_dep_ids(flagging_dao)
 
 
                     else:
-                        flag_dep_id = flagging_doa.get_specific_flag_dep_id_by_flag_id_and_flag_group_id(ObjectId(new_flags[0]), ObjectId(flag_group_id))["_id"]
-                        existing_flag_dep_keys, efdkrc = get_flag_dep_ids(flagging_doa)
+                        flag_dep_id = flagging_dao.get_specific_flag_dep_id_by_flag_id_and_flag_group_id(ObjectId(new_flags[0]), ObjectId(flag_group_id))["_id"]
+                        existing_flag_dep_keys, efdkrc = get_flag_dep_ids(flagging_dao)
                     updated_flag_dep_id, ufdirc = add_dependencies_to_flag(flag_dep_id=str(flag_dep_id),
                                                                            existing_flag_dep_keys=existing_flag_dep_keys,
                                                                            new_dependencies=referenced_flags,
-                                                                           flagging_doa=flagging_doa)
+                                                                           flagging_dao=flagging_dao)
 
                 full_flag_set = new_flags + list(dict.fromkeys(flags_in_flag_group))
                 full_flag_set = [ObjectId(x) for x in full_flag_set]
-                found_flag_group_name = flagging_doa.get_flag_group_name(ObjectId(flag_group_id))
-                flag_with_updated_deps_id = flagging_doa.update_flag_group(flag_group=ObjectId(flag_group_id),
+                found_flag_group_name = flagging_dao.get_flag_group_name(ObjectId(flag_group_id))
+                flag_with_updated_deps_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
                                                                              update_value=full_flag_set,
                                                                              update_column="FLAGS_IN_GROUP")
-                flag_group_set_to_draft = flagging_doa.update_flag_group(flag_group=ObjectId(flag_group_id),
+                flag_group_set_to_draft = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
                                                                              update_value="DRAFT",
                                                                              update_column=flag_group_status_col_name)
                 flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                                message="flag: " + str(new_flags[0]) + " is in DRAFT status but was added to flag group: " + str(flag_group_id) + "\n" + flagging_message,
                                                                simple_message="flag added to flag group",
-                                                               name=flagging_doa.get_flag_group_name(ObjectId(flag_group_id)),
+                                                               name=flagging_dao.get_flag_group_name(ObjectId(flag_group_id)),
                                                                uuid=ObjectId(flag_group_id),
-                                                               logic=[str(x) for x in flagging_doa.get_flag_group_flag(ObjectId(flag_group_id))])
+                                                               logic=[str(x) for x in flagging_dao.get_flag_group_flag(ObjectId(flag_group_id))])
                 response_code = 200
 
         if flag_schema_object is None:
@@ -953,13 +953,13 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                 ref_flag_dict[flag] = {CodeLocation(None, None)}
 
             referenced_flags_names = [x["name"] for x in
-                                      flagging_doa.get_flag_logic_information(new_flag)["referenced_flags"]]
+                                      flagging_dao.get_flag_logic_information(new_flag)["referenced_flags"]]
             ref_flag_dict = {}
             for rf_name in referenced_flags_names:
                 ref_flag_dict[rf_name] = {CodeLocation(None, None)}
             flag_logic_cyclical_check = FlagLogicInformation(referenced_flags=ref_flag_dict)
             validation_results = validate_cyclical_logic(ObjectId(new_flags[0]),
-                                                ObjectId(flag_group_id), flag_logic_cyclical_check, flagging_doa)
+                                                ObjectId(flag_group_id), flag_logic_cyclical_check, flagging_dao)
             flagging_message = ""
             if len(validation_results.errors) != 0:
                 cyclical_errors = []
@@ -975,35 +975,35 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                             ", ".join(str(x) for x in cyclical_errors))
             else:
                 cyclical_errors = []
-            flag_spec_schema_object, fli_rc = get_specific_flag(flag_id=ObjectId(new_flags[0]), existing_flags=existing_flags, flagging_doa=flagging_doa)
+            flag_spec_schema_object, fli_rc = get_specific_flag(flag_id=ObjectId(new_flags[0]), existing_flags=existing_flags, flagging_dao=flagging_dao)
             referenced_flag_names_in_flag_id = flag_spec_schema_object.logic['referenced_flags']
             referenced_flags = []
             for x in referenced_flag_names_in_flag_id:
                 referenced_flags.append(ReferencedFlag(flag_name=x, flag_group_id=ObjectId(flag_group_id)))
 
 
-            flag_ids, firc = get_all_flag_ids(flagging_doa)
-            existing_flag_dep_keys, efdkrc = get_flag_dep_ids(flagging_doa)
-            flag_name = flagging_doa.get_flag_name(ObjectId(new_flags[0]))
-            flag_dep_id = flagging_doa.get_specific_flag_dep_id_by_flag_id_and_flag_group_id(ObjectId(new_flags[0]),
+            flag_ids, firc = get_all_flag_ids(flagging_dao)
+            existing_flag_dep_keys, efdkrc = get_flag_dep_ids(flagging_dao)
+            flag_name = flagging_dao.get_flag_name(ObjectId(new_flags[0]))
+            flag_dep_id = flagging_dao.get_specific_flag_dep_id_by_flag_id_and_flag_group_id(ObjectId(new_flags[0]),
                                                                                                ObjectId(flag_group_id))
             if flag_dep_id not in existing_flag_dep_keys:
                 flag_dep_schema_object, fdi_rc = create_flag_dependency(flag_id=new_flags[0],
                                                              flag_name=flag_name,
                                                              flag_group_id=flag_group_id,
-                                                             existing_flag_ids=flag_ids, existing_flag_dep_keys=existing_flag_dep_keys, flag_dependencies=[], flagging_doa=flagging_doa)
+                                                             existing_flag_ids=flag_ids, existing_flag_dep_keys=existing_flag_dep_keys, flag_dependencies=[], flagging_dao=flagging_dao)
 
-            updated_flag_dep_id, ufdirc = add_dependencies_to_flag(flag_dep_id=str(flag_dep_schema_object.uuid), existing_flag_dep_keys=existing_flag_dep_keys, new_dependencies=referenced_flags, flagging_doa=flagging_doa)
+            updated_flag_dep_id, ufdirc = add_dependencies_to_flag(flag_dep_id=str(flag_dep_schema_object.uuid), existing_flag_dep_keys=existing_flag_dep_keys, new_dependencies=referenced_flags, flagging_dao=flagging_dao)
 
             full_flag_set = new_flags + list(dict.fromkeys(flags_in_flag_group))
             full_flag_set = [ObjectId(x) for x in full_flag_set]
-            found_flag_group_name = flagging_doa.get_flag_group_name(ObjectId(flag_group_id))
-            flag_group_with_updated_deps_id = flagging_doa.update_flag_group(flag_group=ObjectId(flag_group_id), update_value=full_flag_set, update_column="FLAGS_IN_GROUP")
+            found_flag_group_name = flagging_dao.get_flag_group_name(ObjectId(flag_group_id))
+            flag_group_with_updated_deps_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id), update_value=full_flag_set, update_column="FLAGS_IN_GROUP")
             if len(cyclical_errors) > 0:
-                flag_group_set_to_draft = flagging_doa.update_flag_group(flag_group=ObjectId(flag_group_id),
+                flag_group_set_to_draft = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
                                                                              update_value="DRAFT",
                                                                              update_column=flag_group_status_col_name)
-                flag_group_set_to_draft = flagging_doa.update_flag_group(flag_group=ObjectId(flag_group_id),
+                flag_group_set_to_draft = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
                                                                            update_value="CYCLICAL FLAG ERROR",
                                                                            update_column=flag_group_error_col_name)
                 flag_schema_object = FlaggingSchemaInformation(valid=True,
@@ -1013,7 +1013,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                                simple_message="flags added to flag group",
                                                                uuid=flag_group_with_updated_deps_id,
                                                                name=found_flag_group_name,
-                                                               logic=[str(x) for x in flagging_doa.get_flag_group_flag(ObjectId(flag_group_id))])
+                                                               logic=[str(x) for x in flagging_dao.get_flag_group_flag(ObjectId(flag_group_id))])
                 response_code = 200
         if flag_schema_object is None:
             flag_schema_object = FlaggingSchemaInformation(valid=True,
@@ -1022,12 +1022,12 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                            simple_message="flags added to flag group",
                                                            uuid=flag_group_with_updated_deps_id,
                                                            name=found_flag_group_name,
-                                                           logic=[str(x) for x in flagging_doa.get_flag_group_flag(ObjectId(flag_group_id))])
+                                                           logic=[str(x) for x in flagging_dao.get_flag_group_flag(ObjectId(flag_group_id))])
             response_code = 200
     return flag_schema_object, response_code
 
 #A call to remove flags from a group provided a UUID for the group and UUIDs for the flags to remove
-def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: [], existing_flag_groups: [], flags_in_flag_group:[], flagging_doa: FlaggingDOA):
+def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: [], existing_flag_groups: [], flags_in_flag_group:[], flagging_dao: FlaggingDAO):
     flag_schema_object = None
     if flag_schema_object is None:
         if flag_group_id is None:
@@ -1089,7 +1089,7 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
                                                            message=flag_message,
                                                            simple_message="error removing flags from flag group",
                                                            uuid=ObjectId(flag_group_id),
-                                                           name=flagging_doa.get_flag_group_name(ObjectId(flag_group_id)))
+                                                           name=flagging_dao.get_flag_group_name(ObjectId(flag_group_id)))
             response_code = 405
         if flag_schema_object is None and len(flags_not_in_group) > 0:
             if len(flags_not_in_group) == 1:
@@ -1100,33 +1100,33 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
                                                            message=flag_message,
                                                            simple_message="flag specified for removal is not part of flag group",
                                                            uuid=ObjectId(flag_group_id),
-                                                           name=flagging_doa.get_flag_group_name(ObjectId(flag_group_id)))
+                                                           name=flagging_dao.get_flag_group_name(ObjectId(flag_group_id)))
             response_code = 405
 
     if flag_schema_object is None:
         #get flag_id being removed
         for flag_id in del_flags:
-            flag_schema_object_flag_dep, fsofd_rc = delete_flag_dependency(flag_id=str(del_flags[0]), flag_group_id=flag_group_id, flagging_doa=flagging_doa)
-            flagging_doa.remove_specific_flag_dependencies_via_flag_id_and_flag_group_id(flag_id, ObjectId(flag_group_id))
+            flag_schema_object_flag_dep, fsofd_rc = delete_flag_dependency(flag_id=str(del_flags[0]), flag_group_id=flag_group_id, flagging_dao=flagging_dao)
+            flagging_dao.remove_specific_flag_dependencies_via_flag_id_and_flag_group_id(flag_id, ObjectId(flag_group_id))
 
         new_flag_set = (list(list(set(del_flags)-set(flags_in_flag_group)) + list(set(flags_in_flag_group)-set(del_flags))))
         new_flag_set = [ObjectId(x) for x in new_flag_set]
         #method to remove flag(s) from flag group
-        flag_group_with_updated_deps_id = flagging_doa.update_flag_group(flag_group=ObjectId(flag_group_id),
+        flag_group_with_updated_deps_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
                                                                      update_value=new_flag_set,
                                                                      update_column="FLAGS_IN_GROUP")
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="Flag(s) " + ", ".join(map(str, del_flags)) + " removed from " + flag_group_id,
                                                        simple_message="flags removed from flag group",
-                                                       name=flagging_doa.get_flag_group_name(flag_group_with_updated_deps_id),
+                                                       name=flagging_dao.get_flag_group_name(flag_group_with_updated_deps_id),
                                                        uuid=flag_group_with_updated_deps_id,
-                                                       logic=[str(x) for x in flagging_doa.get_flag_group_flag(flag_group_with_updated_deps_id)])
+                                                       logic=[str(x) for x in flagging_dao.get_flag_group_flag(flag_group_with_updated_deps_id)])
 
         #check if new flag set contains any cyclical flag errors
         # flag dependency check here
         flag_logic_cyclical_check = FlagLogicInformation(referenced_flags=set())
         validation_results = validate_cyclical_logic(None,
-                                                     ObjectId(flag_group_id), flag_logic_cyclical_check, flagging_doa)
+                                                     ObjectId(flag_group_id), flag_logic_cyclical_check, flagging_dao)
         flagging_message = ""
         if len(validation_results.errors) != 0:
             cyclical_errors = []
@@ -1134,11 +1134,11 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
                 if isinstance(v, FlagErrorInformation):
                     cyclical_errors.append(k)
             if len(cyclical_errors) > 0:
-                flag_with_updated_deps_id = flagging_doa.update_flag_group(flag_group=ObjectId(flag_group_id),
+                flag_with_updated_deps_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
                                                                              update_value="CYCLICAL FLAG ERRORS",
                                                                              update_column=flag_group_error_col_name)
             else:
-                flag_with_updated_deps_id = flagging_doa.update_flag_group(flag_group=ObjectId(flag_group_id),
+                flag_with_updated_deps_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
                                                                              update_value="",
                                                                              update_column="flag_group_error_col_name")
 
@@ -1147,7 +1147,7 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
     return flag_schema_object, response_code
 
 #A call to duplicate a flag group provided a new name and UUID
-def duplicate_flag_group(original_flag_group_id: str, existing_flag_groups, new_flag_group_name, flagging_doa: FlaggingDOA):
+def duplicate_flag_group(original_flag_group_id: str, existing_flag_groups, new_flag_group_name, flagging_dao: FlaggingDAO):
     flag_schema_object = None
     #make sure ids are past
     if original_flag_group_id is None:
@@ -1176,10 +1176,10 @@ def duplicate_flag_group(original_flag_group_id: str, existing_flag_groups, new_
                                                            message="error duplicating flag group: " + original_flag_group_id + ", missing new flag group name",
                                                            simple_message="error duplicating flag group",
                                                            uuid=ObjectId(original_flag_group_id),
-                                                           name=flagging_doa.get_flag_group_name(ObjectId(original_flag_group_id)))
+                                                           name=flagging_dao.get_flag_group_name(ObjectId(original_flag_group_id)))
             response_code = 400
     if flag_schema_object is None:
-        original_flag_group_name = flagging_doa.get_flag_group_name(ObjectId(original_flag_group_id))
+        original_flag_group_name = flagging_dao.get_flag_group_name(ObjectId(original_flag_group_id))
         if original_flag_group_name == new_flag_group_name:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="can not duplicate flag group " + original_flag_group_id + " must be given a unique name",
@@ -1190,20 +1190,20 @@ def duplicate_flag_group(original_flag_group_id: str, existing_flag_groups, new_
 
     if flag_schema_object is None:
         #get new id
-        new_flag_group_id = flagging_doa.duplicate_flag_group(ObjectId(original_flag_group_id))
+        new_flag_group_id = flagging_dao.duplicate_flag_group(ObjectId(original_flag_group_id))
         #edit new flag group to have new name passed
-        new_flag_group_id = flagging_doa.update_flag_group(ObjectId(new_flag_group_id), new_flag_group_name, flag_group_name_col_name)
+        new_flag_group_id = flagging_dao.update_flag_group(ObjectId(new_flag_group_id), new_flag_group_name, flag_group_name_col_name)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="new flag group " + str(new_flag_group_id)+ " created off of " + str(original_flag_group_id),
                                                        simple_message="new flag group created",
                                                        uuid=new_flag_group_id,
                                                        name=new_flag_group_name,
-                                                       logic=[str(x) for x in flagging_doa.get_flag_group_flag(ObjectId(new_flag_group_id))])
+                                                       logic=[str(x) for x in flagging_dao.get_flag_group_flag(ObjectId(new_flag_group_id))])
         response_code = 200
     return flag_schema_object, response_code
 
 #move flag group to production
-def move_flag_group_to_production(flag_group_id, existing_flag_groups, flagging_doa):
+def move_flag_group_to_production(flag_group_id, existing_flag_groups, flagging_dao):
     flag_schema_object = None
     if flag_schema_object is None:
         if flag_group_id is None:
@@ -1225,44 +1225,44 @@ def move_flag_group_to_production(flag_group_id, existing_flag_groups, flagging_
                                                            simple_message="error moving flag group to production")
             response_code = 400
     if flag_schema_object is None:
-        if flagging_doa.get_flag_group_errors(ObjectId(flag_group_id)) != "":
+        if flagging_dao.get_flag_group_errors(ObjectId(flag_group_id)) != "":
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="flag group: " + flag_group_id + " can not be moved to production due to errors in flag group",
                                                            simple_message="flag group can not be moved to production due to errors in flag group",
                                                            uuid=ObjectId(flag_group_id),
-                                                           name=flagging_doa.get_flag_group_name(ObjectId(flag_group_id)),
-                                                           logic=[str(x) for x in flagging_doa.get_flag_group_flag(ObjectId(flag_group_id))])
+                                                           name=flagging_dao.get_flag_group_name(ObjectId(flag_group_id)),
+                                                           logic=[str(x) for x in flagging_dao.get_flag_group_flag(ObjectId(flag_group_id))])
             response_code = 405
     if flag_schema_object is None:
         flag_error_bool = False
-        for flag in flagging_doa.get_flag_group_flag(ObjectId(flag_group_id)):
-            if flagging_doa.get_specific_flag_error(flag) != "":
+        for flag in flagging_dao.get_flag_group_flag(ObjectId(flag_group_id)):
+            if flagging_dao.get_specific_flag_error(flag) != "":
                 flag_error_bool = True
         if flag_error_bool:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="flag group: " + flag_group_id + " can not be moved to production due to errors in flags found in flag group",
                                                            simple_message="flag group can not be moved to production due to error in flag in flag group",
                                                            uuid=ObjectId(flag_group_id),
-                                                           name=flagging_doa.get_flag_group_name(ObjectId(flag_group_id)),
-                                                           logic=[str(x) for x in flagging_doa.get_flag_group_flag(ObjectId(flag_group_id))])
+                                                           name=flagging_dao.get_flag_group_name(ObjectId(flag_group_id)),
+                                                           logic=[str(x) for x in flagging_dao.get_flag_group_flag(ObjectId(flag_group_id))])
             response_code = 405
     if flag_schema_object is None:
-        updated_flag_group_id = flagging_doa.update_flag_group(flag_group=ObjectId(flag_group_id),
+        updated_flag_group_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
                                                                  update_value="PRODUCTION",
                                                                  update_column=flag_group_status_col_name)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="flag group: " + flag_group_id + " has been moved to production",
                                                        simple_message="flag group has been moved to production",
                                                        uuid=ObjectId(flag_group_id),
-                                                       name=flagging_doa.get_flag_group_name(ObjectId(flag_group_id)),
-                                                       logic=[str(x) for x in flagging_doa.get_flag_group_flag(ObjectId(flag_group_id))])
+                                                       name=flagging_dao.get_flag_group_name(ObjectId(flag_group_id)),
+                                                       logic=[str(x) for x in flagging_dao.get_flag_group_flag(ObjectId(flag_group_id))])
 
         response_code = 200
     return flag_schema_object, response_code
 
 #A call to delete all flag groups
-def delete_all_flag_groups(flagging_doa):
-    flagging_doa.delete_all_flag_groups()
+def delete_all_flag_groups(flagging_dao):
+    flagging_dao.delete_all_flag_groups()
     flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                    message="all flag groups have been deleted",
                                                    simple_message="all flag groups have been deleted")
@@ -1272,11 +1272,11 @@ def delete_all_flag_groups(flagging_doa):
 
 #FLAG DEPENDENCY
 #get flag dependenceis
-def get_flag_dependencies(flagging_doa: FlaggingDOA):
-    return flagging_doa.get_flag_dependencies(), 200
+def get_flag_dependencies(flagging_dao: FlaggingDAO):
+    return flagging_dao.get_flag_dependencies(), 200
 
 #get specifi flag depedency
-def get_specific_flag_dependency(flag_dep_id, existing_flag_deps: [], flagging_doa: FlaggingDOA):
+def get_specific_flag_dependency(flag_dep_id, existing_flag_deps: [], flagging_dao: FlaggingDAO):
     flag_schema_object = None
     if flag_schema_object is None:
         if flag_dep_id is None:
@@ -1292,7 +1292,7 @@ def get_specific_flag_dependency(flag_dep_id, existing_flag_deps: [], flagging_d
                                                            uuid=ObjectId(flag_dep_id))
             response_code = 400
     if flag_schema_object is None:
-        flag_dep_id = flagging_doa.get_specific_flag_dependency(ObjectId(flag_dep_id))
+        flag_dep_id = flagging_dao.get_specific_flag_dependency(ObjectId(flag_dep_id))
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="identified flag dependencies",
                                                        simple_message="identified flag dependencies",
@@ -1301,11 +1301,11 @@ def get_specific_flag_dependency(flag_dep_id, existing_flag_deps: [], flagging_d
     return flag_schema_object, response_code
 
 #get all flag dep ids
-def get_flag_dep_ids(flagging_doa: FlaggingDOA):
-    return flagging_doa.get_flag_dependencies_ids(), 200
+def get_flag_dep_ids(flagging_dao: FlaggingDAO):
+    return flagging_dao.get_flag_dependencies_ids(), 200
 
 #call to create flag dependnecy
-def create_flag_dependency(flag_id: str, flag_name:str, flag_group_id, existing_flag_ids: [], existing_flag_dep_keys: [], flag_dependencies: [], flagging_doa: FlaggingDOA):
+def create_flag_dependency(flag_id: str, flag_name:str, flag_group_id, existing_flag_ids: [], existing_flag_dep_keys: [], flag_dependencies: [], flagging_dao: FlaggingDAO):
     flag_schema_object = None
     if flag_schema_object is None:
         if flag_id is None:
@@ -1325,7 +1325,7 @@ def create_flag_dependency(flag_id: str, flag_name:str, flag_group_id, existing_
 
     #make sure flag dependency entry does not already exist, if exist, need to update
     if flag_schema_object is None:
-        flag_dep_entry = flagging_doa.get_specific_flag_dep_id_by_flag_id_and_flag_group_id(flag_id=ObjectId(flag_id), flag_group_id=ObjectId(flag_group_id))
+        flag_dep_entry = flagging_dao.get_specific_flag_dep_id_by_flag_id_and_flag_group_id(flag_id=ObjectId(flag_id), flag_group_id=ObjectId(flag_group_id))
         try:
             flag_dep_id = flag_dep_entry["_id"]
             if flag_dep_id in existing_flag_dep_keys:
@@ -1339,12 +1339,12 @@ def create_flag_dependency(flag_id: str, flag_name:str, flag_group_id, existing_
             print(e)
     if flag_schema_object is None:
         #creat new flag dependency entry based on passed flag and flag_dependencies
-        new_flag_dependency_id = flagging_doa.add_flag_dependencies({flag_dep_flag_id_col_name: ObjectId(flag_id),
+        new_flag_dependency_id = flagging_dao.add_flag_dependencies({flag_dep_flag_id_col_name: ObjectId(flag_id),
                                                                        flag_name_col_name: flag_name,
                                                                        flag_dep_flag_group_id_col_name: ObjectId(flag_group_id),
                                                                        flag_dep_dep_flags_col_name: []})
         #add specific depdencies to new entry
-        updated_flag_dependency_id = flagging_doa.add_specific_flag_dependencies(new_flag_dependency_id, [], flag_dep_dep_flags_col_name)
+        updated_flag_dependency_id = flagging_dao.add_specific_flag_dependencies(new_flag_dependency_id, [], flag_dep_dep_flags_col_name)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="flag dependency data for flag " + flag_id + " in flag group " + flag_group_id + " has been created",
                                                        simple_message="flag dependency entry created",
@@ -1354,7 +1354,7 @@ def create_flag_dependency(flag_id: str, flag_name:str, flag_group_id, existing_
     return flag_schema_object, response_code
 
 #call to delete flag dependnecy
-def delete_flag_dependency(flag_id, flag_group_id, flagging_doa: FlaggingDOA):
+def delete_flag_dependency(flag_id, flag_group_id, flagging_dao: FlaggingDAO):
     flag_schema_object = None
     if flag_schema_object is None:
         if flag_id is None and flag_group_id is None:
@@ -1365,37 +1365,37 @@ def delete_flag_dependency(flag_id, flag_group_id, flagging_doa: FlaggingDOA):
     if flag_schema_object is None:
         if flag_id is None:
             #make sure entries for flag group id
-            flag_dep_ids = flagging_doa.get_flag_dep_by_flag_group_id(ObjectId(flag_group_id))
+            flag_dep_ids = flagging_dao.get_flag_dep_by_flag_group_id(ObjectId(flag_group_id))
             if len(flag_dep_ids) == 0:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                                message="could not find any flag dep entries based on flag group: " + flag_group_id,
                                                                simple_message="no flag dep entries found")
                 response_code = 400
             else:
-                removed_flag_dep_ids = flagging_doa.remove_specific_flag_dependencies_via_flag_group_id(ObjectId(flag_group_id))
+                removed_flag_dep_ids = flagging_dao.remove_specific_flag_dependencies_via_flag_group_id(ObjectId(flag_group_id))
                 flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                                message="the following flag dep entries based on flag group id: " + flag_group_id + " have been removed" + ", ".join([str(x) for x in removed_flag_dep_ids]),
                                                                simple_message="flag dep entries removed")
                 response_code = 200
     if flag_schema_object is None:
         if flag_group_id is None:
-            flag_dep_ids = flagging_doa.get_flag_dep_by_flag_id(ObjectId(flag_id))
+            flag_dep_ids = flagging_dao.get_flag_dep_by_flag_id(ObjectId(flag_id))
             if len(flag_dep_ids) == 0:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                                message="could not find any flag dep entries based on flag id: " + flag_id,
                                                                simple_message="no flag dep entries found")
                 response_code = 400
             else:
-                removed_flag_dep_ids = flagging_doa.remove_specific_flag_dependencies_via_flag_id(ObjectId(flag_id))
+                removed_flag_dep_ids = flagging_dao.remove_specific_flag_dependencies_via_flag_id(ObjectId(flag_id))
                 flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                                message="the following flag dep entries based on flag id: " + flag_id + " have been removed" + ", ".join([str(x) for x in removed_flag_dep_ids]),
                                                                simple_message="flag dep entries removed")
                 response_code = 200
     if flag_schema_object is None:
-        flag_dep_entry = flagging_doa.get_specific_flag_dep_id_by_flag_id_and_flag_group_id(flag_id=ObjectId(flag_id), flag_group_id=ObjectId(flag_group_id))
+        flag_dep_entry = flagging_dao.get_specific_flag_dep_id_by_flag_id_and_flag_group_id(flag_id=ObjectId(flag_id), flag_group_id=ObjectId(flag_group_id))
         try:
             flag_dep_id = flag_dep_entry["_id"]
-            flagging_doa.remove_flag_dependencies(flag_dep_id)
+            flagging_dao.remove_flag_dependencies(flag_dep_id)
             flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                            message="flag dep id: " + str(flag_dep_id) + " based on flag id: " + flag_id + " and flag group id: " + flag_group_id + " has been removed",
                                                            simple_message="flag dep has been removed")
@@ -1408,7 +1408,7 @@ def delete_flag_dependency(flag_id, flag_group_id, flagging_doa: FlaggingDOA):
             response_code = 400
 
     # if flag_schema_object is None:
-    #     removed_flag_dep_id = flagging_doa.remove_flag_dependencies(flag_dep_id)
+    #     removed_flag_dep_id = flagging_dao.remove_flag_dependencies(flag_dep_id)
     #     flag_schema_object = FlaggingSchemaInformation(valid=True,
     #                                                    message="flag " + str(removed_flag_dep_id) + "has been removed from flag dependency database",
     #                                                    uuid=removed_flag_dep_id,
@@ -1419,7 +1419,7 @@ def delete_flag_dependency(flag_id, flag_group_id, flagging_doa: FlaggingDOA):
     return flag_schema_object, response_code
 
 #call to add deps to flag dependencies set
-def add_dependencies_to_flag(flag_dep_id, existing_flag_dep_keys: [], new_dependencies: [], flagging_doa: FlaggingDOA):
+def add_dependencies_to_flag(flag_dep_id, existing_flag_dep_keys: [], new_dependencies: [], flagging_dao: FlaggingDAO):
     flag_schema_object = None
     if flag_schema_object is None:
         if flag_dep_id is None:
@@ -1440,7 +1440,7 @@ def add_dependencies_to_flag(flag_dep_id, existing_flag_dep_keys: [], new_depend
                                                            simple_message="error in add dependency to flag")
             response_code = 400
     # if flag_schema_object is None:
-    #     existing_flags = flagging_doa.get_flag_ids()
+    #     existing_flags = flagging_dao.get_flag_ids()
     #     missing_flags = []
     #     for flag_x in new_dependencies:
     #         if flag_x not in existing_flags:
@@ -1451,7 +1451,7 @@ def add_dependencies_to_flag(flag_dep_id, existing_flag_dep_keys: [], new_depend
     #         response_code = 400
     if flag_schema_object is None:
         new_dependencies = _convert_RF_to_TRF(new_dependencies)
-        updated_flag_dep_id = flagging_doa.add_specific_flag_dependencies(ObjectId(flag_dep_id), new_dependencies, "DEPENDENT_FLAGS")
+        updated_flag_dep_id = flagging_dao.add_specific_flag_dependencies(ObjectId(flag_dep_id), new_dependencies, "DEPENDENT_FLAGS")
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="dependencies have been updated",
                                                        simple_message="dependencies have been updated",
@@ -1460,7 +1460,7 @@ def add_dependencies_to_flag(flag_dep_id, existing_flag_dep_keys: [], new_depend
     return flag_schema_object, response_code
 
 #call to remove dependencies from flag
-def remove_dependencies_from_flag(flag_dep_id, existing_flag_dep_keys: [], rm_dependencies: [], flagging_doa: FlaggingDOA):
+def remove_dependencies_from_flag(flag_dep_id, existing_flag_dep_keys: [], rm_dependencies: [], flagging_dao: FlaggingDAO):
     flag_schema_object = None
     if flag_schema_object is None:
         if flag_dep_id is None:
@@ -1482,7 +1482,7 @@ def remove_dependencies_from_flag(flag_dep_id, existing_flag_dep_keys: [], rm_de
             response_code = 400
 
     # if flag_schema_object is None:
-    #     existing_flag_dep_flags = flagging_doa.get_specific_flag_dependency_flags(ObjectId(flag_dep_id))
+    #     existing_flag_dep_flags = flagging_dao.get_specific_flag_dependency_flags(ObjectId(flag_dep_id))
     #     missing_flags = []
     #     for flag_x in rm_dependencies:
     #         if flag_x not in existing_flag_dep_flags:
@@ -1493,7 +1493,7 @@ def remove_dependencies_from_flag(flag_dep_id, existing_flag_dep_keys: [], rm_de
     #         response_code = 404
     if flag_schema_object is None:
         rm_dependencies = _convert_RF_to_TRF(rm_dependencies)
-        updated_flag_dep_id = flagging_doa.remove_specific_flag_dependencies(ObjectId(flag_dep_id), rm_dependencies, "DEPENDENT_FLAGS")
+        updated_flag_dep_id = flagging_dao.remove_specific_flag_dependencies(ObjectId(flag_dep_id), rm_dependencies, "DEPENDENT_FLAGS")
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="dependencies have been updated",
                                                        simple_message="dependencies have been updated",
@@ -1502,8 +1502,8 @@ def remove_dependencies_from_flag(flag_dep_id, existing_flag_dep_keys: [], rm_de
     return flag_schema_object, response_code
 
 #A call to delete all flag dependencies
-def delete_all_flag_dependencies(flagging_doa):
-    flagging_doa.delete_all_flag_dependencies()
+def delete_all_flag_dependencies(flagging_dao):
+    flagging_dao.delete_all_flag_dependencies()
     flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                    message="all flag dependencies have been deleted",
                                                    simple_message="all flag dependencies have been deleted")

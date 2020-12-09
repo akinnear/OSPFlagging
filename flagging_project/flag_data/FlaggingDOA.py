@@ -439,5 +439,5 @@ class FlaggingDOA:
         flagging_dependencies = db[FLAG_DEPENDENCIES]
         flagging_dependencies.delete_many({})
 
-def get_db(flagging_mongo):
-    return flagging_mongo.client[FLAGGING_DATABASE]
+def get_db(flagging_doa):
+    return flagging_doa.client[FLAGGING_DATABASE]
