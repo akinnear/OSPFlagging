@@ -971,16 +971,19 @@ def test_delete_flag_group_invalid_id(mock_get_flag_group_ids, client):
 @mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("3a"*12)], 200), autospec=True)
 @mock.patch("handlers.FlaggingAPI.delete_flag_dependency", return_value=(FlaggingSchemaInformation(), 200), autospec=True)
 @mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.remove_flag_group", return_value=ObjectId("1a"*12), autospec=True)
-def test_delete_flag_group_valid(mock_remove_flag_group, mock_delete_flag_dependency, mock_get_flag_group_ids, client):
+@mock.patch("front_end.FlaggingSchemaService.FlaggingMongo.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+def test_delete_flag_group_valid(mock_remove_flag_group, mock_delete_flag_dependency, mock_get_flag_group_ids,
+                                 mock_get_flag_group_name, client):
     flag_group_id = "1a"*12
+    flag_group_name = "FlagGroupName1a"
     url = "flag_group/delete/" + flag_group_id
     response = client.delete(url)
     assert response.status_code == 200
-    assert response.json["flag_group_name"] == None
+    assert response.json["flag_group_name"] == flag_group_name
     assert response.json["flags_in_flag_group"] == None
     assert response.json["message"] == "flag group: " + flag_group_id + " deleted from database"
     assert response.json["simple_message"] == "flag group has been deleted"
-    assert response.json["uuid"] == "None"
+    assert response.json["uuid"] == flag_group_id
     assert response.json["valid"] == True
 
 
