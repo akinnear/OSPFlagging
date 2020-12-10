@@ -81,7 +81,8 @@ def test_create_flag(flagging_dao, mvrb, mvl):
     flagging_dao.return_value.get_flag_logic_information.return_value = _convert_FLI_to_TFLI(flag_logic_information)
     result, response_code = create_flag(flag_name, flag_logic_information, mock_flagging_dao)
     assert result.valid == True
-    assert result.message == "new flag created"
+    assert result.message == "flag id: " + "1" + " has been created"
+    assert result.simple_message == "new flag created"
     assert result.name == flag_name
     assert result.uuid == 1
     assert result.logic == _convert_FLI_to_TFLI(flag_logic_information)
@@ -158,8 +159,8 @@ def test_create_flag_error(flagging_dao, mvrb, mvl):
     flagging_dao.return_value.get_flag_logic_information.return_value = _convert_FLI_to_TFLI(flag_logic_information)
     result, response_code = create_flag(flag_name, flag_logic_information, mock_flagging_dao)
     assert result.valid == False
-    assert result.message == "error in flag logic"
-    assert result.simple_message == "error in flag logic"
+    assert result.message == "flag id: " + "1" + " was created but has error in flag logic"
+    assert result.simple_message == "flag created with errors"
     assert result.uuid == 1
     assert result.name == flag_name
     assert result.logic == _convert_FLI_to_TFLI(flag_logic_information)
@@ -197,8 +198,8 @@ def test_create_flag_myerror(flagging_dao, mvrb, mvl):
     flagging_dao.return_value.get_flag_logic_information.return_value = _convert_FLI_to_TFLI(flag_logic_information)
     result, response_code = create_flag(flag_name, flag_logic_information, mock_flagging_dao)
     assert result.valid == False
-    assert result.message == "error in flag logic"
-    assert result.simple_message == "error in flag logic"
+    assert result.message == "flag id: " + "1" + " was created but has error in flag logic"
+    assert result.simple_message == "flag created with errors"
     assert result.uuid == 1
     assert result.name == flag_name
     assert result.logic == _convert_FLI_to_TFLI(flag_logic_information)
