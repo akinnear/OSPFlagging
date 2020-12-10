@@ -36,7 +36,9 @@ def make_routes(app, flagging_dao):
         else:
             if function == "get":
                 flags, response_code = get_all_flags(flagging_dao)
-                flags = [str(x) for x in flags]
+                # flags = [str(x) for x in flags]
+                for flag in flags:
+                    flag["_id"] = str(flag["_id"])
                 data = {'flags': flags}
                 return data, response_code
 
