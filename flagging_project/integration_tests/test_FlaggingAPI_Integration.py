@@ -25,13 +25,93 @@ import json
 def _get_connection_string(container):
     return "mongodb://test:test@localhost:"+container.get_exposed_port(27017)
 
-
 def _create_flagging_dao(container):
     return FlaggingDAO(_get_connection_string(container))
 
-
 def _create_mongo_client(container):
     return MongoClient(_get_connection_string(container))
+
+#template
+# 1) create app
+# 2) create container and flagging_dao off of test container
+# 3) make routes
+# 4) intialize client
+# 5) run test
+
+# def test_simple_create():
+#     app = Flask(__name__)
+#     app.config["TESTING"] = True
+#     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+#             _create_flagging_dao(container) as flagging_dao:
+#         make_routes(app, flagging_dao)
+#         client = app.test_client()
+#         flag_deletion_url = "flag/delete_all"
+#         response = client.delete(flag_deletion_url)
+#         assert response.status_code == 200
+#         flag_name = "FlagName1A"
+#         flag_logic = """\
+#         if FF1 > 10:
+#             return True
+#         else:
+#             return False"""
+#         payload = {"FLAG_NAME": flag_name, "FLAG_LOGIC": flag_logic}
+#         url = "flag/create/x/" + payload["FLAG_NAME"]
+#
+#         response = client.post(url, data=json.dumps(payload),
+#                                content_type='application/json')
+#         unpack = client.get("flag/get")
+#
+#         print('hello')
+
+def test_simple_create():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        flag_deletion_url = "flag/delete_all"
+        response = client.delete(flag_deletion_url)
+        assert response.status_code == 200
+
+        #confirm empty database
+        response = client.get("flag/get_ids")
+        assert response.status_code == 200
+        assert response.json["_ids"] == []
+
+        flag_name = "FlagName1A"
+        flag_logic = """\
+if FF1 > 10:
+    return True
+else:
+    return False"""
+        payload = {"FLAG_NAME": flag_name, "FLAG_LOGIC": flag_logic}
+        url = "flag/create/x/" + payload["FLAG_NAME"]
+        response = client.post(url, data=json.dumps(payload),
+                               content_type='application/json')
+        assert response.status_code == 200
+        assert response.json["flag_name"] == payload["FLAG_NAME"]
+        assert response.json["message"] == "new flag created"
+        assert response.json["simple_message"] == response.json["message"]
+        assert response.json["valid"] == True
+        assert response.json["flag_logic"] == _convert_FLI_to_TFLI(determine_variables(payload["FLAG_LOGIC"]))
+
+        #confirm created flag id is in get_ids call
+        response_unpack = client.get("flag/get_ids")
+        assert response_unpack.status_code == 200
+        assert response.json["uuid"] in response_unpack.json["_ids"]
+
+        #confirm standard get
+        response_2 = client.get("flag/get")
+        assert response_2.status_code == 200
+        assert response_2.json["flags"][0]["FLAG_ERRORS"] == ""
+        assert response_2.json["flags"][0]["FLAG_LOGIC"] == _convert_FLI_to_TFLI(determine_variables(payload["FLAG_LOGIC"]))
+        assert response_2.json["flags"][0]["FLAG_NAME"] == payload["FLAG_NAME"]
+        assert response_2.json["flags"][0]["FLAG_STATUS"] == "PRODUCTION_READY"
+        assert response_2.json["flags"][0]["REFERENCED_FLAGS"] == []
+        assert response_2.json["flags"][0]["_id"] == response.json["uuid"]
+
+
 
 
 
@@ -3476,33 +3556,6 @@ def _get_connection_string(container):
     return "mongodb://test:test@localhost:"+container.get_exposed_port(27017)
 
 
-def _create_flagging_dao(container):
-    return FlaggingMongo(_get_connection_string(container))
-
-def test_simple_create():
-    app = Flask(__name__)
-    app.config["TESTING"] = True
-    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
-            _create_flagging_dao(container) as flagging_dao:
-        make_routes(app, flagging_dao)
-        client = app.test_client()
-        flag_deletion_url = "flag/delete_all"
-        response = client.delete(flag_deletion_url)
-        assert response.status_code == 200
-        flag_name = "FlagName1A"
-        flag_logic = """\
-        if FF1 > 10:
-            return True
-        else:
-            return False"""
-        payload = {"FLAG_NAME": flag_name, "FLAG_LOGIC": flag_logic}
-        url = "flag/create/x/" + payload["FLAG_NAME"]
-
-        response = client.post(url, data=json.dumps(payload),
-                               content_type='application/json')
-        unpack = client.get("flag/get")
-
-        print('hello')
 
 
 
