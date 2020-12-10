@@ -1,1 +1,0 @@
-MONGO_DOCKER_IMAGE = 'mongo:4.4.1'

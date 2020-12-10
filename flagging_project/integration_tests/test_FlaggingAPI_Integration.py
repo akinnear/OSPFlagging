@@ -1,7 +1,7 @@
 import pytest
 from flask import Flask
 from handlers.FlaggingAPI import make_routes
-from app import _create_flagging_doa
+from app import _create_flagging_dao
 import re
 from random_object_id import generate
 from flag_names.FlagService import pull_flag_logic_information
@@ -16,7 +16,7 @@ import requests
 from flagging.FlaggingNodeVisitor import determine_variables
 from pymongo import MongoClient
 from testcontainers.mongodb import MongoDbContainer
-from flag_data.FlaggingDOA import FlaggingDOA
+from flag_data.FlaggingDAO import FlaggingDAO
 from integration_tests import MONGO_DOCKER_IMAGE
 from front_end.TransferFlagLogicInformation import TransferFlagLogicInformation, _convert_FLI_to_TFLI, \
     _convert_TFLI_to_FLI
@@ -26,52 +26,15 @@ def _get_connection_string(container):
     return "mongodb://test:test@localhost:"+container.get_exposed_port(27017)
 
 
-def _create_flagging_doa(container):
-    return FlaggingDOA(_get_connection_string(container))
+def _create_flagging_dao(container):
+    return FlaggingDAO(_get_connection_string(container))
 
 
 def _create_mongo_client(container):
     return MongoClient(_get_connection_string(container))
 
 
-##################
-# do not need to use requests module, just used test client
-# json payload can be sent with test client as such
-#
-#     flag_logic ="""\
-# if FF1 > 10:
-#     return True
-# else:
-#     return False"""
-#     flag_logic_info = determine_variables(flag_logic)
-#     payload = _convert_FLI_to_TFLI(flag_logic_info)
-#     response = client.post("flag/create_flag/x/Flag1A", data=json.dumps(payload),
-#                            content_type='application/json')
 
-# see below example for full content
-# def test_simple_request_post(client):
-#     # delete all flags
-#     flag_deletion_url = "flag/delete_all_flags"
-#     response = client.delete(flag_deletion_url)
-#     assert response.status_code == 200
-#
-#     flag_logic ="""\
-# if FF1 > 10:
-#     return True
-# else:
-#     return False"""
-#     flag_logic_info = determine_variables(flag_logic)
-#     payload = _convert_FLI_to_TFLI(flag_logic_info)
-#     response = client.post("flag/create_flag/x/Flag1A", data=json.dumps(payload),
-#                            content_type='application/json')
-#     # url = "http://localhost:5000/flag/create_flag/x/Flag1A"
-#     #
-#     # r = requests.post(url, data=json.dumps(payload))
-#
-#     unpack = client.get("flag/get_flags")
-#     print("hello")
-#
-###################################################
 
 def test_simple_request_post(client):
     # delete all flags
@@ -98,8 +61,8 @@ else:
 def client():
     app = Flask(__name__)
     app.config["TESTING"] = True
-    flagging_doa = _create_flagging_doa()
-    make_routes(app, flagging_doa)
+    flagging_dao = _create_flagging_dao()
+    make_routes(app, flagging_dao)
     client = app.test_client()
     return client
 
@@ -126,8 +89,8 @@ def test_flag_home(client):
     app = Flask(__name__)
     app.config["TESTING"] = True
     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
-            _create_flagging_doa(container) as flagging_doa:
-        make_routes(app, flagging_doa)
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
         client = app.test_client()
         flag_deletion_url = "flag/delete_all"
         response = client.delete(flag_deletion_url)
@@ -3513,15 +3476,15 @@ def _get_connection_string(container):
     return "mongodb://test:test@localhost:"+container.get_exposed_port(27017)
 
 
-def _create_flagging_doa(container):
+def _create_flagging_dao(container):
     return FlaggingMongo(_get_connection_string(container))
 
 def test_simple_create():
     app = Flask(__name__)
     app.config["TESTING"] = True
     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
-            _create_flagging_doa(container) as flagging_doa:
-        make_routes(app, flagging_doa)
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
         client = app.test_client()
         flag_deletion_url = "flag/delete_all"
         response = client.delete(flag_deletion_url)

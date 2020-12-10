@@ -1,21 +1,11 @@
 import pytest
 from flask import Flask
 from handlers.FlaggingAPI import make_routes
-from app import _create_flagging_doa
-import re
-from random_object_id import generate
-from flag_names.FlagService import pull_flag_logic_information
+from app import _create_flagging_dao
 from flagging.FlagLogicInformation import FlagLogicInformation
-from flagging.FlaggingNodeVisitor import CodeLocation
-from flagging.VariableInformation import VariableInformation
-from flagging.ModuleInformation import ModuleInformation
 from flagging.TypeValidationResults import TypeValidationResults
-from flagging.ErrorInformation import ErrorInformation
 from unittest import mock
-from flagging.FlaggingNodeVisitor import determine_variables
 from front_end.TransferFlagLogicInformation import _convert_FLI_to_TFLI
-import requests
-import json
 from bson.objectid import ObjectId
 from front_end.FlaggingSchemaInformation import FlaggingSchemaInformation
 
@@ -25,8 +15,8 @@ from front_end.FlaggingSchemaInformation import FlaggingSchemaInformation
 def client():
     app = Flask(__name__)
     app.config["TESTING"] = True
-    flagging_doa = _create_flagging_doa()
-    make_routes(app, flagging_doa)
+    flagging_dao = _create_flagging_dao()
+    make_routes(app, flagging_dao)
     client = app.test_client()
     return client
 
@@ -105,9 +95,9 @@ flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                logic=flag_logic)
 response_code = 200
 @mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=([ObjectId("1a"*12)], 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_specific_flag", return_value=flag_uuid, autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_name", return_value=flag_name, autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_logic_information", return_value=flag_logic, autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_specific_flag", return_value=flag_uuid, autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_name", return_value=flag_name, autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_logic_information", return_value=flag_logic, autospec=True)
 def test_get_specific_flag_id_valid(mock_get_flag_logic_information, mock_get_flag_name, mock_get_specific_flag, mock_get_flag_ids, client):
     flag_id = "1a"*12
     url = "/flag/get_specific/" + flag_id
@@ -172,9 +162,9 @@ flag_uuid = ObjectId("1a"*12)
 flag_name = "FlagName1a"
 flag_logic = _convert_FLI_to_TFLI(FlagLogicInformation())
 @mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=([ObjectId("2b"*12)], 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.duplicate_flag", return_value=flag_uuid, autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_logic_information", return_value=flag_logic, autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_name", return_value=flag_name, autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.duplicate_flag", return_value=flag_uuid, autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_logic_information", return_value=flag_logic, autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_name", return_value=flag_name, autospec=True)
 def test_duplicate_flag_id_valid(mock_flag_name, mock_flag_logic, mock_duplicated_id, mock_get_flag_ids, client):
     og_flag_id = "2b"*12
     dup_flag_id = "1a"*12
@@ -254,7 +244,7 @@ def test_update_flag_name_flag_id_not_exist(mock_get_flag_ids, client):
 #update flag name, new name is same as old name
 flag_name = "FlagName2b"
 @mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=([ObjectId("2b"*12)], 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_name", return_value=flag_name, autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_name", return_value=flag_name, autospec=True)
 def test_update_flag_name_non_unique_name(mock_get_flag_name, mock_get_flag_ids, client):
     flag_name = "FlagName2b"
     flag_id = "2b"*12
@@ -275,9 +265,9 @@ new_flag_name = "FlagName1a"
 new_flag_id = ObjectId("1a"*12)
 flag_logic = _convert_FLI_to_TFLI(FlagLogicInformation())
 @mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=([ObjectId("2b"*12)], 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_name", side_effect=[og_flag_name, new_flag_name], autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_logic_information", return_value=flag_logic, autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.update_flag", return_value=new_flag_id, autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_name", side_effect=[og_flag_name, new_flag_name], autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_logic_information", return_value=flag_logic, autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.update_flag", return_value=new_flag_id, autospec=True)
 def test_update_flag_name_valid(mock_update_flag, mock_get_flag_logic, mock_get_flag_name, mock_get_flag_ids, client):
     og_flag_id = "2b"*12
     new_flag_name = "FlagName1a"
@@ -340,8 +330,8 @@ def test_delete_flag_invalid_id(mock_get_flag_ids, client):
 #delete flag, valid
 @mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=([ObjectId("2b"*12)], 200), autospec=True)
 @mock.patch("handlers.FlaggingAPI.delete_flag_dependency", return_value=(ObjectId("3c"*12), 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_name", return_value="FlagName2b", autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.remove_flag", return_value=ObjectId("2b"*12), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_name", return_value="FlagName2b", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.remove_flag", return_value=ObjectId("2b"*12), autospec=True)
 def test_delete_flag_valid(mock_remove_flag, mock_get_flag_name, mock_delete_flag_dependency, mock_get_flag_ids, client):
     flag_id = "2b"*12
     flag_name = "FlagName2b"
@@ -434,8 +424,8 @@ def test_move_flag_to_production_invalid_id(mock_get_all_flag_ids, client):
 #     validation_results=TypeValidationResults())
 # error_flag = pull_flag_logic_information(unique_dummy_flag=unique_dummy_flag)
 @mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=([ObjectId("2b"*12)], 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_specific_flag_error", return_value="ERROR", autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_name", return_value="FlagName2b", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_specific_flag_error", return_value="ERROR", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_name", return_value="FlagName2b", autospec=True)
 def test_move_flag_to_production_error_in_flag(mock_flag_error, mock_get_all_flag_ids, mock_get_flag_name, client):
     flag_id = "2b"*12
     flag_name = "FlagName2b"
@@ -452,9 +442,9 @@ def test_move_flag_to_production_error_in_flag(mock_flag_error, mock_get_all_fla
 
 #move flag to production, valid
 @mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=([ObjectId("2b"*12)], 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_specific_flag_error", return_value="", autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_name", return_value="FlagName2b", autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.update_flag", return_value=ObjectId("2b"*12), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_specific_flag_error", return_value="", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_name", return_value="FlagName2b", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.update_flag", return_value=ObjectId("2b"*12), autospec=True)
 def test_move_flag_to_production_valid(mock_update_flag, mock_get_flag_name, mock_get_flag_error, mock_get_flag_ids, client):
     flag_id = "2b" * 12
     flag_name = "FlagName2b"
@@ -554,8 +544,8 @@ def test_get_flags_in_flag_group_invalid_id(mock_get_flag_group_ids, client):
 
 #get flag ids in flag group, valid
 @mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("3a"*12)], 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_name", return_value="FlagGroupName3a", autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_flag", return_value=[ObjectId("2a"*12), ObjectId("2b"*12)], autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_name", return_value="FlagGroupName3a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_flag", return_value=[ObjectId("2a"*12), ObjectId("2b"*12)], autospec=True)
 def test_get_flags_in_flag_group_valid(mock_get_flag_group_flag, mock_get_flag_group_name, mock_get_flag_group_ids, client):
     flag_group_id = "3a" * 12
     flags_in_flag_group = [ObjectId("2a"*12), ObjectId("2b"*12)]
@@ -617,9 +607,9 @@ def test_get_specific_flag_group_invalid_id(mock_get_flag_group_id, client):
 
 #get specific flag group, valid
 @mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("3a"*12)], 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_specific_flag_group", return_value=ObjectId("1a"*12), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_flag", return_value=[ObjectId("2a"*12), ObjectId("2b"*12)], autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_specific_flag_group", return_value=ObjectId("1a"*12), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_flag", return_value=[ObjectId("2a"*12), ObjectId("2b"*12)], autospec=True)
 def test_get_specific_flag_group_valid(mock_get_flag_group_flags, mock_get_flag_group_name, mock_get_specific_fag,
                                        mock_get_flag_group_ids, client):
     flag_group_id = "1a" * 12
@@ -666,7 +656,7 @@ def test_create_flag_group_non_unique_name(mock_get_flag_group_names, client):
 
 #create flag group, valid
 @mock.patch("handlers.FlaggingAPI.get_flag_group_names", return_value=(["FlagGroupName1a", "FlagGroupName2b"], 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.add_flag_group", return_value=ObjectId("2a"*12), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.add_flag_group", return_value=ObjectId("2a"*12), autospec=True)
 def test_create_flag_group_valid(mock_add_flag_group, mock_get_flag_group_names, client):
     flag_group_name = "FlagGroupName2a"
     url = "flag_group/create/id_does_not_matter_here/" + flag_group_name
@@ -726,8 +716,8 @@ def test_delete_flag_group_invalid_id(mock_get_flag_group_ids, client):
 #delete flag group, valid
 @mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("3a"*12)], 200), autospec=True)
 @mock.patch("handlers.FlaggingAPI.delete_flag_dependency", return_value=(FlaggingSchemaInformation(), 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.remove_flag_group", return_value=ObjectId("1a"*12), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.remove_flag_group", return_value=ObjectId("1a"*12), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
 def test_delete_flag_group_valid(mock_remove_flag_group, mock_delete_flag_dependency, mock_get_flag_group_ids,
                                  mock_get_flag_group_name, client):
     flag_group_id = "1a"*12
@@ -824,7 +814,7 @@ def test_add_flag_to_flag_group_missing_flag_id(mock_get_flag_group_flags, mock_
 @mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("2a"*12)], 200), autospec=True)
 @mock.patch("handlers.FlaggingAPI.get_flag_group_flags",
             return_value=(FlaggingSchemaInformation(logic=[ObjectId("1f"*12), ObjectId("2f"*12)]), 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
 def test_add_flag_to_flag_group_flag_id_no_exist(mock_get_flag_group_flags, mock_get_flag_group_ids, mock_get_flag_ids,
                                                  mock_get_flag_group_name, client):
     flag_group_id = "1a"*12
@@ -846,7 +836,7 @@ def test_add_flag_to_flag_group_flag_id_no_exist(mock_get_flag_group_flags, mock
 @mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("2a"*12)], 200), autospec=True)
 @mock.patch("handlers.FlaggingAPI.get_flag_group_flags",
             return_value=(FlaggingSchemaInformation(logic=[ObjectId("1f"*12), ObjectId("2f"*12)]), 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
 def test_add_flag_to_flag_group_invalid_flag_id(mock_get_flag_group_flags, mock_get_flag_group_ids, mock_get_flag_ids,
                                                 mock_get_flag_group_name, client):
     flag_group_id = "1a"*12
@@ -868,7 +858,7 @@ def test_add_flag_to_flag_group_invalid_flag_id(mock_get_flag_group_flags, mock_
 @mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("2a"*12)], 200), autospec=True)
 @mock.patch("handlers.FlaggingAPI.get_flag_group_flags",
             return_value=(FlaggingSchemaInformation(logic=[ObjectId("1f"*12), ObjectId("2f"*12)]), 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
 def test_add_flag_to_flag_group_flag_id_already_exists_in_flag_group(mock_get_flag_group_flags, mock_get_flag_group_ids, mock_get_flag_ids,
                                                 mock_get_flag_group_name, client):
     flag_group_id = "1a"*12
@@ -890,10 +880,10 @@ def test_add_flag_to_flag_group_flag_id_already_exists_in_flag_group(mock_get_fl
 @mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("2a"*12)], 200), autospec=True)
 @mock.patch("handlers.FlaggingAPI.get_flag_group_flags",
             return_value=(FlaggingSchemaInformation(logic=[ObjectId("1f"*12), ObjectId("2f"*12)]), 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_names_from_flag_group", return_value=["FlagName1f", "FlagName2f"], autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_name", return_value="FlagName1f", autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_logic_information", return_value=_convert_FLI_to_TFLI(FlagLogicInformation()), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_names_from_flag_group", return_value=["FlagName1f", "FlagName2f"], autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_name", return_value="FlagName1f", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_logic_information", return_value=_convert_FLI_to_TFLI(FlagLogicInformation()), autospec=True)
 def test_add_flag_to_flag_group_flag_name_already_in_flag(mock_get_flag_ids, mock_get_flag_group_ids, mock_get_flag_group_flags,
                                                           mock_get_flag_group_name, mock_get_flag_names_in_flag_group,
                                                           mock_get_flag_name, mock_referenced_flags, client):
@@ -918,18 +908,18 @@ def test_add_flag_to_flag_group_flag_name_already_in_flag(mock_get_flag_ids, moc
 @mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("2a"*12)], 200), autospec=True)
 @mock.patch("handlers.FlaggingAPI.get_flag_group_flags",
             return_value=(FlaggingSchemaInformation(logic=[ObjectId("1f"*12), ObjectId("2f"*12)]), 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_names_from_flag_group", return_value=["FlagName1f", "FlagName2f"], autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_name", return_value="FlagName3f", autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_logic_information", return_value=_convert_FLI_to_TFLI(FlagLogicInformation()), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.update_flag_group", return_value=ObjectId("1a"*12), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_status", return_value="PRODUCTION", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_names_from_flag_group", return_value=["FlagName1f", "FlagName2f"], autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_name", return_value="FlagName3f", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_logic_information", return_value=_convert_FLI_to_TFLI(FlagLogicInformation()), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.update_flag_group", return_value=ObjectId("1a"*12), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_status", return_value="PRODUCTION", autospec=True)
 @mock.patch("front_end.FlaggingValidateLogic.validate_cyclical_logic", return_value=TypeValidationResults(), autospec=True)
 @mock.patch("handlers.FlaggingAPI.get_specific_flag", return_value=(FlagLogicInformation(), 200), autospec=True)
 @mock.patch("handlers.FlaggingAPI.get_flag_dep_ids", return_value=([ObjectId("1b"*12)], 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_specific_flag_dep_id_by_flag_id_and_flag_group_id", return_value=ObjectId("1b"*12), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_specific_flag_dep_id_by_flag_id_and_flag_group_id", return_value=ObjectId("1b"*12), autospec=True)
 @mock.patch("handlers.FlaggingAPI.add_dependencies_to_flag", return_value=(ObjectId("1b"*12), 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_flag", return_value=[ObjectId("1f"*12), ObjectId("2f"*12), ObjectId("3f"*12)], autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_flag", return_value=[ObjectId("1f"*12), ObjectId("2f"*12), ObjectId("3f"*12)], autospec=True)
 def test_add_flag_to_flag_group_valid(mock_get_flag_ids, mock_get_flag_group_ids, mock_get_flag_group_flags,
                                       mock_get_flag_group_name, mock_get_flag_names_in_flag_group,
                                       mock_get_flag_name, mock_referenced_flags, mock_update_flag_group,
@@ -1049,7 +1039,7 @@ get_all_flag_group_return_value = FlaggingSchemaInformation(valid=True,
 @mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("1b"*12)], 200), autospec=True)
 @mock.patch("handlers.FlaggingAPI.get_flag_group_flags", return_value=(get_all_flag_group_return_value, 200), autospec=True)
 @mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=([ObjectId("2a"*12), ObjectId("2b"*12), ObjectId("2c"*12), ObjectId("2d"*12)], 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
 def test_remove_flag_from_flag_group_flag_no_exist(mock_get_flag_ids, mock_get_flag_group_flags, mock_get_flag_group_ids,
                                                    mock_get_flag_group_name, client):
     flag_group_id = "1a" * 12
@@ -1077,7 +1067,7 @@ get_all_flag_group_return_value = FlaggingSchemaInformation(valid=True,
 @mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("1b"*12)], 200), autospec=True)
 @mock.patch("handlers.FlaggingAPI.get_flag_group_flags", return_value=(get_all_flag_group_return_value, 200), autospec=True)
 @mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=([ObjectId("2a"*12), ObjectId("2b"*12), ObjectId("2c"*12), ObjectId("2d"*12)], 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
 def test_remove_flag_from_flag_group_flag_not_in_flag_group(mock_get_flag_ids, mock_get_flag_group_flags, mock_get_flag_group_ids,
                                                             mock_get_flag_group_name, client):
     flag_group_id = "1a" * 12
@@ -1104,7 +1094,7 @@ get_all_flag_group_return_value = FlaggingSchemaInformation(valid=True,
 @mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("1b"*12)], 200), autospec=True)
 @mock.patch("handlers.FlaggingAPI.get_flag_group_flags", return_value=(get_all_flag_group_return_value, 200), autospec=True)
 @mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=([ObjectId("2a"*12), ObjectId("2b"*12), ObjectId("2c"*12), ObjectId("2d"*12)], 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
 def test_remove_flag_from_flag_group_invalid_flag_id(mock_get_flag_ids, mock_get_flag_group_flags, mock_get_flag_group_ids,
                                                     mock_get_flag_group_name, client):
     flag_group_id = "1a" * 12
@@ -1131,12 +1121,12 @@ get_all_flag_group_return_value = FlaggingSchemaInformation(valid=True,
 @mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("1b"*12)], 200), autospec=True)
 @mock.patch("handlers.FlaggingAPI.get_flag_group_flags", return_value=(get_all_flag_group_return_value, 200), autospec=True)
 @mock.patch("handlers.FlaggingAPI.get_all_flag_ids", return_value=([ObjectId("2a"*12), ObjectId("2b"*12), ObjectId("2c"*12), ObjectId("2d"*12)], 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
 @mock.patch("handlers.FlaggingAPI.delete_flag_dependency", return_value=(ObjectId("3a"*12), 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.remove_specific_flag_dependencies_via_flag_id_and_flag_group_id", autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.update_flag_group", return_value=ObjectId("1a"*12), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.remove_specific_flag_dependencies_via_flag_id_and_flag_group_id", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.update_flag_group", return_value=ObjectId("1a"*12), autospec=True)
 @mock.patch("front_end.FlaggingValidateLogic.validate_cyclical_logic", return_value=TypeValidationResults(), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_flag", return_value=[ObjectId("2b"*12)], autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_flag", return_value=[ObjectId("2b"*12)], autospec=True)
 def test_remove_flag_from_flag_group_valid(mock_get_flag_group_ids, mock_get_flag_group_flags_handler,
                                            mock_get_all_flag_ids, mock_get_flag_group_name, mock_delete_dep,
                                            mock_rm_flag_dep_via_flag_id_and_flag_group_id, mock_update_flag_group,
@@ -1207,7 +1197,7 @@ def test_duplicate_flag_group_invalid_flag_group_id(mock_get_flag_group_ids, cli
 
 #duplicate flag group, missing new name
 @mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("1b"*12)], 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
 def test_duplicate_flag_group_missing_new_name(mock_get_flag_group_ids, mock_get_flag_group_name, client):
     flag_group_id = "1a" * 12
     flag_group_name = "NEWFlagGroupName1a"
@@ -1223,7 +1213,7 @@ def test_duplicate_flag_group_missing_new_name(mock_get_flag_group_ids, mock_get
 
 #duplicate flag group, new name same as old name
 @mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("1b"*12)], 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
 def test_duplicate_flag_group_same_name(mock_get_flag_group_ids, mock_get_flag_group_name, client):
     flag_group_id = "1a" * 12
     flag_group_name = "FlagGroupName1a"
@@ -1239,10 +1229,10 @@ def test_duplicate_flag_group_same_name(mock_get_flag_group_ids, mock_get_flag_g
 
 #dupliacte flag group, valid
 @mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("1b"*12)], 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.duplicate_flag_group", return_value=ObjectId("2a"*12), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.update_flag_group", return_value=ObjectId("2a"*12), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_flag", return_value=[ObjectId("1f"*12), ObjectId("2f"*12)], autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.duplicate_flag_group", return_value=ObjectId("2a"*12), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.update_flag_group", return_value=ObjectId("2a"*12), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_flag", return_value=[ObjectId("1f"*12), ObjectId("2f"*12)], autospec=True)
 def test_duplicate_flag_group_valid(mock_get_flag_group_ids, mock_get_flag_group_name, mock_duplicate_flag_group,
                                     mock_update_flag_group, mock_get_flag_group_flag, client):
     flag_group_id = "1a" * 12
@@ -1302,9 +1292,9 @@ def test_move_flag_group_to_production_invalid_flag_group_id(mock_get_flag_group
 
 #move flag group to production, error in flag group
 @mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("1b"*12)], 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_errors", return_value="HAS ERROR HERE", autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_flag", return_value=[ObjectId("1f"*12), ObjectId("2f"*12), ObjectId("3f"*12)], autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_errors", return_value="HAS ERROR HERE", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_flag", return_value=[ObjectId("1f"*12), ObjectId("2f"*12), ObjectId("3f"*12)], autospec=True)
 def test_move_flag_group_to_production_error_error_in_flag_group(mock_get_flag_group_ids, mock_get_flag_group_error,
                                                                  mock_get_flag_group_name, mock_get_flag_group_flags, client):
     flag_group_id = "1a" * 12
@@ -1319,10 +1309,10 @@ def test_move_flag_group_to_production_error_error_in_flag_group(mock_get_flag_g
     assert response.json["valid"] == False
 
 @mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("1b"*12)], 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_errors", return_value="", autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_flag", return_value=[ObjectId("1f"*12), ObjectId("2f"*12), ObjectId("3f"*12)], autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_specific_flag_error", return_value="HAS FLAG ERROR HERE", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_errors", return_value="", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_flag", return_value=[ObjectId("1f"*12), ObjectId("2f"*12), ObjectId("3f"*12)], autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_specific_flag_error", return_value="HAS FLAG ERROR HERE", autospec=True)
 def test_move_flag_group_to_production_error_in_flag_in_flag_group(mock_get_flag_group_ids, mock_get_flag_group_errors, mock_get_flag_group_name,
                                                                    mock_get_flag_group_flags, mock_get_specific_flag_error, client):
     flag_group_id = "1a" * 12
@@ -1337,11 +1327,11 @@ def test_move_flag_group_to_production_error_in_flag_in_flag_group(mock_get_flag
     assert response.json["valid"] == False
 
 @mock.patch("handlers.FlaggingAPI.get_flag_group_ids", return_value=([ObjectId("1a"*12), ObjectId("1b"*12)], 200), autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_errors", return_value="", autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_flag_group_flag", return_value=[ObjectId("1f"*12), ObjectId("2f"*12), ObjectId("3f"*12)], autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.get_specific_flag_error", return_value="", autospec=True)
-@mock.patch("front_end.FlaggingSchemaService.FlaggingDOA.update_flag_group", return_value=ObjectId("1a"*12), autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_errors", return_value="", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_name", return_value="FlagGroupName1a", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_flag_group_flag", return_value=[ObjectId("1f"*12), ObjectId("2f"*12), ObjectId("3f"*12)], autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.get_specific_flag_error", return_value="", autospec=True)
+@mock.patch("front_end.FlaggingSchemaService.FlaggingDAO.update_flag_group", return_value=ObjectId("1a"*12), autospec=True)
 def test_move_flag_group_to_production_valid(mock_get_flag_group_ids, mock_get_flag_group_errors, mock_get_flag_group_name,
                                              mock_get_flag_group_flags, mock_get_specific_flag_error, mock_update_flag_group,
                                              client):

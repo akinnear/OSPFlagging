@@ -16,8 +16,6 @@ pymongo = "^3.11.0"
 datetime = "^4.3"
 mongomock = "^3.20.0"
 flask = "^1.1.2"
-flask_pymongo = "^2.3.0"
-random-object-id = "^2.0.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.6"
@@ -25,6 +23,8 @@ numpy = "^1.19.1"
 pandas = "^1.1.1"
 mock = "^4.0.2"
 testcontainers = "^3.1.0"
+flask_pymongo = "^2.3.0"
+random_object_id = "^2.0.0"
 
 [build-system]
 requires = ["poetry>=0.12"]
