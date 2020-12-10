@@ -113,59 +113,151 @@ else:
 
 
 
+# test flag home page
+def test_flag_home():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        response = client.get("flag")
+        assert response.status_code == 200
+        assert response.get_data().decode("utf-8") == "flag home page to go here"
+
+# test get flags no flags
+def test_get_flags_no_flags():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        response = client.get("flag/get")
+        assert response.status_code == 200
+        assert response.json["flags"] == []
 
 
+# test get flag ids no ids
+def test_get_flag_ids_no_flag_ids():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        response = client.get("flag/get_ids")
+        assert response.status_code == 200
+        assert response.json["_ids"] == []
 
-def test_simple_request_post(client):
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
 
-    flag_logic ="""\
+# get specific flag, id does not exist
+def test_get_specific_flag_does_not_exist():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        flag_id = "1a"*12
+        url = "flag/get_specific/" + flag_id
+        response = client.get(url)
+        assert response.status_code == 404
+        assert response.status == "404 NOT FOUND"
+        assert response.json["flag_logic"] == None
+        assert response.json["flag_name"] == None
+        assert response.json["message"] == "flag: " + flag_id + " does not exist"
+        assert response.json["simple_message"] == "flag does not exist"
+        assert response.json["uuid"] == "None"
+        assert response.json["valid"] == False
+
+
+def test_get_specific_flag_does_not_exist_2():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        flag_name = "FlagName1A"
+        flag_logic = """\
 if FF1 > 10:
     return True
 else:
     return False"""
-    flag_logic_info = determine_variables(flag_logic)
-    payload = _convert_FLI_to_TFLI(flag_logic_info)
-    response = client.post("flag/create_flag/x/Flag1A", data=json.dumps(payload),
-                           content_type='application/json')
-    # url = "http://localhost:5000/flag/create_flag/x/Flag1A"
-    #
-    # r = requests.post(url, data=json.dumps(payload))
+        payload = {"FLAG_NAME": flag_name, "FLAG_LOGIC": flag_logic}
+        url = "flag/create/x/" + payload["FLAG_NAME"]
+        response = client.post(url, data=json.dumps(payload),
+                               content_type='application/json')
+        assert response.status_code == 200
+        assert response.json["flag_name"] == payload["FLAG_NAME"]
+        assert response.json["message"] == "new flag created"
+        assert response.json["simple_message"] == response.json["message"]
+        assert response.json["valid"] == True
+        assert response.json["flag_logic"] == _convert_FLI_to_TFLI(determine_variables(payload["FLAG_LOGIC"]))
 
-    unpack = client.get("flag/get_flags")
-    print("hello")
-@pytest.fixture
-def client():
+        # confirm created flag id is in get_ids call
+        response_unpack = client.get("flag/get_ids")
+        assert response_unpack.status_code == 200
+        assert response.json["uuid"] in response_unpack.json["_ids"]
+
+        flag_id = "1a"*12
+        if flag_id == response.json["uuid"]:
+            flag_id = "1b"*12
+
+        url = "flag/get_specific/" + flag_id
+        response = client.get(url)
+        assert response.status_code == 404
+        assert response.status == "404 NOT FOUND"
+        assert response.json["flag_logic"] == None
+        assert response.json["flag_name"] == None
+        assert response.json["message"] == "flag: " + flag_id + " does not exist"
+        assert response.json["simple_message"] == "flag does not exist"
+        assert response.json["uuid"] == "None"
+        assert response.json["valid"] == False
+
+
+# get specific flag, no id
+def test_get_specific_flag_missing_id():
     app = Flask(__name__)
     app.config["TESTING"] = True
-    flagging_dao = _create_flagging_dao()
-    make_routes(app, flagging_dao)
-    client = app.test_client()
-    return client
-
-def test_simple(client):
-    flag_logic = """\
-    if FF1 > 10:
-        return True
-    else:
-        return False"""
-    flag_logic_information = determine_variables(flag_logic)
-    flag_name = "Flag1A"
-    url_prefix = "http://localhost:5000/"
-    url = url_prefix + "flag/get_flag_ids"
-    r = requests.get(url=url)
-    payload = r.json()
-    print('hello')
-
-    r = requests.get(url="flag/get_flags")
-    print("hello")
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        response = client.get("flag/get_specific")
+        assert response.status_code == 400
+        assert response.json["flag_logic"] == None
+        assert response.json["flag_name"] == None
+        assert response.json["message"] == "flag id not specified"
+        assert response.json["simple_message"] == "flag id not specified"
+        assert response.json["uuid"] == "None"
+        assert response.json["valid"] == False
 
 
-# test flag home page
-def test_flag_home(client):
+
+# get specifif flag, id not valid
+def test_get_specific_flag_invalid_id():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        flag_id = "1a"*2
+        url = "flag/get_specific/" + flag_id
+        response = client.get(url)
+        assert response.status_code == 400
+        assert response.json["flag_logic"] == None
+        assert response.json["flag_name"] == None
+        assert response.json["message"] == "error converting flag id to Object ID type"
+        assert response.json["simple_message"] == "error converting flag id to Object ID type"
+        assert response.json["uuid"] == "None"
+        assert response.json["valid"] == False
+
+
+# get specific flag, valid id, have to create flag first
+def test_get_specific_flag_id_valid():
     app = Flask(__name__)
     app.config["TESTING"] = True
     with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
@@ -176,103 +268,43 @@ def test_flag_home(client):
         response = client.delete(flag_deletion_url)
         assert response.status_code == 200
 
-        #confirm no flags
-        flag_get_url = "flag/get_ids"
-        response = client.get(flag_get_url)
+        # confirm empty database
+        response = client.get("flag/get_ids")
+        assert response.status_code == 200
+        assert response.json["_ids"] == []
 
-        print("hello")
+        flag_name = "FlagName1A"
+        flag_logic = """\
+if FF1 > 10:
+    return True
+else:
+    return False"""
+        payload = {"FLAG_NAME": flag_name, "FLAG_LOGIC": flag_logic}
+        url = "flag/create/x/" + payload["FLAG_NAME"]
+        response = client.post(url, data=json.dumps(payload),
+                               content_type='application/json')
+        assert response.status_code == 200
+        assert response.json["flag_name"] == payload["FLAG_NAME"]
+        assert response.json["message"] == "new flag created"
+        assert response.json["simple_message"] == response.json["message"]
+        assert response.json["valid"] == True
+        assert response.json["flag_logic"] == _convert_FLI_to_TFLI(determine_variables(payload["FLAG_LOGIC"]))
 
-        flag_home_url = "flag"
-        response = client.get(flag_home_url)
+        # confirm created flag id is in get_ids call
+        response_unpack = client.get("flag/get_ids")
+        assert response_unpack.status_code == 200
+        assert response.json["uuid"] in response_unpack.json["_ids"]
 
-        print('hello')
-
-
-# test get flags no flags
-def test_get_flags_no_flags(client):
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
-
-    url = '/flag/get_flags'
-    response = client.get(url)
-    data = response.get_data()
-    str_data = data.decode("utf-8").replace("\n", "")
-    assert str_data == '{"flags":[]}'
-    assert response.status_code == 200
-
-
-# test get flag ids no ids
-def test_get_flag_ids_no_flag_ids(client):
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
-
-    url = '/flag/get_flag_ids'
-    response = client.get(url)
-    data = response.get_data()
-    str_data = data.decode("utf-8").replace("\n", "")
-    assert str_data == '{"_ids":[]}'
-    assert response.status_code == 200
-
-
-# get specific flag, id does not exist
-def test_get_specific_flag_does_not_exist(client):
-    url = '/flag/get_specific_flag/111111111111111111111111'
-
-    response = client.get(url)
-    assert response.status_code == 404
-
-
-# get specific flag, no id
-def test_get_specific_flag_missing_id(client):
-    url = "/flag/get_specific_flag"
-
-    response = client.get(url)
-    assert response.status_code == 400
-
-
-# get specifif flag, id not valid
-def test_get_specific_flag_invalid_id(client):
-    url = "flag/get_specific_flag/123"
-
-    response = client.get(url)
-    assert response.status_code == 400
-
-
-# mock flag logic
-# get specific flag, valid id, have to create flag first
-def test_get_specific_flag_id_valid(client):
-    # delete all flags first
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
-
-    # create valid flag first
-    flag_creation_url = "flag/create_flag/XX/Flag1A"
-    response = client.post(flag_creation_url)
-    assert response.status_code == 200
-
-    # get new flag id
-    flag_id_get_url = "flag/get_flag_ids"
-    response = client.get(flag_id_get_url)
-    assert response.status_code == 200
-
-    # unpack flag id
-    x = response.get_data().decode("utf-8")
-    id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
-
-    # call valid get specific flag
-    specific_flag_url = "flag/get_specific_flag/" + id
-    response = client.get(specific_flag_url)
-    assert response.status_code == 200
-
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
+        # confirm standard get
+        response_2 = client.get("flag/get")
+        assert response_2.status_code == 200
+        assert response_2.json["flags"][0]["FLAG_ERRORS"] == ""
+        assert response_2.json["flags"][0]["FLAG_LOGIC"] == _convert_FLI_to_TFLI(
+            determine_variables(payload["FLAG_LOGIC"]))
+        assert response_2.json["flags"][0]["FLAG_NAME"] == payload["FLAG_NAME"]
+        assert response_2.json["flags"][0]["FLAG_STATUS"] == "PRODUCTION_READY"
+        assert response_2.json["flags"][0]["REFERENCED_FLAGS"] == []
+        assert response_2.json["flags"][0]["_id"] == response.json["uuid"]
 
 
 # create flag, missing flag name
