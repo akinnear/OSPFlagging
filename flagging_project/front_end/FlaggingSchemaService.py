@@ -101,8 +101,8 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
             specific_flag_logic = flagging_dao.get_flag_logic_information(add_flag_id)
             specific_flag_name = flagging_dao.get_flag_name(add_flag_id)
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="error in flag logic",
-                                                           simple_message="error in flag logic",
+                                                           message="flag id: " + str(add_flag_id) + " was created but has error in flag logic",
+                                                           simple_message="flag created with errors",
                                                            uuid=add_flag_id,
                                                            name=specific_flag_name,
                                                            logic=specific_flag_logic)
@@ -117,7 +117,7 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
         specific_flag_logic = flagging_dao.get_flag_logic_information(add_flag_id)
         specific_flag_name = flagging_dao.get_flag_name(add_flag_id)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message="new flag created",
+                                                       message="flag id: " + str(add_flag_id) + " has been created",
                                                        simple_message="new flag created",
                                                        uuid=add_flag_id,
                                                        name=specific_flag_name,
