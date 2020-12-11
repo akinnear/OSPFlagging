@@ -30,6 +30,8 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
     for used_var, cl in flag_logic_info.used_variables.items():
         if used_var.name in flag_feeders:
             del used_variables[used_var]
+        elif used_var.name == "f":
+            del used_variables[used_var]
 
     for used_var, cl in flag_logic_info.assigned_variables.items():
         try:
