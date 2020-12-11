@@ -138,8 +138,7 @@ def duplicate_flag(original_flag_id, existing_flags, flagging_dao: FlaggingDAO):
         try:
             if ObjectId(original_flag_id) not in existing_flags:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                               message="flag " + str(
-                                                                   original_flag_id) + " does not exist",
+                                                               message="flag " + str(original_flag_id) + " does not exist",
                                                                simple_message="flag does not exist")
                 response_code = 404
         except Exception as e:
