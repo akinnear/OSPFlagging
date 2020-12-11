@@ -2711,7 +2711,7 @@ else:
     test_output = determine_variables(logic)
     print('hello')
 
-def test_simple_2():
+def test_referenced_flag_embedded_in_flag_logic():
     logic = """\
 if FF1 > 10:
     if f["Flag_1A"] == True:
@@ -2719,21 +2719,28 @@ if FF1 > 10:
     else:
         return False
 else:
-    if f.get("Flag_2B") == False:
+    if f["FLAG_2B"] == False:
         return True
     else:
         return False"""
     test_output = determine_variables(logic)
-    print("hello")
+    assert test_output.used_variables.keys() == {VariableInformation("f"), VariableInformation("FF1")}
+    assert test_output.used_variables[VariableInformation("f")] == {CodeLocation(2, 7), CodeLocation(7, 7)}
+    assert test_output.used_variables[VariableInformation("FF1")] == {CodeLocation(1, 3)}
+    assert test_output.assigned_variables.keys() == set()
+    assert test_output.referenced_functions.keys() == set()
+    assert test_output.defined_functions.keys() == set()
+    assert test_output.defined_classes.keys() == set()
+    assert test_output.referenced_modules.keys() == set()
+    assert test_output.referenced_flags.keys() == {"Flag_1A", "FLAG_2B"}
+    assert test_output.referenced_flags["Flag_1A"] == {CodeLocation(2, 10)}
+    assert test_output.referenced_flags["FLAG_2B"] == {CodeLocation(7, 10)}
+    assert test_output.return_points == {CodeLocation(3, 8), CodeLocation(5, 8), CodeLocation(8, 8), CodeLocation(10, 8)}
+    assert test_output.errors == []
+    assert test_output.validation_results.other_errors == {}
+    assert test_output.validation_results.validation_errors == {}
+    assert test_output.validation_results.warnings == {}
 
-def test_simple_3():
-    logic = """\
-if f["Flag_1A"] == True:
-    return True
-else:
-    return False"""
-    test_output = determine_variables(logic)
-    print("hello")
     
     
 
