@@ -144,7 +144,7 @@ def duplicate_flag(original_flag_id, existing_flags, flagging_dao: FlaggingDAO):
         except Exception as e:
             print(e)
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="error in duplicating flag: " + str(original_flag_id),
+                                                           message="error in duplicating flag: " + str(original_flag_id) + ", invalid object Id type",
                                                            simple_message="error in duplicating flag")
             response_code = 400
     if flag_schema_object is None:
