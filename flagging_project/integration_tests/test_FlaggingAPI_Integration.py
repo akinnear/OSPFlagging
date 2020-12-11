@@ -680,111 +680,253 @@ else:
 
 
 # duplicate flag, missing flag id
-def test_duplicate_flag_missing_flag_id(client):
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
+def test_duplicate_flag_missing_flag_id():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        flag_deletion_url = "flag/delete_all"
+        response = client.delete(flag_deletion_url)
+        assert response.status_code == 200
 
-    # create flag
-    flag_creation_url = "flag/create_flag/XX/Flag1A"
-    response = client.post(flag_creation_url)
-    assert response.status_code == 200
+        # confirm empty database
+        response = client.get("flag/get_ids")
+        assert response.status_code == 200
+        assert response.json["_ids"] == []
 
-    flag_duplicate_missing_id_url = "flag/duplicate_flag"
-    response = client.post(flag_duplicate_missing_id_url)
-    assert response.status_code == 400
+        flag_name = "FlagName1A"
+        flag_logic = """\
+if FF1 > 10:
+    return True
+else:
+    return False"""
+        payload = {"FLAG_NAME": flag_name, "FLAG_LOGIC": flag_logic}
+        url = "flag/create/x/" + payload["FLAG_NAME"]
+        response = client.post(url, data=json.dumps(payload),
+                               content_type='application/json')
+        assert response.status_code == 200
+        assert response.json["flag_name"] == payload["FLAG_NAME"]
+        assert response.json["message"] == "flag id: " + response.json["uuid"] + " has been created"
+        assert response.json["simple_message"] == "new flag created"
+        assert response.json["valid"] == True
+        assert response.json["flag_logic"] == _convert_FLI_to_TFLI(determine_variables(payload["FLAG_LOGIC"]))
 
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
+        # confirm created flag id is in get_ids call
+        response_unpack = client.get("flag/get_ids")
+        assert response_unpack.status_code == 200
+        assert response.json["uuid"] in response_unpack.json["_ids"]
+
+        #duplicate flag, missing id
+        url = "flag/duplicate"
+        response = client.post(url)
+        assert response.status_code == 400
+        assert response.json["flag_name"] == None
+        assert response.json["message"] == "flag id must be specified"
+        assert response.json["simple_message"] == "flag id must be specified"
+        assert response.json["valid"] == False
+        assert response.json["uuid"] == "None"
+        assert response.json["flag_logic"] == None
+
+        #still ony one flag
+        # confirm created flag id is in get_ids call
+        response_unpack = client.get("flag/get_ids")
+        assert response_unpack.status_code == 200
+        assert len(response_unpack.json["_ids"]) == 1
 
 
 # duplicate flag, flag id does not exist
-def test_duplicate_flag_id_does_not_exist(client):
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
+def test_duplicate_flag_id_does_not_exist():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        flag_deletion_url = "flag/delete_all"
+        response = client.delete(flag_deletion_url)
+        assert response.status_code == 200
 
-    # create flag
-    flag_creation_url = "flag/create_flag/XX/Flag1A"
-    response = client.post(flag_creation_url)
-    assert response.status_code == 200
+        # confirm empty database
+        response = client.get("flag/get_ids")
+        assert response.status_code == 200
+        assert response.json["_ids"] == []
 
-    # get new flag id
-    flag_id_get_url = "flag/get_flag_ids"
-    response = client.get(flag_id_get_url)
-    assert response.status_code == 200
+        flag_name = "FlagName1A"
+        flag_logic = """\
+if FF1 > 10:
+    return True
+else:
+    return False"""
+        payload = {"FLAG_NAME": flag_name, "FLAG_LOGIC": flag_logic}
+        url = "flag/create/x/" + payload["FLAG_NAME"]
+        response = client.post(url, data=json.dumps(payload),
+                               content_type='application/json')
+        assert response.status_code == 200
+        assert response.json["flag_name"] == payload["FLAG_NAME"]
+        assert response.json["message"] == "flag id: " + response.json["uuid"] + " has been created"
+        assert response.json["simple_message"] == "new flag created"
+        assert response.json["valid"] == True
+        assert response.json["flag_logic"] == _convert_FLI_to_TFLI(determine_variables(payload["FLAG_LOGIC"]))
 
-    # unpack flag id
-    x = response.get_data().decode("utf-8")
-    id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
-    new_id = str(generate())
-    while new_id == id:
-        new_id = str(generate())
+        # confirm created flag id is in get_ids call
+        response_unpack = client.get("flag/get_ids")
+        assert response_unpack.status_code == 200
+        assert response.json["uuid"] in response_unpack.json["_ids"]
 
-    url_duplicate_flag_does_not_exist = "flag/duplicate_flag/" + new_id
-    response = client.post(url_duplicate_flag_does_not_exist)
-    assert response.status_code == 404
+        # duplicate flag, missing id
+        new_flag_id = "1a"*12
+        if new_flag_id == response.json["uuid"]:
+            new_flag_id = "1b"*12
+        url = "flag/duplicate/" + new_flag_id
+        response = client.post(url)
+        assert response.status_code == 404
+        assert response.json["flag_name"] == None
+        assert response.json["message"] == "flag " + new_flag_id + " does not exist"
+        assert response.json["simple_message"] == "flag does not exist"
+        assert response.json["valid"] == False
+        assert response.json["uuid"] == "None"
+        assert response.json["flag_logic"] == None
 
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
-
+        # still ony one flag
+        # confirm created flag id is in get_ids call
+        response_unpack = client.get("flag/get_ids")
+        assert response_unpack.status_code == 200
+        assert len(response_unpack.json["_ids"]) == 1
 
 # duplicate flag, invalid flag id
-def test_duplicate_flag_invalid_flag_id(client):
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
+def test_duplicate_flag_invalid_flag_id():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        flag_deletion_url = "flag/delete_all"
+        response = client.delete(flag_deletion_url)
+        assert response.status_code == 200
 
-    # create flag
-    flag_creation_url = "flag/create_flag/XX/Flag1A"
-    response = client.post(flag_creation_url)
-    assert response.status_code == 200
+        # confirm empty database
+        response = client.get("flag/get_ids")
+        assert response.status_code == 200
+        assert response.json["_ids"] == []
 
-    url_invalid_duplicate_flag = "flag/duplicate_flag/1A"
-    response = client.post(url_invalid_duplicate_flag)
-    assert response.status_code == 400
+        flag_name = "FlagName1A"
+        flag_logic = """\
+if FF1 > 10:
+    return True
+else:
+    return False"""
+        payload = {"FLAG_NAME": flag_name, "FLAG_LOGIC": flag_logic}
+        url = "flag/create/x/" + payload["FLAG_NAME"]
+        response = client.post(url, data=json.dumps(payload),
+                               content_type='application/json')
+        assert response.status_code == 200
+        assert response.json["flag_name"] == payload["FLAG_NAME"]
+        assert response.json["message"] == "flag id: " + response.json["uuid"] + " has been created"
+        assert response.json["simple_message"] == "new flag created"
+        assert response.json["valid"] == True
+        assert response.json["flag_logic"] == _convert_FLI_to_TFLI(determine_variables(payload["FLAG_LOGIC"]))
 
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
+        # confirm created flag id is in get_ids call
+        response_unpack = client.get("flag/get_ids")
+        assert response_unpack.status_code == 200
+        assert response.json["uuid"] in response_unpack.json["_ids"]
+
+        # duplicate flag, missing id
+        new_flag_id = "1a" * 2
+        url = "flag/duplicate/" + new_flag_id
+        response = client.post(url)
+        assert response.status_code == 400
+        assert response.json["flag_name"] == None
+        assert response.json["message"] == "error in duplicating flag: " + new_flag_id + ", invalid object Id type"
+        assert response.json["simple_message"] == "error in duplicating flag"
+        assert response.json["valid"] == False
+        assert response.json["uuid"] == "None"
+        assert response.json["flag_logic"] == None
+
+        # still ony one flag
+        # confirm created flag id is in get_ids call
+        response_unpack = client.get("flag/get_ids")
+        assert response_unpack.status_code == 200
+        assert len(response_unpack.json["_ids"]) == 1
 
 
-# dupplicate flag, valid
-def test_duplicate_flag_id_valid(client):
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
 
-    # create flag
-    flag_creation_url = "flag/create_flag/XX/Flag1A"
-    response = client.post(flag_creation_url)
-    assert response.status_code == 200
+def test_duplicate_flag_id_valid():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        flag_deletion_url = "flag/delete_all"
+        response = client.delete(flag_deletion_url)
+        assert response.status_code == 200
 
-    # get new flag id
-    flag_id_get_url = "flag/get_flag_ids"
-    response = client.get(flag_id_get_url)
-    assert response.status_code == 200
+        # confirm empty database
+        response = client.get("flag/get_ids")
+        assert response.status_code == 200
+        assert response.json["_ids"] == []
 
-    # unpack flag id
-    x = response.get_data().decode("utf-8")
-    id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+        flag_name = "FlagName1A"
+        flag_logic = """\
+if FF1 > 10:
+    return True
+else:
+    return False"""
+        payload = {"FLAG_NAME": flag_name, "FLAG_LOGIC": flag_logic}
+        url = "flag/create/x/" + payload["FLAG_NAME"]
+        response = client.post(url, data=json.dumps(payload),
+                               content_type='application/json')
+        assert response.status_code == 200
+        assert response.json["flag_name"] == payload["FLAG_NAME"]
+        assert response.json["message"] == "flag id: " + response.json["uuid"] + " has been created"
+        assert response.json["simple_message"] == "new flag created"
+        assert response.json["valid"] == True
+        assert response.json["flag_logic"] == _convert_FLI_to_TFLI(determine_variables(payload["FLAG_LOGIC"]))
 
-    url_duplicate_flag_valid = "flag/duplicate_flag/" + id
-    response = client.post(url_duplicate_flag_valid)
-    assert response.status_code == 200
 
-    # delete all flags
-    flag_deletion_url = "flag/delete_all_flags"
-    response = client.delete(flag_deletion_url)
-    assert response.status_code == 200
+        # confirm created flag id is in get_ids call
+        response_unpack = client.get("flag/get_ids")
+        assert response_unpack.status_code == 200
+        assert response.json["uuid"] in response_unpack.json["_ids"]
+
+        # duplicate flag, missing id
+        flag_id = response.json["uuid"]
+        url = "flag/duplicate/" + flag_id
+        r2 = client.post(url)
+        assert r2.status_code == 200
+        assert r2.json["flag_name"] == payload["FLAG_NAME"]
+        assert r2.json["message"] == response.json["uuid"] + " has been duplicated"
+        assert r2.json["simple_message"] == "flag has been duplicated"
+        assert r2.json["valid"] == True
+        assert r2.json["uuid"] != response.json["uuid"]
+        assert r2.json["flag_logic"] == _convert_FLI_to_TFLI(determine_variables(payload["FLAG_LOGIC"]))
+
+
+        # still ony one flag
+        # confirm created flag id is in get_ids call
+        response_unpack = client.get("flag/get_ids")
+        assert response_unpack.status_code == 200
+        assert len(response_unpack.json["_ids"]) == 2
+
+
+        response_unpack.json["_ids"].remove(response.json["uuid"])
+        new_uuid = response_unpack.json["_ids"][0]
+
+        #get new flag
+        url = "flag/get_specific/" + new_uuid
+        r3 = client.get(url)
+        assert r3.status_code == 200
+        assert r2.json["flag_name"] == payload["FLAG_NAME"]
+        assert r2.json["message"] == response.json["uuid"] + " has been duplicated"
+        assert r2.json["simple_message"] == "flag has been duplicated"
+        assert r2.json["valid"] == True
+        assert r2.json["uuid"] == new_uuid
+        assert r2.json["flag_logic"] == _convert_FLI_to_TFLI(determine_variables(payload["FLAG_LOGIC"]))
+
 
 
 # update flag name, missing flag id
