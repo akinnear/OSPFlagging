@@ -1990,22 +1990,20 @@ f["MY_FLAG"]"""
     
     
 
-#TODO
-# update test
-# no any return error
-def test_simple_flag_get():
-    logic = """
-f.get("MY_FLAG")"""
-    test_output = determine_variables(logic)
-    assert test_output.used_variables.keys() == {"f"}
-    assert test_output.assigned_variables.keys() == set()
-    assert test_output.referenced_functions.keys() == {"f.get"}
-    assert test_output.defined_functions.keys() == set()
-    assert test_output.defined_classes.keys() == set()
-    assert test_output.referenced_modules.keys() == set()
-    assert test_output.referenced_flags.keys() == {"MY_FLAG"}
-    assert test_output.referenced_flags["MY_FLAG"] == {CodeLocation(2, 7)}
-    assert test_output.errors == []
+
+# def test_simple_flag_get():
+#     logic = """
+# f.get("MY_FLAG")"""
+#     test_output = determine_variables(logic)
+#     assert test_output.used_variables.keys() == {"f"}
+#     assert test_output.assigned_variables.keys() == set()
+#     assert test_output.referenced_functions.keys() == {"f.get"}
+#     assert test_output.defined_functions.keys() == set()
+#     assert test_output.defined_classes.keys() == set()
+#     assert test_output.referenced_modules.keys() == set()
+#     assert test_output.referenced_flags.keys() == {"MY_FLAG"}
+#     assert test_output.referenced_flags["MY_FLAG"] == {CodeLocation(2, 7)}
+#     assert test_output.errors == []
     
     
 
@@ -2712,6 +2710,30 @@ else:
     return False"""
     test_output = determine_variables(logic)
     print('hello')
+
+def test_simple_2():
+    logic = """\
+if FF1 > 10:
+    if f["Flag_1A"] == True:
+        return True
+    else:
+        return False
+else:
+    if f.get("Flag_2B") == False:
+        return True
+    else:
+        return False"""
+    test_output = determine_variables(logic)
+    print("hello")
+
+def test_simple_3():
+    logic = """\
+if f["Flag_1A"] == True:
+    return True
+else:
+    return False"""
+    test_output = determine_variables(logic)
+    print("hello")
     
     
 
