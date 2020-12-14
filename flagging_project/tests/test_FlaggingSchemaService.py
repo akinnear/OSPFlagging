@@ -20,19 +20,6 @@ from front_end.ReferencedFlag import ReferencedFlag
 from front_end.TransferFlagLogicInformation import _convert_FLI_to_TFLI
 
 
-
-
-
-
-
-
-#mock add_flag() and mock valdate_logic
-#add_flag should return 1 as and ide
-#validate_logic should return a FlaggingValidationResults() object
-
-
-
-
 @mock.patch("flag_data.FlaggingDAO.FlaggingDAO")
 def test_mock_simple_class(flagging_dao):
     flagging_dao.return_value.add_flag.return_value = 1
@@ -257,7 +244,7 @@ def test_update_flag_name_missing_new_flag(flagging_dao, mvrb, mvl):
     assert result.valid == False
     assert result.message == "user must specify name of new flag"
     assert result.simple_message == "missing new flag name"
-    assert result.uuid == None
+    assert result.uuid == "FlagID1"
     assert result.name == None
     assert result.logic == None
     assert response_code >= 400
