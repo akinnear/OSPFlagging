@@ -174,7 +174,8 @@ def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, 
             # return error to user that original_flag_name and new_flag_name have to be specified
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="user must specify name of new flag",
-                                                           simple_message="missing new flag name")
+                                                           simple_message="missing new flag name",
+                                                           uuid=original_flag_id)
             response_code = 404
     #query to get existing flag names
     if flag_schema_object is None:
