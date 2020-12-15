@@ -67,6 +67,8 @@ def get_specific_flag(flag_id, existing_flags: [], flagging_dao: FlaggingDAO):
         specific_flag_id = flagging_dao.get_specific_flag(flag_id_object)
         specific_flag_logic = flagging_dao.get_flag_logic_information(flag_id_object)
         specific_flag_name = flagging_dao.get_flag_name(flag_id_object)
+        flag_status = flagging_dao.get_flag_status(flag_id_object)
+        referenced_flags = flagging_dao.get_referenced_flags(flag_id_object)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message='found flag id',
                                                        simple_message="found flag id",
@@ -199,7 +201,7 @@ def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, 
             for flag_group_id in flag_group_ids:
                 flags_in_flag_group_schema, response_code_get_flags = get_flag_group_flags(str(flag_group_id), flag_group_ids, flagging_dao)
                 flags_in_flag_group_x = flags_in_flag_group_schema.logic
-                if ObjectId(original_flag_id) in flags_in_flag_group_x:
+                if ObjectId(original_flag_id) in flags_in_flag_group_x or original_flag_id in flags_in_flag_group_x:
                     flags_in_flag_group[flag_group_id] = flags_in_flag_group_x
             if len(flags_in_flag_group) > 1:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
@@ -261,7 +263,7 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                 flags_in_flag_group_schema, response_code_get_flags = get_flag_group_flags(str(flag_group_id),
                                                                                            flag_group_ids, flagging_dao)
                 flags_in_flag_group_x = flags_in_flag_group_schema.logic
-                if ObjectId(flag_id) in flags_in_flag_group_x:
+                if ObjectId(flag_id) in flags_in_flag_group_x or flag_id in flags_in_flag_group_x:
                     flags_in_flag_group[flag_group_id] = flags_in_flag_group_x
             if len(flags_in_flag_group) > 1:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
