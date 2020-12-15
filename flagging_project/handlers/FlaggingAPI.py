@@ -104,7 +104,7 @@ def make_routes(app, flagging_dao):
                     data = {"valid": False,
                             "message": "error reading flag data to update flag logic",
                             "simple_message": "error reading flag data to update flag logic"}
-                    response_code = 500
+                    response_code = 400
                     return data, response_code
                 try:
                     flag_info = determine_variables(flag_payload["FLAG_LOGIC"])
@@ -112,7 +112,7 @@ def make_routes(app, flagging_dao):
                     data = {"valid": False,
                             "message": "error converting flag data to proper form to update flag logic",
                             "simple_message": "error converting flag data to proper form to update flag logic"}
-                    response_code = 500
+                    response_code = 400
                     return data, response_code
                 existing_flag_ids, response_code_ids = get_all_flag_ids(flagging_dao)
                 flag_schema_object, response_code = update_flag_logic(flag_id, flag_info, existing_flag_ids,
@@ -187,14 +187,15 @@ def make_routes(app, flagging_dao):
         else:
             if function == "get":
                 flag_groups, response_code = get_flag_groups(flagging_dao)
-                flag_groups = [str(x) for x in flag_groups]
-                data = {'flag_groups': flag_groups}
+                for flag_group in flag_groups:
+                    flag_group["_id"] = str(flag_group["_id"])
+                data = {"flag_groups": flag_groups}
                 return data, response_code
 
             if function == "get_ids":
                 flag_group_ids, response_code = get_flag_group_ids(flagging_dao)
                 flag_group_ids = [str(x) for x in flag_group_ids]
-                data = {'flag_group_ids': flag_group_ids}
+                data = {'_ids': flag_group_ids}
                 return data, response_code
 
             if function == "get_names":
