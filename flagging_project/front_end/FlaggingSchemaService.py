@@ -437,9 +437,9 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
 
             # update flag
             new_transfer_flag_logic_information = _convert_FLI_to_TFLI(new_flag_logic_information)
-            updated_flag_id = flagging_dao.update_flag(flag=flag_id, update_value=new_transfer_flag_logic_information,
-                                                         update_column=flag_logic_col_name)
             flag_id_object = ObjectId(flag_id)
+            updated_flag_id = flagging_dao.update_flag(flag=flag_id_object, update_value=new_transfer_flag_logic_information,
+                                                         update_column=flag_logic_col_name)
             updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
                                                          update_value="PRODUCTION READY",
                                                          update_column=flag_status_col_name)
