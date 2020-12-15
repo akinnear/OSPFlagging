@@ -41,6 +41,7 @@ class FlaggingDAO:
     FLAG_LOGIC: jsonify flag logic information
     REFERENCED_FLAGS: flags in flag logic -> [str]
     FLAG_STATUS: is flag in production or in draft status -> bool
+    FLAG_ERRORS: list of flag errors
     '''
     def get_flags(self):
         db = get_db(self)
@@ -98,6 +99,15 @@ class FlaggingDAO:
         except Exception as e:
             flag_status = None
         return flag_status
+
+    def get_referenced_flags(self, flag):
+        db = get_db(self)
+        flagging = db[FLAGGING_COLLECTION]
+        try:
+            flag_referenced = flagging.find_one({flag_id: flag})[referenced_flag_col_name]
+        except Exception as e:
+            flag_referenced = None
+        return flag_referenced
 
     def add_flag(self, flag):
         db = get_db(self)
