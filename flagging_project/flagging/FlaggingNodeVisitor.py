@@ -25,14 +25,14 @@ def code_location_helper(var_data, key, cl):
     if isinstance(var_data, dict):
         if key in var_data.keys():
             var_data[key].add(cl)
-            print(str(key) + ": " + str(cl))
-            print(var_data)
+            # print(str(key) + ": " + str(cl))
+            # print(var_data)
         else:
             #creat new key
             var_data.setdefault(key, set())
             var_data[key].add(cl)
-            print(str(key) + ": " + str(cl))
-            print(var_data)
+            # print(str(key) + ": " + str(cl))
+            # print(var_data)
     elif isinstance(var_data, set) and key == "return point":
         var_data.add(cl)
 
