@@ -491,13 +491,14 @@ def delete_flag(flag_id, existing_flags, flagging_dao: FlaggingDAO):
                 flags_in_flag_group_schema, response_code_get_flags = get_flag_group_flags(str(flag_group_id),
                                                                                            flag_group_ids, flagging_dao)
                 flags_in_flag_group_x = flags_in_flag_group_schema.logic
-                if ObjectId(flag_id) in flags_in_flag_group_x:
+                if ObjectId(flag_id) in flags_in_flag_group_x or flag_id in flags_in_flag_group_x:
                     flags_in_flag_group[flag_group_id] = flags_in_flag_group_x
             if len(flags_in_flag_group) > 1:
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                                message="flag id: " + flag_id + " can not be modified because it is contained in the following flag groups: " + ", ".join(
                                                                    [str(x) for x in flags_in_flag_group.keys()]),
                                                                simple_message="flag can not be deleted",
+                                                               name=flagging_dao.get_flag_name(ObjectId(flag_id)),
                                                                uuid=flag_id)
                 response_code = 405
     if flag_schema_object is None:
