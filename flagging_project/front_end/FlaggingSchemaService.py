@@ -546,7 +546,7 @@ def move_flag_to_production(flag_id, existing_flags, flagging_dao):
         flag_error = flagging_dao.get_specific_flag_error(ObjectId(flag_id))
         if flag_error != "":
             flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="flag can not be moved to production due to flag errors",
+                                                           message="flag id: " + flag_id + " can not be moved to production due to flag errors",
                                                            simple_message="flag can not be moved to production due to flag errors",
                                                            uuid=ObjectId(flag_id),
                                                            name=flagging_dao.get_flag_name(ObjectId(flag_id)))
@@ -557,7 +557,7 @@ def move_flag_to_production(flag_id, existing_flags, flagging_dao):
                                                      update_value="PRODUCTION",
                                                      update_column=flag_status_col_name)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                       message="flag has been moved to production",
+                                                       message="flag id: " + flag_id + " has been moved to production",
                                                        simple_message="flag has been moved to production",
                                                        uuid=ObjectId(flag_id),
                                                        name=flagging_dao.get_flag_name(ObjectId(flag_id)))
