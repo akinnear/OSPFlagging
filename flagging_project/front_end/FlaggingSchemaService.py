@@ -663,7 +663,7 @@ def create_flag_group(flag_group_name: str, existing_flag_groups, flagging_dao: 
         response_code = 400
     elif flag_group_name in existing_flag_groups:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                       message="new flag group name must be unique",
+                                                       message="new flag group name: " + flag_group_name + " must be unique",
                                                        simple_message="new flag group name must be unique",
                                                        name=flag_group_name)
         response_code = 405
