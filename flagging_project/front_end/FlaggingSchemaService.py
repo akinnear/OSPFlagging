@@ -666,7 +666,7 @@ def create_flag_group(flag_group_name: str, existing_flag_groups, flagging_dao: 
                                                        message="new flag group name must be unique",
                                                        simple_message="new flag group name must be unique",
                                                        name=flag_group_name)
-        response_code = 404
+        response_code = 405
     else:
         new_flag_group_id = flagging_dao.add_flag_group({flag_group_name_col_name: flag_group_name,
                                                flag_group_flags_col_name: dict(),
