@@ -189,6 +189,8 @@ def make_routes(app, flagging_dao):
                 flag_groups, response_code = get_flag_groups(flagging_dao)
                 for flag_group in flag_groups:
                     flag_group["_id"] = str(flag_group["_id"])
+                    if len(flag_group["FLAGS_IN_GROUP"]) > 0:
+                        flag_group["FLAGS_IN_GROUP"] = [str(x) for x in flag_group["FLAGS_IN_GROUP"]]
                 data = {"flag_groups": flag_groups}
                 return data, response_code
 
