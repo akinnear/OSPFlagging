@@ -111,8 +111,6 @@ else:
         assert response_2.json["flags"][0]["REFERENCED_FLAGS"] == []
         assert response_2.json["flags"][0]["_id"] == response.json["uuid"]
 
-
-
 # test flag home page
 def test_flag_home():
     app = Flask(__name__)
@@ -137,7 +135,6 @@ def test_get_flags_no_flags():
         assert response.status_code == 200
         assert response.json["flags"] == []
 
-
 # test get flag ids no ids
 def test_get_flag_ids_no_flag_ids():
     app = Flask(__name__)
@@ -149,7 +146,6 @@ def test_get_flag_ids_no_flag_ids():
         response = client.get("flag/get_ids")
         assert response.status_code == 200
         assert response.json["_ids"] == []
-
 
 # get specific flag, id does not exist
 def test_get_specific_flag_does_not_exist():
@@ -170,7 +166,6 @@ def test_get_specific_flag_does_not_exist():
         assert response.json["simple_message"] == "flag does not exist"
         assert response.json["uuid"] == "None"
         assert response.json["valid"] == False
-
 
 def test_get_specific_flag_does_not_exist_2():
     app = Flask(__name__)
@@ -216,7 +211,6 @@ else:
         assert response.json["uuid"] == "None"
         assert response.json["valid"] == False
 
-
 # get specific flag, no id
 def test_get_specific_flag_missing_id():
     app = Flask(__name__)
@@ -233,8 +227,6 @@ def test_get_specific_flag_missing_id():
         assert response.json["simple_message"] == "flag id not specified"
         assert response.json["uuid"] == "None"
         assert response.json["valid"] == False
-
-
 
 # get specifif flag, id not valid
 def test_get_specific_flag_invalid_id():
@@ -254,7 +246,6 @@ def test_get_specific_flag_invalid_id():
         assert response.json["simple_message"] == "error converting flag id to Object ID type"
         assert response.json["uuid"] == "None"
         assert response.json["valid"] == False
-
 
 # get specific flag, valid id, have to create flag first
 def test_get_specific_flag_id_valid():
@@ -306,7 +297,6 @@ else:
         assert response_2.json["flags"][0]["REFERENCED_FLAGS"] == []
         assert response_2.json["flags"][0]["_id"] == response.json["uuid"]
 
-
 # create flag, missing flag name
 def test_create_flag_missing_flag_name_1():
     app = Flask(__name__)
@@ -347,7 +337,6 @@ else:
         assert response.status_code == 200
         assert response.json["_ids"] == []
 
-
 def test_create_flag_missing_flag_name_2():
     app = Flask(__name__)
     app.config["TESTING"] = True
@@ -387,7 +376,6 @@ else:
         assert response.status_code == 200
         assert response.json["_ids"] == []
 
-
 def test_create_flag_missing_flag_name_3():
     app = Flask(__name__)
     app.config["TESTING"] = True
@@ -426,7 +414,6 @@ else:
         response = client.get("flag/get_ids")
         assert response.status_code == 200
         assert response.json["_ids"] == []
-
 
 # create flag, valid, has errors
 def test_create_flag_w_errors():
@@ -678,7 +665,6 @@ else:
         assert r.json["valid"] == True
         print("hello")
 
-
 # duplicate flag, missing flag id
 def test_duplicate_flag_missing_flag_id():
     app = Flask(__name__)
@@ -734,7 +720,6 @@ else:
         response_unpack = client.get("flag/get_ids")
         assert response_unpack.status_code == 200
         assert len(response_unpack.json["_ids"]) == 1
-
 
 # duplicate flag, flag id does not exist
 def test_duplicate_flag_id_does_not_exist():
@@ -852,7 +837,7 @@ else:
         assert response_unpack.status_code == 200
         assert len(response_unpack.json["_ids"]) == 1
 
-
+#duplicate flag, valid
 def test_duplicate_flag_id_valid():
     app = Flask(__name__)
     app.config["TESTING"] = True
@@ -923,7 +908,6 @@ else:
         assert r2.json["valid"] == True
         assert r2.json["uuid"] == new_uuid
         assert r2.json["flag_logic"] == _convert_FLI_to_TFLI(determine_variables(payload["FLAG_LOGIC"]))
-
 
 # update flag name, missing flag id
 def test_update_flag_name_missing_flag_id():
@@ -1046,7 +1030,6 @@ else:
         assert r2.status_code == 200
         assert r2.json["flag_name"] == payload["FLAG_NAME"]
 
-
 # update flag name, invalid flag id
 def test_update_flag_name_invalid_id():
     app = Flask(__name__)
@@ -1109,7 +1092,6 @@ else:
         r2 = client.get("flag/get_specific/" + flag_id)
         assert r2.status_code == 200
         assert r2.json["flag_name"] == payload["FLAG_NAME"]
-
 
 # update flag name, flag id does not exist
 def test_update_flag_name_flag_id_not_exist():
@@ -1295,7 +1277,6 @@ else:
         assert r2.status_code == 200
         assert r2.json["flag_name"] == payload["FLAG_NAME"]
 
-
 # update flag name, new name is same as old name
 def test_update_flag_name_non_unique_name():
     app = Flask(__name__)
@@ -1349,8 +1330,6 @@ else:
         r2 = client.get("flag/get_specific/" + response.json["uuid"])
         assert r2.status_code == 200
         assert r2.json["flag_name"] == payload["FLAG_NAME"]
-
-
 
 # update flag name, valid
 def test_update_flag_name_valid():
@@ -1412,8 +1391,6 @@ else:
         r3 = client.get("flag/get_specific/" + response.json["uuid"])
         assert r3.status_code == 200
         assert r3.json["flag_name"] == new_flag_name
-
-
 
 # update flag logic, missing flag id
 def test_update_flag_logic_missing_id():
@@ -1480,7 +1457,6 @@ else:
         r3 = client.get("flag/get_specific/" + response.json["uuid"])
         assert r3.status_code == 200
         assert r3.json["flag_logic"] == response.json["flag_logic"]
-
 
 # update flag logic, flag id does not exist
 def test_update_flag_logic_id_does_not_exist():
@@ -1551,7 +1527,6 @@ else:
         assert r3.status_code == 200
         assert r3.json["flag_logic"] == response.json["flag_logic"]
 
-
 # update flag logic, invalid flag id
 def test_update_flag_logic_invalid_id():
     app = Flask(__name__)
@@ -1618,7 +1593,6 @@ else:
         r3 = client.get("flag/get_specific/" + response.json["uuid"])
         assert r3.status_code == 200
         assert r3.json["flag_logic"] == response.json["flag_logic"]
-
 
 # update flag logic, flag in more than one flag group
 def test_update_flag_logic_multi_group():
@@ -1927,7 +1901,6 @@ else:
         assert r3.json["flags"][0]["FLAG_ERRORS"] == "ERROR"
         assert r3.json["flags"][0]["FLAG_STATUS"] == "DRAFT"
 
-
 # update flag logic, valid
 def test_update_flag_logic_valid():
     app = Flask(__name__)
@@ -1998,7 +1971,6 @@ else:
         assert r3.json["flags"][0]["FLAG_ERRORS"] == ""
         assert r3.json["flags"][0]["FLAG_STATUS"] == "PRODUCTION READY"
 
-
 # delete flag, missing flag id
 def test_delete_flag_missing_flag_id():
     app = Flask(__name__)
@@ -2052,7 +2024,6 @@ else:
         assert response_unpack.status_code == 200
         assert len(response_unpack.json["_ids"]) == 1
         assert response.json["uuid"] in response_unpack.json["_ids"]
-
 
 # delete flag, flag id does not exist
 def test_delete_flag_id_does_not_exist():
@@ -2111,7 +2082,6 @@ else:
         assert len(response_unpack.json["_ids"]) == 1
         assert response.json["uuid"] in response_unpack.json["_ids"]
 
-
 # delete flag, invalid flag id
 def test_delete_flag_invalid_id():
     app = Flask(__name__)
@@ -2166,7 +2136,6 @@ else:
         assert response_unpack.status_code == 200
         assert len(response_unpack.json["_ids"]) == 1
         assert response.json["uuid"] in response_unpack.json["_ids"]
-
 
 # delete flag, flag in more than one flag group
 def test_delete_flag_multi_group():
@@ -2335,7 +2304,6 @@ else:
         assert r2.status_code == 200
         assert r2.json["_ids"] == []
 
-
 def test_delete_flag_valid_2():
     app = Flask(__name__)
     app.config["TESTING"] = True
@@ -2419,8 +2387,6 @@ else:
         assert r3.json["valid"] == False
         assert r3.json["flag_logic"] == None
 
-
-
 # move flag to production, missing id
 def test_move_flag_to_production_missing_id():
     app = Flask(__name__)
@@ -2478,10 +2444,6 @@ else:
         r2 = client.get("flag/get")
         assert r2.status_code == 200
         assert r2.json["flags"][0]["FLAG_STATUS"] == "PRODUCTION_READY"
-
-
-
-
 
 # move flag to production, id does not exist
 def test_move_flag_to_production_id_no_exist():
@@ -2544,7 +2506,6 @@ else:
         assert r2.status_code == 200
         assert r2.json["flags"][0]["FLAG_STATUS"] == "PRODUCTION_READY"
 
-
 # move flag to production, invalid id
 def test_move_flag_to_production_invalid_id():
     app = Flask(__name__)
@@ -2603,7 +2564,6 @@ else:
         r2 = client.get("flag/get")
         assert r2.status_code == 200
         assert r2.json["flags"][0]["FLAG_STATUS"] == "PRODUCTION_READY"
-
 
 # move flag to production, error in flag
 def test_move_flag_to_production_error_in_flag():
@@ -2664,7 +2624,6 @@ def test_move_flag_to_production_error_in_flag():
         assert r2.status_code == 200
         assert r2.json["flags"][0]["FLAG_STATUS"] == "DRAFT"
 
-
 # move flag to production, valid
 def test_move_flag_to_production_valid():
     app = Flask(__name__)
@@ -2724,28 +2683,80 @@ else:
         assert r2.status_code == 200
         assert r2.json["flags"][0]["FLAG_STATUS"] == "PRODUCTION"
 
-
 # get flag groups
-def test_get_flag_groups(client):
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
+def test_get_flag_groups():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        flag_deletion_url = "flag/delete_all"
+        response = client.delete(flag_deletion_url)
+        assert response.status_code == 200
+        flag_group_delete_url = "flag_group/delete_all"
+        response = client.delete(flag_group_delete_url)
+        assert response.status_code == 200
 
-    # create flag group
-    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
+        response = client.get("flag/get_ids")
+        assert response.status_code == 200
+        assert response.json["_ids"] == []
 
-    # get flag group
-    flag_group_get_url = "flag_group/get_flag_groups"
-    response = client.get(flag_group_get_url)
-    assert response.status_code == 200
+        response = client.get("flag_group/get_ids")
+        assert response.status_code == 200
+        assert response.json["_ids"] == []
 
-    # delete all flag groups
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
+        #create flag
+        flag_name = "FlagName1A"
+        flag_logic = """\
+if FF1 > 10:
+    return True
+else:
+    return False"""
+        payload = {"FLAG_NAME": flag_name, "FLAG_LOGIC": flag_logic}
+        url = "flag/create/x/" + payload["FLAG_NAME"]
+        response = client.post(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 200
+        assert response.json["flag_name"] == payload["FLAG_NAME"]
+        assert response.json["message"] == "flag id: " + response.json["uuid"] + " has been created"
+        assert response.json["simple_message"] == "new flag created"
+        assert response.json["valid"] == True
+        assert response.json["flag_logic"] == _convert_FLI_to_TFLI(determine_variables(payload["FLAG_LOGIC"]))
+        flag_id = response.json["uuid"]
+
+        #create flag group
+        flag_group_name = "FlagGroupName1"
+        url_1 = "flag_group/create/x/" + flag_group_name
+        response_group_1 = client.post(url_1)
+        assert response_group_1.status_code == 200
+        assert response_group_1.json["flag_group_name"] == flag_group_name
+        assert response_group_1.json["message"] == "unique flag group: " + flag_group_name + " created"
+        assert response_group_1.json["simple_message"] == "new flag group created"
+        assert response_group_1.json["valid"] == True
+        assert response_group_1.json["flags_in_flag_group"] == None
+
+        #flag group get
+        r = client.get("flag_group/get")
+        assert r.status_code == 200
+        assert r.json["flag_groups"][0]["FLAGS_IN_GROUP"] == {}
+        assert r.json["flag_groups"][0]["FLAG_GROUP_ERRORS"] == ""
+        assert r.json["flag_groups"][0]["FLAG_GROUP_NAME"] == flag_group_name
+        assert r.json["flag_groups"][0]["FLAG_GROUP_STATUS"] == "PRODUCTION_READY"
+        assert r.json["flag_groups"][0]["_id"] == response_group_1.json["uuid"]
+
+        #add flag to flag group
+        r = client.put("flag_group/add_flag/" + response_group_1.json["uuid"] + "/xx/" + flag_id)
+        assert r.status_code == 200
+
+        #flag group get with new flag in group
+        r2 = client.get("flag_group/get")
+        assert r2.status_code == 200
+        assert r2.json["flag_groups"][0]["FLAGS_IN_GROUP"] == [flag_id]
+        assert r2.json["flag_groups"][0]["FLAG_GROUP_ERRORS"] == ""
+        assert r2.json["flag_groups"][0]["FLAG_GROUP_NAME"] == flag_group_name
+        assert r2.json["flag_groups"][0]["FLAG_GROUP_STATUS"] == "PRODUCTION_READY"
+        assert r2.json["flag_groups"][0]["_id"] == response_group_1.json["uuid"]
+
 
 
 # get flag group ids
