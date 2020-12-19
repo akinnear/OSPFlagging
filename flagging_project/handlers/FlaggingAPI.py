@@ -349,7 +349,10 @@ def make_routes(app, flagging_dao):
         else:
             if function == "get":
                 flag_deps, response_code = get_flag_dependencies(flagging_dao)
-                flag_deps = [str(x) for x in flag_deps]
+                for flag_dep in flag_deps:
+                    flag_dep["_id"] = str(flag_dep["_id"])
+                    flag_dep["FLAG_ID"] = str(flag_dep["_FLAG_ID"])
+                    flag_dep["FLAG_GROUP_ID"] = str(flag_dep["FLAG_GROUP_ID"])
                 data = {"flag_deps": flag_deps}
                 return data, response_code
 
