@@ -282,7 +282,7 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
             if len(flag_group_ids) > 0:
                 for flag_group_idx in flag_group_ids:
                     flags_in_flag_group_idx = flagging_dao.get_flag_group_flag(flag_group_idx)
-                    if ObjectId(flag_id) in flags_in_flag_group_x:
+                    if flag_id in flags_in_flag_group_x:
                         flag_in_flag_group_bool = True
                         flag_group_id = flag_group_idx
                         # delete previous dep entry
@@ -370,7 +370,7 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
             if len(flag_group_ids) > 0:
                 for flag_group_idx in flag_group_ids:
                     flags_in_flag_group_idx = flagging_dao.get_flag_group_flag(flag_group_idx)
-                    if ObjectId(flag_id) in flags_in_flag_group_x:
+                    if flag_id in flags_in_flag_group_x:
                         flag_in_flag_group_bool = True
                         flag_group_id = flag_group_idx
                         # delete previous dep entry
@@ -378,12 +378,12 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
 
             if flag_in_flag_group_bool:
                 # create new entry flag dep entry for flag_id in flag_group_id
-                flag_name = flagging_dao.get_flag_name(ObjectId(flag_group_id))
+                flag_name = flagging_dao.get_flag_name(ObjectId(flag_id))
                 flag_ids = flagging_dao.get_flag_ids()
                 existing_flag_dep_keys = flagging_dao.get_flag_dependencies_ids()
                 flag_schema_object_flag_dep, fdi_rc = create_flag_dependency(flag_id=flag_id,
                                                                              flag_name=flag_name,
-                                                                             flag_group_id=flag_group_id,
+                                                                             flag_group_id=str(flag_group_id),
                                                                              existing_flag_ids=flag_ids,
                                                                              existing_flag_dep_keys=existing_flag_dep_keys,
                                                                              flag_dependencies=[],
@@ -779,7 +779,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
             #query to get UUID for each new_flag
             if new_flag not in existing_flags:
                 missing_flags.append(new_flag)
-            if new_flag in flags_in_flag_group:
+            if new_flag in [ObjectId(x) for x in flags_in_flag_group]:
                 duplicate_flags.append(new_flag)
 
         if len(missing_flags) == 0 and len(duplicate_flags) == 0:
