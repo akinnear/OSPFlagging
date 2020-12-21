@@ -307,7 +307,7 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                 ref_flag_dict = {}
                 for flag in flag_set:
                     ref_flag_dict[flag] = {CodeLocation(None, None)}
-                referenced_flags_names = [x["name"] for x in flagging_dao.get_flag_logic_information(ObjectId(flag_id))]
+                referenced_flags_names = [x["name"] for x in _convert_FLI_to_TFLI(new_flag_logic_information)["referenced_flags"]]
                 ref_flag_dict = {}
                 for rf_name in referenced_flags_names:
                     ref_flag_dict[rf_name] = {CodeLocation(None, None)}
@@ -386,17 +386,16 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                                                                              flag_group_id=str(flag_group_id),
                                                                              existing_flag_ids=flag_ids,
                                                                              existing_flag_dep_keys=existing_flag_dep_keys,
-                                                                             flag_dependencies=[],
+                                                                             flag_dependencies=[x["name"] for x in _convert_FLI_to_TFLI(new_flag_logic_information)["referenced_flags"]],
                                                                              flagging_dao=flagging_dao)
 
                 # add new referenced flags to flag dependeny entry
                 # check for cyclical errors
-                flag_set = flagging_dao.get_flag_group_flag()
+                flag_set = flagging_dao.get_flag_group_flag(flag_group_id)
                 ref_flag_dict = {}
                 for flag in flag_set:
                     ref_flag_dict[flag] = {CodeLocation(None, None)}
-                referenced_flags_names = [x["name"] for x in
-                                          flagging_dao.get_flag_logic_information(ObjectId(flag_id))]
+                referenced_flags_names = [x["name"] for x in _convert_FLI_to_TFLI(new_flag_logic_information)["referenced_flags"]]
                 ref_flag_dict = {}
                 for rf_name in referenced_flags_names:
                     ref_flag_dict[rf_name] = {CodeLocation(None, None)}
@@ -1347,7 +1346,7 @@ def create_flag_dependency(flag_id: str, flag_name:str, flag_group_id, existing_
                                                                        flag_dep_flag_group_id_col_name: ObjectId(flag_group_id),
                                                                        flag_dep_dep_flags_col_name: []})
         #add specific depdencies to new entry
-        updated_flag_dependency_id = flagging_dao.add_specific_flag_dependencies(new_flag_dependency_id, [], flag_dep_dep_flags_col_name)
+        updated_flag_dependency_id = flagging_dao.add_specific_flag_dependencies(new_flag_dependency_id, flag_dependencies, flag_dep_dep_flags_col_name)
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="flag dependency data for flag " + flag_id + " in flag group " + flag_group_id + " has been created",
                                                        simple_message="flag dependency entry created",
