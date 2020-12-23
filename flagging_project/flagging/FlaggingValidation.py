@@ -68,8 +68,7 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
             for warning, cl in my_py_output.warnings.items():
                 results.add_mypy_warning(warning, cl)
 
-
-    def check_flag_dependency(cyclical_flags, flag_dependencies, flag_history, flag_check):
+    def check_flag_dependency(og_flag_dependencies, cyclical_flags, flag_dependencies, flag_history, flag_check):
         '''
         :param cyclical_flags: flags marked as cyclical
         :param flag_dependencies: full set of flag dependicies
@@ -79,82 +78,90 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
         flags not contained as referenced_flags in logic do not need to be checked for cyclical dependency
         :return: None
         '''
-        og_flag_dependencies = flag_dependencies
-        #if no flag_depencies, move to next original flag
+        # og_flag_dependencies = flag_dependencies
+        # if no flag_depencies, move to next original flag
         for original_flag, flag_deps in flag_dependencies.items():
             if not flag_check[original_flag]:
                 # has depencies, parse dpendicies
                 if flag_deps:
 
-                    #check if flag is dependent on itself
+                    # check if flag is dependent on itself
                     if original_flag in flag_deps:
-                        #found cyclical flag, mark flag as checkd and add to cyclical flag set
+                        # found cyclical flag, mark flag as checkd and add to cyclical flag set
                         flag_check[original_flag] = True
                         cyclical_flags.append(original_flag)
+                        flag_check.update({flag: True})
+                        flag_dependencies[original_flag] = og_flag_dependencies[original_flag]
 
-                    new_flag_dependencies = []
-                    #make sure each depedendent flag exists in flag depdency set
-                    #otherwise we do not know if there is cyclical flag
-                    #not necessary, only checking flags in flag group now
-                    # for flag in flag_deps:
-                    #     try:
-                    #         for new_flag in list(flag_dependencies[flag]):
-                    #             new_flag_dependencies.append(new_flag)
-                    #     except KeyError as ke:
-                    #         results.add_flag_error(flag, FlagErrorInformation(flag=flag,
-                    #                                                           err_info="missing_flag",
-                    #                                                           cl={CodeLocation(None, None)}))
-                            # results.add_flag_error(str(ke).replace("'", ""), FlagErrorInformation(flag=str(ke).replace("'", "")),
-                            #                                                                   err_info="missing_flag",
-                            #                                                                   cl=CodeLocation(None, None))
-                            # results.add_error(str(ke).replace("'", "") + "_missing_flag", {CodeLocation(None, None)})
+                    else:
+                        # iterate through each dependency
+                        new_flag_dependencies = list(flag_deps)
+                        for new_flag in flag_deps:
+                            try:
+                                new_deps = list(flag_dependencies[new_flag])
+                                if new_deps:
+                                    new_flag_dependencies = new_deps
+                                else:
+                                    new_flag_dependencies.remove(new_flag)
+                            except KeyError as ke:
+                                try:
+                                    new_flag_dependencies.remove(new_flag)
+                                except Exception as e:
+                                    pass
+                                pass
 
-                    #update with new iteration of flag depednecy
-                    flag_dependencies[original_flag] = set(new_flag_dependencies)
-                    flag_history[original_flag].append(set(new_flag_dependencies))
+                        # update with new iteration of flag depednecy
+                        flag_dependencies[original_flag] = set(new_flag_dependencies)
+                        flag_history[original_flag].append(set(new_flag_dependencies))
 
-                    # check if flag history contains any duplicate sets,
-                    # indicates cyclical logic outside of original flag
-                    for i in range(len(flag_history[original_flag])):
-                        if len(flag_history[original_flag]) - 1 != i:
-                            if flag_history[original_flag][len(flag_history[original_flag])-1] == flag_history[original_flag][i]:
-                                cyclical_flags.append(original_flag)
-                                flag_check[original_flag] = True
+                        # check if flag history contains any duplicate sets,
+                        # indicates cyclical logic outside of original flag
+                        for i in range(len(flag_history[original_flag])):
+                            if len(flag_history[original_flag]) - 1 != i:
+                                if flag_history[original_flag][len(flag_history[original_flag]) - 1] == \
+                                        flag_history[original_flag][i]:
+                                    cyclical_flags.append(original_flag)
+                                    flag_check[original_flag] = True
 
-                    #iterate with update flag_dependencies, flag_history, and flag_check
-                    check_flag_dependency(cyclical_flags, flag_dependencies,
-                                          flag_history, flag_check)
+                        # iterate with update flag_dependencies, flag_history, and flag_check
+                        check_flag_dependency(og_flag_dependencies, cyclical_flags, flag_dependencies,
+                                              flag_history, flag_check)
                 else:
-                    #flag check completed, move to next flag and restore orginal flag dependency for future validation
+                    # flag check completed, move to next flag and restore orginal flag dependency for future validation
                     flag_check[original_flag] = True
                     flag_dependencies[original_flag] = og_flag_dependencies[original_flag]
-
 
     cyclical_flags = []
     flag_check = {}
     flag_history = {}
-    #add flag_name and passed referenced_flags to flag_dependcies
+    og_flag_dependencies = flag_dependencies.copy()
+    # add flag_name and passed referenced_flags to flag_dependcies
     if not og_flag_included_in_flag_dep:
         flag_dependencies[flag_name] = flag_logic_info.referenced_flags.keys()
     if flag_dependencies:
         for flag in flag_dependencies.keys():
-            #only check referenced_flags for cyclical flag dependicies
+            # only check referenced_flags for cyclical flag dependicies
             (flag_check.update({flag: False}))
             if not og_flag_included_in_flag_dep:
-                (flag_check.update({flag: False}) if flag in flag_logic_info.referenced_flags.keys() else flag_check.update({flag: True}))
+                (flag_check.update(
+                    {flag: False}) if flag in flag_logic_info.referenced_flags.keys() else flag_check.update(
+                    {flag: True}))
             flag_history.update({flag: list()})
 
-        check_flag_dependency(cyclical_flags, flag_dependencies, flag_history, flag_check)
-        for flag in set(cyclical_flags):
-            try:
-                results.add_flag_error(flag, FlagErrorInformation(flag=flag,
-                                                                  err_info="cyclical_flag",
-                                                                  cl=flag_logic_info.referenced_flags[flag]))
-                # results.add_error(flag + "_cyclical_flag", flag_logic_info.referenced_flags[flag])
-            except KeyError as ke:
-                results.add_flag_error(flag, FlagErrorInformation(flag=flag,
-                                                                  err_info="cyclical_flag",
-                                                                  cl={CodeLocation(None, None)}))
+        check_flag_dependency(og_flag_dependencies, cyclical_flags, flag_dependencies, flag_history, flag_check)
+
+
+
+    for flag in set(cyclical_flags):
+        try:
+            results.add_flag_error(flag, FlagErrorInformation(flag=flag,
+                                                              err_info="cyclical_flag",
+                                                              cl=flag_logic_info.referenced_flags[flag]))
+            # results.add_error(flag + "_cyclical_flag", flag_logic_info.referenced_flags[flag])
+        except KeyError as ke:
+            results.add_flag_error(flag, FlagErrorInformation(flag=flag,
+                                                              err_info="cyclical_flag",
+                                                              cl={CodeLocation(None, None)}))
 
 
     # remove ref_functions that are built-ins
