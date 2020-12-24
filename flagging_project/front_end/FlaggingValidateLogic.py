@@ -26,7 +26,7 @@ def validate_cyclical_logic(flag_id, flag_group_id, flag_logic_information:FlagL
         rf_key = flag_deps_for_flag_group[i]["FLAG_NAME"]
         rf_value = set()
         for j in range(len(flag_deps_for_flag_group[i]["DEPENDENT_FLAGS"])):
-            rf_value.add(flag_deps_for_flag_group[i]["DEPENDENT_FLAGS"][j]["FLAG_NAME"])
+            rf_value.add(flag_deps_for_flag_group[i]["DEPENDENT_FLAGS"][j])
 
         flag_dependencies[rf_key] = rf_value
 
