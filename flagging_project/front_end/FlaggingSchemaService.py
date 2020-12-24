@@ -1102,7 +1102,7 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
         for del_flag in del_flags:
             if del_flag not in existing_flags:
                 missing_flags.append(del_flag)
-            if del_flag not in flags_in_flag_group:
+            if del_flag not in flags_in_flag_group and str(del_flag) not in flags_in_flag_group:
                 flags_not_in_group.append(del_flag)
         if len(missing_flags) > 0:
             missing_flags = [str(x) for x in missing_flags]
@@ -1130,10 +1130,10 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
 
     if flag_schema_object is None:
         #get flag_id being removed
-        for flag_id in del_flags:
-            flag_schema_object_flag_dep, fsofd_rc = delete_flag_dependency(flag_id=str(del_flags[0]), flag_group_id=flag_group_id, flagging_dao=flagging_dao)
-            flagging_dao.remove_specific_flag_dependencies_via_flag_id_and_flag_group_id(flag_id, ObjectId(flag_group_id))
-
+        for flag_id in [str(x) for x in del_flags]:
+            flag_schema_object_flag_dep, fsofd_rc = delete_flag_dependency(flag_id=flag_id, flag_group_id=flag_group_id, flagging_dao=flagging_dao)
+            flagging_dao.remove_specific_flag_dependencies_via_flag_id_and_flag_group_id(ObjectId(flag_id), ObjectId(flag_group_id))
+        del_flags = [str(x) for x in del_flags]
         new_flag_set = (list(list(set(del_flags)-set(flags_in_flag_group)) + list(set(flags_in_flag_group)-set(del_flags))))
         new_flag_set = [ObjectId(x) for x in new_flag_set]
         #method to remove flag(s) from flag group
