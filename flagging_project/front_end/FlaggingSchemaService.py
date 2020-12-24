@@ -386,8 +386,23 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                                                                              flag_group_id=str(flag_group_id),
                                                                              existing_flag_ids=flag_ids,
                                                                              existing_flag_dep_keys=existing_flag_dep_keys,
-                                                                             flag_dependencies=[x["name"] for x in _convert_FLI_to_TFLI(new_flag_logic_information)["referenced_flags"]],
+                                                                             flag_dependencies=[x for x in new_flag_logic_information.referenced_flags.keys()],
                                                                              flagging_dao=flagging_dao)
+
+                # get referenced flags from flag logic information
+                if len(new_flag_logic_information.referenced_flags) > 0:
+                    referenced_flags_names_in_flag_id = [x for x in new_flag_logic_information.referenced_flags]
+                    referenced_flags = []
+                    for x in referenced_flags_names_in_flag_id:
+                        referenced_flags.append(ReferencedFlag(flag_name=x, flag_group_id=flag_group_id))
+
+                    # update existing flag dep keys
+                    existing_flag_dep_keys = flagging_dao.get_flag_dependencies_ids()
+                    updated_flag_dep_id, ufdi_rc = add_dependencies_to_flag(
+                        flag_dep_id=str(flag_schema_object_flag_dep.uuid),
+                        existing_flag_dep_keys=existing_flag_dep_keys,
+                        new_dependencies=referenced_flags,
+                        flagging_dao=flagging_dao)
 
                 # add new referenced flags to flag dependeny entry
                 # check for cyclical errors
@@ -418,43 +433,50 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                         # update flag group that flag is part of with cyclcial error
                         flagging_dao.update_flag_group(ObjectId(flag_group_id), "CYCLICAL ERROR",
                                                          flag_group_error_col_name)
+                        flagging_dao.update_flag_group(ObjectId(flag_group_id), "DRAFT", flag_group_status_col_name)
 
-                # get referenced flags from flag logic information
-                if len(new_flag_logic_information.referenced_flags) > 0:
-                    referenced_flags_names_in_flag_id = [x for x in new_flag_logic_information.referenced_flags]
-                    referenced_flags = []
-                    for x in referenced_flags_names_in_flag_id:
-                        referenced_flags.append(ReferencedFlag(flag_name=x, flag_group_id=flag_group_id))
-
-                    # update existing flag dep keys
-                    existing_flag_dep_keys = flagging_dao.get_flag_dependencies_ids()
-                    updated_flag_dep_id, ufdi_rc = add_dependencies_to_flag(
-                        flag_dep_id=str(flag_schema_object_flag_dep.uuid),
-                        existing_flag_dep_keys=existing_flag_dep_keys,
-                        new_dependencies=referenced_flags,
-                        flagging_dao=flagging_dao)
-
-            # update flag
-            new_transfer_flag_logic_information = _convert_FLI_to_TFLI(new_flag_logic_information)
-            flag_id_object = ObjectId(flag_id)
-            updated_flag_id = flagging_dao.update_flag(flag=flag_id_object, update_value=new_transfer_flag_logic_information,
-                                                         update_column=flag_logic_col_name)
-            updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
-                                                         update_value="PRODUCTION READY",
-                                                         update_column=flag_status_col_name)
-            updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
-                                                         update_value="",
-                                                         update_column=flag_error_col_name)
-            specific_flag_logic = flagging_dao.get_flag_logic_information(updated_flag_id)
-            specific_flag_name = flagging_dao.get_flag_name(updated_flag_id)
-            flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                           message="logic for flag " + str(
-                                                               updated_flag_id) + " has been updated",
-                                                           simple_message="flag logic has been updated",
-                                                           uuid=updated_flag_id,
-                                                           name=specific_flag_name,
-                                                           logic=specific_flag_logic)
-            response_code = 200
+                    # update flag
+                    new_transfer_flag_logic_information = _convert_FLI_to_TFLI(new_flag_logic_information)
+                    flag_id_object = ObjectId(flag_id)
+                    updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
+                                                               update_value=new_transfer_flag_logic_information,
+                                                               update_column=flag_logic_col_name)
+                    updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
+                                                               update_value="DRAFT",
+                                                               update_column=flag_status_col_name)
+                    updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
+                                                               update_value="ERROR",
+                                                               update_column=flag_error_col_name)
+                    specific_flag_name = flagging_dao.get_flag_name(updated_flag_id)
+                    specific_flag_logic = flagging_dao.get_flag_logic_information(updated_flag_id)
+                    flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                                   message="error in flag logic",
+                                                                   simple_message="new logic updated but has errors",
+                                                                   uuid=updated_flag_id,
+                                                                   name=specific_flag_name,
+                                                                   logic=specific_flag_logic)
+                    response_code = 200
+                else:
+                    new_transfer_flag_logic_information = _convert_FLI_to_TFLI(new_flag_logic_information)
+                    flag_id_object = ObjectId(flag_id)
+                    updated_flag_id = flagging_dao.update_flag(flag=flag_id_object, update_value=new_transfer_flag_logic_information,
+                                                                 update_column=flag_logic_col_name)
+                    updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
+                                                                 update_value="PRODUCTION READY",
+                                                                 update_column=flag_status_col_name)
+                    updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
+                                                                 update_value="",
+                                                                 update_column=flag_error_col_name)
+                    specific_flag_logic = flagging_dao.get_flag_logic_information(updated_flag_id)
+                    specific_flag_name = flagging_dao.get_flag_name(updated_flag_id)
+                    flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                                   message="logic for flag " + str(
+                                                                       updated_flag_id) + " has been updated",
+                                                                   simple_message="flag logic has been updated",
+                                                                   uuid=updated_flag_id,
+                                                                   name=specific_flag_name,
+                                                                   logic=specific_flag_logic)
+                    response_code = 200
     return flag_schema_object, response_code
 
 #A call to delete a flag provided a UUID, return true/false
@@ -989,13 +1011,14 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
             flag_name = flagging_dao.get_flag_name(ObjectId(new_flags[0]))
             flag_dep_id = flagging_dao.get_specific_flag_dep_id_by_flag_id_and_flag_group_id(ObjectId(new_flags[0]),
                                                                                                ObjectId(flag_group_id))
-            if flag_dep_id not in existing_flag_dep_keys:
-                flag_dep_schema_object, fdi_rc = create_flag_dependency(flag_id=new_flags[0],
-                                                             flag_name=flag_name,
-                                                             flag_group_id=flag_group_id,
-                                                             existing_flag_ids=flag_ids, existing_flag_dep_keys=existing_flag_dep_keys, flag_dependencies=[], flagging_dao=flagging_dao)
 
-            updated_flag_dep_id, ufdirc = add_dependencies_to_flag(flag_dep_id=str(flag_dep_schema_object.uuid), existing_flag_dep_keys=existing_flag_dep_keys, new_dependencies=referenced_flags, flagging_dao=flagging_dao)
+            flag_dep_schema_object, fdi_rc = create_flag_dependency(flag_id=new_flags[0],
+                                                                    flag_name=flag_name,
+                                                                    flag_group_id=flag_group_id,
+                                                                    existing_flag_ids=flag_ids,
+                                                                    existing_flag_dep_keys=existing_flag_dep_keys,
+                                                                    flag_dependencies=[x.flag_name["name"] for x in referenced_flags], flagging_dao=flagging_dao)
+
 
             full_flag_set = new_flags + list(dict.fromkeys(flags_in_flag_group))
             full_flag_set = [ObjectId(x) for x in full_flag_set]
@@ -1452,8 +1475,7 @@ def add_dependencies_to_flag(flag_dep_id, existing_flag_dep_keys: [], new_depend
     #                                                        message="flag(s): " + ", ".join([str(x) for x in missing_flags]) + " do not exist")
     #         response_code = 400
     if flag_schema_object is None:
-        new_dependencies = _convert_RF_to_TRF(new_dependencies)
-        updated_flag_dep_id = flagging_dao.add_specific_flag_dependencies(ObjectId(flag_dep_id), new_dependencies, "DEPENDENT_FLAGS")
+        updated_flag_dep_id = flagging_dao.add_specific_flag_dependencies(ObjectId(flag_dep_id), [x.flag_name for x in new_dependencies], "DEPENDENT_FLAGS")
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="dependencies have been updated",
                                                        simple_message="dependencies have been updated",
