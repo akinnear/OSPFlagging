@@ -4900,202 +4900,264 @@ else:
 
 
 # duplicate flag group, missing flag group id
-def test_duplicate_flag_group_missing_flag_group_id(client):
-    # delete all flag group
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
+def test_duplicate_flag_group_missing_flag_group_id():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        flag_deletion_url = "flag/delete_all"
+        response = client.delete(flag_deletion_url)
+        assert response.status_code == 200
+        flag_group_delete_url = "flag_group/delete_all"
+        response = client.delete(flag_group_delete_url)
+        assert response.status_code == 200
 
-    # create flag group
-    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
-
-    # get flag group id
-    flag_group_id_get_url = "flag_group/get_flag_group_ids"
-    response = client.get(flag_group_id_get_url)
-    assert response.status_code == 200
-
-    # unpack flag group id
-    x = response.get_data().decode("utf-8")
-    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
-
-    # duplicate flag group
-    flag_group_duplicate_url = "flag_group/duplicate_flag_group"
-    response = client.post(flag_group_duplicate_url)
-    assert response.status_code == 400
-
-    # delete all flag group
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
+        r = client.post("flag_group/duplicate")
+        assert r.status_code == 400
+        assert r.json["flag_group_name"] == None
+        assert r.json["flags_in_flag_group"] == None
+        assert r.json["message"] == "user must specify flag group id"
+        assert r.json["simple_message"] == "user must specify flag group id"
+        assert r.json["uuid"] == "None"
+        assert r.json["valid"] == False
 
 
 # duplicate flag group, flag group does not exist
-def test_duplicate_flag_group_flag_group_no_exist(client):
-    # delete all flag group
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
+def test_duplicate_flag_group_flag_group_no_exist():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        flag_deletion_url = "flag/delete_all"
+        response = client.delete(flag_deletion_url)
+        assert response.status_code == 200
+        flag_group_delete_url = "flag_group/delete_all"
+        response = client.delete(flag_group_delete_url)
+        assert response.status_code == 200
 
-    # create flag group
-    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
+        flag_group_name = "FlagGroupName1A"
+        r = client.post("flag_group/create/x/" + flag_group_name)
+        assert r.status_code == 200
+        flag_group_id = r.json["uuid"]
 
-    # get flag group id
-    flag_group_id_get_url = "flag_group/get_flag_group_ids"
-    response = client.get(flag_group_id_get_url)
-    assert response.status_code == 200
 
-    # unpack flag group id
-    x = response.get_data().decode("utf-8")
-    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+        flag_group_id_2 = "1a"*12
+        if flag_group_id == flag_group_id_2:
+            flag_group_id_2 = "2b"*12
 
-    # create new unique flag group id
-    new_flag_group_id = str(generate())
-    while flag_group_id == new_flag_group_id:
-        new_flag_group_id = str(generate())
+        r = client.post("flag_group/duplicate/" + flag_group_id_2)
+        assert r.status_code == 404
+        assert r.json["flag_group_name"] == None
+        assert r.json["flags_in_flag_group"] == None
+        assert r.json["message"] == "flag group: " + flag_group_id_2 + " does not exist"
+        assert r.json["simple_message"] == "flag group does not exist"
+        assert r.json["uuid"] == flag_group_id_2
+        assert r.json["valid"] == False
 
-    # duplicate flag group
-    flag_group_duplicate_url = "flag_group/duplicate_flag_group/" + new_flag_group_id + "/FlagGroup2B"
-    response = client.post(flag_group_duplicate_url)
-    assert response.status_code == 404
-
-    # delete all flag group
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
-
+        #confirm only one flag group exists
+        r = client.get("flag_group/get_ids")
+        assert r.status_code == 200
+        assert r.json["_ids"] == [flag_group_id]
 
 # duplicate flag group, invalid flag group id
-def test_duplicate_flag_group_invalid_flag_group_id(client):
-    # delete all flag group
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
+def test_duplicate_flag_group_invalid_flag_group_id():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        flag_deletion_url = "flag/delete_all"
+        response = client.delete(flag_deletion_url)
+        assert response.status_code == 200
+        flag_group_delete_url = "flag_group/delete_all"
+        response = client.delete(flag_group_delete_url)
+        assert response.status_code == 200
 
-    # create flag group
-    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
+        flag_group_name = "FlagGroupName1A"
+        r = client.post("flag_group/create/x/" + flag_group_name)
+        assert r.status_code == 200
+        flag_group_id = r.json["uuid"]
 
-    # get flag group id
-    flag_group_id_get_url = "flag_group/get_flag_group_ids"
-    response = client.get(flag_group_id_get_url)
-    assert response.status_code == 200
+        flag_group_id_2 = "1a" * 12
+        if flag_group_id == flag_group_id_2:
+            flag_group_id_2 = "2b" * 12
 
-    # unpack flag group id
-    x = response.get_data().decode("utf-8")
-    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+        r = client.post("flag_group/duplicate/" + flag_group_id_2)
+        assert r.status_code == 404
+        assert r.json["flag_group_name"] == None
+        assert r.json["flags_in_flag_group"] == None
+        assert r.json["message"] == "flag group: " + flag_group_id_2 + " does not exist"
+        assert r.json["simple_message"] == "flag group does not exist"
+        assert r.json["uuid"] == flag_group_id_2
+        assert r.json["valid"] == False
 
-    # duplicate flag group
-    flag_group_duplicate_url = "flag_group/duplicate_flag_group/1A1A/FlagGroup2B"
-    response = client.post(flag_group_duplicate_url)
-    assert response.status_code == 400
-
-    # delete all flag group
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
+        # confirm only one flag group exists
+        r = client.get("flag_group/get_ids")
+        assert r.status_code == 200
+        assert r.json["_ids"] == [flag_group_id]
 
 
 # duplicate flag group, missing new name
-def test_duplicate_flag_group_missing_new_name(client):
-    # delete all flag group
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
+def test_duplicate_flag_group_missing_new_name():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        flag_deletion_url = "flag/delete_all"
+        response = client.delete(flag_deletion_url)
+        assert response.status_code == 200
+        flag_group_delete_url = "flag_group/delete_all"
+        response = client.delete(flag_group_delete_url)
+        assert response.status_code == 200
 
-    # create flag group
-    flag_group_creation_url = "flag_group/create_flag_group/XX/FlagGroup1A"
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
+        flag_group_name = "FlagGroupName1A"
+        r = client.post("flag_group/create/x/" + flag_group_name)
+        assert r.status_code == 200
+        flag_group_id = r.json["uuid"]
 
-    # get flag group id
-    flag_group_id_get_url = "flag_group/get_flag_group_ids"
-    response = client.get(flag_group_id_get_url)
-    assert response.status_code == 200
+        r = client.post("flag_group/duplicate/" + flag_group_id)
+        assert r.status_code == 400
+        assert r.json["flag_group_name"] == flag_group_name
+        assert r.json["flags_in_flag_group"] == None
+        assert r.json["message"] == "error duplicating flag group: " + flag_group_id + ", missing new flag group name"
+        assert r.json["simple_message"] == "error duplicating flag group"
+        assert r.json["uuid"] == flag_group_id
+        assert r.json["valid"] == False
 
-    # unpack flag group id
-    x = response.get_data().decode("utf-8")
-    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
-
-    # duplicate_flag_group
-    flag_group_duplicate_url = "flag_group/duplicate_flag_group/" + flag_group_id
-    response = client.post(flag_group_duplicate_url)
-    assert response.status_code == 400
-
-    # delete all flag group
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
-
+        # confirm only one flag group exists
+        r = client.get("flag_group/get_ids")
+        assert r.status_code == 200
+        assert r.json["_ids"] == [flag_group_id]
 
 # duplicate flag group, new name same as old name
-def test_duplicate_flag_group_same_name(client):
-    # delete all flag group
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
+def test_duplicate_flag_group_same_name():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        flag_deletion_url = "flag/delete_all"
+        response = client.delete(flag_deletion_url)
+        assert response.status_code == 200
+        flag_group_delete_url = "flag_group/delete_all"
+        response = client.delete(flag_group_delete_url)
+        assert response.status_code == 200
 
-    # create flag group
-    flag_group_name = "FlagGroup1A"
-    flag_group_creation_url = "flag_group/create_flag_group/XX/" + flag_group_name
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
+        flag_group_name = "FlagGroupName1A"
+        r = client.post("flag_group/create/x/" + flag_group_name)
+        assert r.status_code == 200
+        flag_group_id = r.json["uuid"]
 
-    # get flag group id
-    flag_group_id_get_url = "flag_group/get_flag_group_ids"
-    response = client.get(flag_group_id_get_url)
-    assert response.status_code == 200
+        r = client.post("flag_group/duplicate/" + flag_group_id +"/" + flag_group_name)
+        assert r.status_code == 405
+        assert r.json["flag_group_name"] == flag_group_name
+        assert r.json["flags_in_flag_group"] == None
+        assert r.json["message"] == "can not duplicate flag group " + flag_group_id + " must be given a unique name"
+        assert r.json["simple_message"] == "new name for flag group must be unique"
+        assert r.json["uuid"] == flag_group_id
+        assert r.json["valid"] == False
 
-    # unpack flag group id
-    x = response.get_data().decode("utf-8")
-    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
-
-    # duplicate_flag_group
-    flag_group_duplicate_url = "flag_group/duplicate_flag_group/" + flag_group_id + "/" + flag_group_name
-    response = client.post(flag_group_duplicate_url)
-    assert response.status_code == 405
-
-    # delete all flag group
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
+        # confirm only one flag group exists
+        r = client.get("flag_group/get_ids")
+        assert r.status_code == 200
+        assert r.json["_ids"] == [flag_group_id]
 
 
-# dupliacte flag group, valid
-def test_duplicate_flag_group_valid(client):
-    # delete all flag group
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
+# duplicate flag group, valid
+def test_duplicate_flag_group_valid():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        flag_deletion_url = "flag/delete_all"
+        response = client.delete(flag_deletion_url)
+        assert response.status_code == 200
+        flag_group_delete_url = "flag_group/delete_all"
+        response = client.delete(flag_group_delete_url)
+        assert response.status_code == 200
 
-    # create flag group
-    flag_group_name = "FlagGroup1A"
-    flag_group_creation_url = "flag_group/create_flag_group/XX/" + flag_group_name
-    response = client.post(flag_group_creation_url)
-    assert response.status_code == 200
+        flag_group_name = "FlagGroupName1A"
+        r = client.post("flag_group/create/x/" + flag_group_name)
+        assert r.status_code == 200
+        flag_group_id = r.json["uuid"]
 
-    # get flag group id
-    flag_group_id_get_url = "flag_group/get_flag_group_ids"
-    response = client.get(flag_group_id_get_url)
-    assert response.status_code == 200
+        new_flag_group_name = "FlagGroupName1ANewName"
 
-    # unpack flag group id
-    x = response.get_data().decode("utf-8")
-    flag_group_id = re.sub("[^a-zA-Z0-9]+", "", x.split(":")[1])
+        r = client.post("flag_group/duplicate/" + flag_group_id +"/" + new_flag_group_name)
+        assert r.status_code == 200
+        new_flag_group_id = r.json["uuid"]
+        assert r.json["flag_group_name"] == new_flag_group_name
+        assert r.json["flags_in_flag_group"] == []
+        assert r.json["message"] == "new flag group " + new_flag_group_id + " created off of " + flag_group_id
+        assert r.json["simple_message"] == "new flag group created"
+        assert r.json["valid"] == True
 
-    # duplicate_flag_group
-    flag_group_duplicate_url = "flag_group/duplicate_flag_group/" + flag_group_id + "/" + "FlagGroup2B"
-    response = client.post(flag_group_duplicate_url)
-    assert response.status_code == 200
+        # confirm two flag group creates
+        r = client.get("flag_group/get_ids")
+        assert r.status_code == 200
+        assert set(r.json["_ids"]) == set([flag_group_id, new_flag_group_id])
 
-    # delete all flag group
-    flag_group_deletion_url = "flag_group/delete_all_flag_groups"
-    response = client.delete(flag_group_deletion_url)
-    assert response.status_code == 200
+# duplicate flag group, valid
+def test_duplicate_flag_group_valid_2():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        flag_deletion_url = "flag/delete_all"
+        response = client.delete(flag_deletion_url)
+        assert response.status_code == 200
+        flag_group_delete_url = "flag_group/delete_all"
+        response = client.delete(flag_group_delete_url)
+        assert response.status_code == 200
+
+        flag_group_name = "FlagGroupName1A"
+        r = client.post("flag_group/create/x/" + flag_group_name)
+        assert r.status_code == 200
+        flag_group_id = r.json["uuid"]
+
+        # create flag
+        flag_name = "FlagName1A"
+        flag_logic = """\
+if FF1 > 10:
+    return True
+else:
+    return False"""
+        payload = {"FLAG_NAME": flag_name, "FLAG_LOGIC": flag_logic}
+        url = "flag/create/x/" + payload["FLAG_NAME"]
+        response = client.post(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 200
+        flag_id = response.json["uuid"]
+
+        r = client.put("flag_group/add_flag/" + flag_group_id + "/x/" + flag_id)
+        assert r.status_code == 200
+
+        new_flag_group_name = "FlagGroupName1ANewName"
+
+        r = client.post("flag_group/duplicate/" + flag_group_id +"/" + new_flag_group_name)
+        assert r.status_code == 200
+        new_flag_group_id = r.json["uuid"]
+        assert r.json["flag_group_name"] == new_flag_group_name
+        assert r.json["flags_in_flag_group"] == [flag_id]
+        assert r.json["message"] == "new flag group " + new_flag_group_id + " created off of " + flag_group_id
+        assert r.json["simple_message"] == "new flag group created"
+        assert r.json["valid"] == True
+
+        # confirm two flag group creates
+        r = client.get("flag_group/get_ids")
+        assert r.status_code == 200
+        assert set(r.json["_ids"]) == set([flag_group_id, new_flag_group_id])
 
 
 # move flag group to production, missing flag group id
