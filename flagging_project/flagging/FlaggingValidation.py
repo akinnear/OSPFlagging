@@ -90,7 +90,6 @@ def validate_flag_logic_information(flag_name, flag_feeders, flag_dependencies, 
                         # found cyclical flag, mark flag as checkd and add to cyclical flag set
                         flag_check[original_flag] = True
                         cyclical_flags.append(original_flag)
-                        flag_check.update({flag: True})
                         flag_dependencies[original_flag] = og_flag_dependencies[original_flag]
 
                     else:
