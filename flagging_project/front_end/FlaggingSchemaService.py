@@ -209,6 +209,9 @@ def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, 
                                                                simple_message="flag can not be modified",
                                                                uuid=original_flag_id)
                 response_code = 405
+                # TODO
+                #   if len(flags_in_flag_group) == 1, need to redo validation to check for any cyclical flag errors due to new name
+
     if flag_schema_object is None:
         og_flag_name = flagging_dao.get_flag_name(ObjectId(original_flag_id))
         if og_flag_name == new_flag_name:
@@ -434,6 +437,10 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                         flagging_dao.update_flag_group(ObjectId(flag_group_id), "CYCLICAL ERROR",
                                                          flag_group_error_col_name)
                         flagging_dao.update_flag_group(ObjectId(flag_group_id), "DRAFT", flag_group_status_col_name)
+
+                        # TODO
+                        #   redo cyclical flag check for all flags that were in flag group
+                        #   update flag status and flag error based on redone flag validation
 
                     # update flag
                     new_transfer_flag_logic_information = _convert_FLI_to_TFLI(new_flag_logic_information)
@@ -727,6 +734,12 @@ def delete_flag_group(flag_group_id, existing_flag_groups, flagging_dao: Flaggin
         flag_schema_object_flag_dep, fsofd_rc = delete_flag_dependency(flag_id=None,
                                                                        flag_group_id=flag_group_id,
                                                                        flagging_dao=flagging_dao)
+        #TODO
+        #   redo cyclical flag check for all flags that were in flag group
+        #   1) check if flag ids from original flag group are in any flag dependnecy entries
+        #   2) if so, redo all cyclical checks for flags that are current flag dependency
+        #   3) update flag status and flag erorr based on redone flag validation
+
         flag_group_id_object = ObjectId(flag_group_id)
         flag_group_name = flagging_dao.get_flag_group_name(flag_group_id_object)
         removed_flag_group = flagging_dao.remove_flag_group(flag_group_id_object)
@@ -908,6 +921,11 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                         else:
                             flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
                                 ", ".join(str(x) for x in cyclical_errors))
+
+                        #TODO
+                        #   update all flags that are in cyclical error set so that error is CYCLICAL FLAG
+                        #   and status is DRAFT
+
                         # full_flag_set = new_flags + list(dict.fromkeys(existing_flags))
                         # flag_with_updated_deps_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
                         #                                                              update_value=full_flag_set,
@@ -997,6 +1015,10 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                     else:
                         flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
                             ", ".join(str(x) for x in cyclical_errors))
+
+                    # TODO
+                    #   update all flags that are in cyclical error set so that error is CYCLICAL FLAG
+                    #   and status is DRAFT
             else:
                 cyclical_errors = []
             flag_spec_schema_object, fli_rc = get_specific_flag(flag_id=ObjectId(new_flags[0]), existing_flags=existing_flags, flagging_dao=flagging_dao)
@@ -1167,6 +1189,14 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
                                                                              update_value="",
                                                                              update_column="flag_group_error_col_name")
 
+                # TODO
+                #   1)update all flags that are in cyclical error set so that error is CYCLICAL FLAG
+                #   and status is DRAFT
+                #   2)check if removed flag is in other flag groups,
+                #   if so, redo flag validation on removed flag to see if any remaining cyclical error
+                #   lack of cyclical error or any error, udpate flag status to PRODUCTION_READY and remove error entry for flag
+
+
         response_code = 200
 
     return flag_schema_object, response_code
@@ -1288,10 +1318,16 @@ def move_flag_group_to_production(flag_group_id, existing_flag_groups, flagging_
 #A call to delete all flag groups
 def delete_all_flag_groups(flagging_dao):
     flagging_dao.delete_all_flag_groups()
+
+    #TODO
+    #   redo all flag validation since flags are no longer in flags groups, lack of cyclical flag possiblity
+
     flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                    message="all flag groups have been deleted",
                                                    simple_message="all flag groups have been deleted")
     return flag_schema_object, 200
+
+
 
 
 
