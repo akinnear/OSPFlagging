@@ -734,6 +734,7 @@ def delete_flag_group(flag_group_id, existing_flag_groups, flagging_dao: Flaggin
         flag_schema_object_flag_dep, fsofd_rc = delete_flag_dependency(flag_id=None,
                                                                        flag_group_id=flag_group_id,
                                                                        flagging_dao=flagging_dao)
+
         #TODO
         #   redo cyclical flag check for all flags that were in flag group
         #   1) check if flag ids from original flag group are in any flag dependnecy entries
@@ -844,7 +845,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                     else:
                         flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
                             ", ".join(str(x) for x in cyclical_errors))
-                    full_flag_set = new_flags + list(dict.fromkeys(existing_flags))
+                    full_flag_set = new_flags + flags_in_flag_group
                     flag_with_updated_deps_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
                                                                                  update_value=full_flag_set,
                                                                                  update_column="FLAGS_IN_GROUP")
@@ -856,7 +857,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                                    simple_message="flags in flag group has been updated",
                                                                    uuid=flag_with_updated_deps_id,
                                                                    name=flagging_dao.get_flag_group_name(flag_with_updated_deps_id),
-                                                                   logic=flagging_dao.get_flag_group_flag(ObjectId(flag_group_id)))
+                                                                   logic=[str(x) for x in flagging_dao.get_flag_group_flag(ObjectId(flag_group_id))])
                     response_code = 200
 
         elif len(missing_flags) != 0:
@@ -922,6 +923,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                             flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
                                 ", ".join(str(x) for x in cyclical_errors))
 
+                        print("update all cyclcial flags")
                         #TODO
                         #   update all flags that are in cyclical error set so that error is CYCLICAL FLAG
                         #   and status is DRAFT
@@ -971,7 +973,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                                            new_dependencies=referenced_flags,
                                                                            flagging_dao=flagging_dao)
 
-                full_flag_set = new_flags + list(dict.fromkeys(flags_in_flag_group))
+                full_flag_set = new_flags + flags_in_flag_group
                 full_flag_set = [ObjectId(x) for x in full_flag_set]
                 found_flag_group_name = flagging_dao.get_flag_group_name(ObjectId(flag_group_id))
                 flag_with_updated_deps_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
@@ -1016,6 +1018,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                         flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
                             ", ".join(str(x) for x in cyclical_errors))
 
+                    print("update all cyclical flags")
                     # TODO
                     #   update all flags that are in cyclical error set so that error is CYCLICAL FLAG
                     #   and status is DRAFT
@@ -1042,7 +1045,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                                     flag_dependencies=[x.flag_name["name"] for x in referenced_flags], flagging_dao=flagging_dao)
 
 
-            full_flag_set = new_flags + list(dict.fromkeys(flags_in_flag_group))
+            full_flag_set = new_flags + flags_in_flag_group
             full_flag_set = [ObjectId(x) for x in full_flag_set]
             found_flag_group_name = flagging_dao.get_flag_group_name(ObjectId(flag_group_id))
             flag_group_with_updated_deps_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id), update_value=full_flag_set, update_column="FLAGS_IN_GROUP")
