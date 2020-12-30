@@ -764,6 +764,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
     flag_schema_object = None
     validation_results = FlaggingValidationResults()
 
+
     if flag_group_id is None:
         flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                        message="flag group must be specified",
@@ -820,47 +821,65 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
         if len(missing_flags) == 0 and len(duplicate_flags) == 0:
             flag_set = flags_in_flag_group + [new_flag]
 
-            #CYCLICAL CHECK
-            #need dummy dictionary
-            ref_flag_dict = {}
-            for flag in flag_set:
-                ref_flag_dict[flag] = {CodeLocation(None, None)}
 
-            referenced_flags_names = [x["name"] for x in flagging_dao.get_flag_logic_information(new_flag)["referenced_flags"]]
-            ref_flag_dict = {}
-            for rf_name in referenced_flags_names:
-                ref_flag_dict[rf_name] = {CodeLocation(None, None)}
-            flag_logic_cyclical_check = FlagLogicInformation(referenced_flags=ref_flag_dict)
-            validation_results = validate_cyclical_logic(ObjectId(new_flags[0]),
-                                                ObjectId(flag_group_id), flag_logic_cyclical_check, flagging_dao)
-            if len(validation_results.errors) != 0:
-                cyclical_errors = []
-                for k, v in validation_results.errors.items():
-                    if isinstance(v, FlagErrorInformation):
-                        cyclical_errors.append(k)
-                if len(cyclical_errors) > 0:
-                    if len(cyclical_errors) == 1:
-                        flagging_message = "the following flag dependency resulted in cyclical dependencies: " + \
-                                           str(cyclical_errors[0])
-                    else:
-                        flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
-                            ", ".join(str(x) for x in cyclical_errors))
-                    full_flag_set = new_flags + flags_in_flag_group
-                    flag_with_updated_deps_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
-                                                                                 update_value=full_flag_set,
-                                                                                 update_column="FLAGS_IN_GROUP")
-                    flag_with_updated_deps_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
-                                                                                 update_value=flag_group_error_col_name,
-                                                                                 update_column="CYCLICAL FLAG ERROR")
-                    flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                                   message=flagging_message,
-                                                                   simple_message="flags in flag group has been updated",
-                                                                   uuid=flag_with_updated_deps_id,
-                                                                   name=flagging_dao.get_flag_group_name(flag_with_updated_deps_id),
-                                                                   logic=[str(x) for x in flagging_dao.get_flag_group_flag(ObjectId(flag_group_id))])
-                    response_code = 200
 
-        elif len(missing_flags) != 0:
+        # if len(missing_flags) == 0 and len(duplicate_flags) == 0:
+        #     flag_set = flags_in_flag_group + [new_flag]
+        #
+        #     #CYCLICAL CHECK
+        #     #need dummy dictionary
+        #     ref_flag_dict = {}
+        #     for flag in flag_set:
+        #         ref_flag_dict[flag] = {CodeLocation(None, None)}
+        #
+        #
+        #
+        #
+        #     referenced_flags_names = [x["name"] for x in flagging_dao.get_flag_logic_information(new_flag)["referenced_flags"]]
+        #     ref_flag_dict = {}
+        #     for rf_name in referenced_flags_names:
+        #         ref_flag_dict[rf_name] = {CodeLocation(None, None)}
+        #     flag_logic_cyclical_check = FlagLogicInformation(referenced_flags=ref_flag_dict)
+        #     validation_results = validate_cyclical_logic(ObjectId(new_flags[0]),
+        #                                         ObjectId(flag_group_id), flag_logic_cyclical_check, flagging_dao)
+        #     if len(validation_results.errors) != 0:
+        #         cyclical_errors = []
+        #         for k, v in validation_results.errors.items():
+        #             if isinstance(v, FlagErrorInformation):
+        #                 cyclical_errors.append(k)
+        #         if len(cyclical_errors) > 0:
+        #             if len(cyclical_errors) == 1:
+        #                 flagging_message = "the following flag dependency resulted in cyclical dependencies: " + \
+        #                                    str(cyclical_errors[0])
+        #             else:
+        #                 flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
+        #                     ", ".join(str(x) for x in cyclical_errors))
+        #             full_flag_set = new_flags + flags_in_flag_group
+        #             flag_name_dict = {}
+        #             for flag in full_flag_set:
+        #                 flag_name = flag.get_flag_name(flag)
+        #                 flag_name_dict[flag_name] = flag
+        #             for k, v in flag_name_dict.items():
+        #                 if k in cyclical_errors:
+        #                     updated_flag_id = flagging_dao.update_flag(v, "CYCLICAL_ERROR", flag_error_col_name)
+        #                     updated_flag_id = flagging_dao.update_flag(v, "DRAFT", flag_status_col_name)
+        #
+        #             flag_with_updated_deps_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
+        #                                                                          update_value=full_flag_set,
+        #                                                                          update_column="FLAGS_IN_GROUP")
+        #             flag_with_updated_deps_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
+        #                                                                          update_value=flag_group_error_col_name,
+        #                                                                          update_column="CYCLICAL FLAG ERROR")
+        #
+        #             flag_schema_object = FlaggingSchemaInformation(valid=False,
+        #                                                            message=flagging_message,
+        #                                                            simple_message="flags in flag group has been updated",
+        #                                                            uuid=flag_with_updated_deps_id,
+        #                                                            name=flagging_dao.get_flag_group_name(flag_with_updated_deps_id),
+        #                                                            logic=[str(x) for x in flagging_dao.get_flag_group_flag(ObjectId(flag_group_id))])
+        #             response_code = 200
+
+        if len(missing_flags) != 0:
             # return error message that flag must be created first before added to flag group
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="Flag(s) " + ", ".join(map(str, missing_flags)) + " do not exist",
@@ -869,7 +888,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                            name=flagging_dao.get_flag_group_name(ObjectId(flag_group_id)))
             response_code = 404
 
-        elif len(duplicate_flags) != 0:
+        if len(duplicate_flags) != 0:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                            message="Flag(s) " + ", ".join(map(str, duplicate_flags)) + " already exist in flag group",
                                                            simple_message='flag already in flag group',
@@ -923,10 +942,15 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                             flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
                                 ", ".join(str(x) for x in cyclical_errors))
 
-                        print("update all cyclcial flags")
-                        #TODO
-                        #   update all flags that are in cyclical error set so that error is CYCLICAL FLAG
-                        #   and status is DRAFT
+                        print("update all cyclical flags")
+                        flag_name_dict = {}
+                        for flag in flag_set:
+                            flag_name = flagging_dao.get_flag_name(ObjectId(flag))
+                            flag_name_dict[flag_name] = ObjectId(flag)
+                        for k, v in flag_name_dict.items():
+                            if k in cyclical_errors:
+                                updated_flag_id = flagging_dao.update_flag(v, "CYCLICAL_ERROR", flag_error_col_name)
+                                updated_flag_id = flagging_dao.update_flag(v, "DRAFT", flag_status_col_name)
 
                         # full_flag_set = new_flags + list(dict.fromkeys(existing_flags))
                         # flag_with_updated_deps_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
@@ -973,11 +997,11 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                                            new_dependencies=referenced_flags,
                                                                            flagging_dao=flagging_dao)
 
-                full_flag_set = new_flags + flags_in_flag_group
-                full_flag_set = [ObjectId(x) for x in full_flag_set]
+                # full_flag_set = new_flags + flags_in_flag_group
+                # full_flag_set = [ObjectId(x) for x in full_flag_set]
                 found_flag_group_name = flagging_dao.get_flag_group_name(ObjectId(flag_group_id))
                 flag_with_updated_deps_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
-                                                                             update_value=full_flag_set,
+                                                                             update_value=[ObjectId(x) for x in flag_set],
                                                                              update_column="FLAGS_IN_GROUP")
                 flag_group_set_to_draft = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
                                                                              update_value="DRAFT",
@@ -1019,9 +1043,14 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                             ", ".join(str(x) for x in cyclical_errors))
 
                     print("update all cyclical flags")
-                    # TODO
-                    #   update all flags that are in cyclical error set so that error is CYCLICAL FLAG
-                    #   and status is DRAFT
+                    flag_name_dict = {}
+                    for flag in flag_set:
+                        flag_name = flagging_dao.get_flag_name(ObjectId(flag))
+                        flag_name_dict[flag_name] = ObjectId(flag)
+                    for k, v in flag_name_dict.items():
+                        if k in cyclical_errors:
+                            updated_flag_id = flagging_dao.update_flag(v, "CYCLICAL_ERROR", flag_error_col_name)
+                            updated_flag_id = flagging_dao.update_flag(v, "DRAFT", flag_status_col_name)
             else:
                 cyclical_errors = []
             flag_spec_schema_object, fli_rc = get_specific_flag(flag_id=ObjectId(new_flags[0]), existing_flags=existing_flags, flagging_dao=flagging_dao)
@@ -1045,10 +1074,11 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                                                                     flag_dependencies=[x.flag_name["name"] for x in referenced_flags], flagging_dao=flagging_dao)
 
 
-            full_flag_set = new_flags + flags_in_flag_group
-            full_flag_set = [ObjectId(x) for x in full_flag_set]
+            # full_flag_set = new_flags + flags_in_flag_group
+            # full_flag_set = [ObjectId(x) for x in full_flag_set]
             found_flag_group_name = flagging_dao.get_flag_group_name(ObjectId(flag_group_id))
-            flag_group_with_updated_deps_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id), update_value=full_flag_set, update_column="FLAGS_IN_GROUP")
+            flag_group_with_updated_deps_id = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
+                                                                             update_value=[ObjectId(x) for x in flag_set], update_column="FLAGS_IN_GROUP")
             if len(cyclical_errors) > 0:
                 flag_group_set_to_draft = flagging_dao.update_flag_group(flag_group=ObjectId(flag_group_id),
                                                                              update_value="DRAFT",
