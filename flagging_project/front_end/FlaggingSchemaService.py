@@ -734,12 +734,54 @@ def delete_flag_group(flag_group_id, existing_flag_groups, flagging_dao: Flaggin
         flag_schema_object_flag_dep, fsofd_rc = delete_flag_dependency(flag_id=None,
                                                                        flag_group_id=flag_group_id,
                                                                        flagging_dao=flagging_dao)
+        #   1) get flags in flag group
+        #   2) do flag validation on each flag in flag group
+        #   3) perform cyclical flag check on flag in flag group
+        #   4) update flags errors and statuses accordingly
+        flags_in_flag_group = flagging_dao.get_flag_group_flag(ObjectId(flag_group_id))
+        cyclical_errors = []
+        other_errors = []
+        other_flag_group_ids = []
+        flag_name_dict = {}
+        flag_groups = flagging_dao.get_flag_groups()
+        for i in range(0, len(flag_groups)):
+            if flag_groups[i]["_id"] == ObjectId(flag_group_id):
+                flag_groups.pop(i)
+                break
+        for flag_group in flag_groups:
+            for flag in flags_in_flag_group:
+                if flag in flag_group["FLAGS_IN_GROUP"]:
+                    other_flag_group_ids.append(flag_group["_id"])
+                    flag_validation = validate_logic(flagging_dao.get_flag_name(flag), _convert_TFLI_to_FLI(flagging_dao.get_flag_logic_information(flag)), flagging_dao)
+                    if flag_validation.errors != {} or flag_validation.mypy_errors != {}:
+                        other_errors.append(flag)
+        for flag_group in other_flag_group_ids:
+            flags_in_flag_group_x = flagging_dao.get_flag_group_flag(ObjectId(flag_group))
+            for flag in flags_in_flag_group_x:
+                flag_name_dict[flagging_dao.get_flag_name(flag)] = flag
 
-        #TODO
-        #   redo cyclical flag check for all flags that were in flag group
-        #   1) check if flag ids from original flag group are in any flag dependnecy entries
-        #   2) if so, redo all cyclical checks for flags that are current flag dependency
-        #   3) update flag status and flag erorr based on redone flag validation
+            validation_results = validate_cyclical_logic(None, flag_group, FlagLogicInformation(), flagging_dao)
+            if len(validation_results.errors) != 0:
+                for k, v in validation_results.errors.items():
+                    if isinstance(v, FlagErrorInformation):
+                        cyclical_errors.append(k)
+
+        for k, v in flag_name_dict.items():
+            if k in cyclical_errors:
+                cyclical_errors.remove(k)
+                cyclical_errors.append(v)
+
+        for flag in flags_in_flag_group:
+            if flag in other_errors:
+                updated_flag_id = flagging_dao.update_flag(flag, "ERROR", flag_error_col_name)
+                updated_flag_id = flagging_dao.update_flag(flag, "DRAFT", flag_status_col_name)
+            elif flag in cyclical_errors:
+                updated_flag_id = flagging_dao.update_flag(flag, "CYCLICAL_ERROR", flag_error_col_name)
+                updated_flag_id = flagging_dao.update_flag(flag, "DRAFT", flag_status_col_name)
+            else:
+                updated_flag_id = flagging_dao.update_flag(flag, "", flag_error_col_name)
+                updated_flag_id = flagging_dao.update_flag(flag, "PRODUCTION_READY",
+                                                           flag_status_col_name)
 
         flag_group_id_object = ObjectId(flag_group_id)
         flag_group_name = flagging_dao.get_flag_group_name(flag_group_id_object)
