@@ -209,8 +209,6 @@ def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, 
                                                                simple_message="flag can not be modified",
                                                                uuid=original_flag_id)
                 response_code = 405
-                # TODO
-                #   if len(flags_in_flag_group) == 1, need to redo validation to check for any cyclical flag errors due to new name
 
     if flag_schema_object is None:
         og_flag_name = flagging_dao.get_flag_name(ObjectId(original_flag_id))
@@ -227,12 +225,70 @@ def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, 
                                                  update_column="FLAG_NAME")
         specific_flag_logic = flagging_dao.get_flag_logic_information(new_flag_id)
         specific_flag_name = flagging_dao.get_flag_name(new_flag_id)
+
+
+        #   1)have to delete flag dep entry for og flag name and flag group combo
+        if len(flags_in_flag_group) == 1:
+            try:
+                flagging_dao.remove_specific_flag_dependencies_via_flag_id_and_flag_group_id(original_flag_id_object,  list(flags_in_flag_group.keys())[0])
+            except Exception as e:
+                print(e)
+
+        #   2)check if new flag dep entry is need based on referenced flags in renamed flag
+            if len(specific_flag_logic["referenced_flags"]) > 0:
+                flag_schema_object_flag_dep, fdi_rc = create_flag_dependency(flag_id=str(original_flag_id_object),
+                                                                             flag_name=specific_flag_name,
+                                                                             flag_group_id=str(list(flags_in_flag_group.keys())[0]),
+                                                                             existing_flag_ids=flagging_dao.get_flag_ids(),
+                                                                             existing_flag_dep_keys=flagging_dao.get_flag_dependencies_ids(),
+                                                                             flag_dependencies=[x["name"] for x in specific_flag_logic["referenced_flags"]],
+                                                                             flagging_dao=flagging_dao)
+
+
+
+        # if len(flags_in_flag_group) == 1:
+            #perform cyclical check on flags in flag group
+            cyclical_errors = []
+            other_errors = []
+            flag_name_dict = {}
+            for k, v in flags_in_flag_group.items():
+                for flag_id in [ObjectId(x) for x in v]:
+                    flag_name_dict[flagging_dao.get_flag_name(flag_id)] = flag_id
+            validation_results = validate_cyclical_logic(None, list(flags_in_flag_group.keys())[0], FlagLogicInformation(), flagging_dao)
+            if len(validation_results.errors) != 0:
+                for k, v in validation_results.errors.items():
+                    if isinstance(v, FlagErrorInformation):
+                        cyclical_errors.append(k)
+                flag_validation = validate_logic(flagging_dao.get_flag_name(flag_id),
+                                                 _convert_TFLI_to_FLI(flagging_dao.get_flag_logic_information(flag_id)),
+                                                 flagging_dao)
+                if flag_validation.errors != {} or flag_validation.mypy_errors != {}:
+                    other_errors.append(flag_id)
+            cyclical_errors = list(set(cyclical_errors))
+            for k, v in flag_name_dict.items():
+                if k in cyclical_errors:
+                    cyclical_errors.remove(k)
+                    cyclical_errors.append(v)
+            for k, v in flags_in_flag_group.items():
+                for flag_id in [ObjectId(x) for x in v]:
+                    if flag_id in other_errors:
+                        updated_flag_id = flagging_dao.update_flag(flag_id, "ERROR", flag_error_col_name)
+                        updated_flag_id = flagging_dao.update_flag(flag_id, "DRAFT", flag_status_col_name)
+                    elif flag_id in cyclical_errors:
+                        updated_flag_id = flagging_dao.update_flag(flag_id, "CYCLICAL_ERROR", flag_error_col_name)
+                        updated_flag_id = flagging_dao.update_flag(flag_id, "DRAFT", flag_status_col_name)
+                    else:
+                        updated_flag_id = flagging_dao.update_flag(flag_id, "", flag_error_col_name)
+                        updated_flag_id = flagging_dao.update_flag(flag_id, "PRODUCTION_READY", flag_status_col_name)
+
         flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                        message="original flag " + str(original_flag_id) + " has been renamed " + new_flag_name,
                                                        simple_message="flag has been renamed",
                                                        uuid=new_flag_id,
                                                        name=specific_flag_name,
                                                        logic=specific_flag_logic)
+
+
         response_code = 200
     return flag_schema_object, response_code
 
@@ -277,213 +333,487 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                 response_code = 405
 
     if flag_schema_object is None:
-        validation_results = validate_logic(flag_id, new_flag_logic_information, flagging_dao)
-        if validation_results.errors != {} or validation_results.mypy_errors != {}:
-            #check if flag is part of flag group
-            flag_group_ids = flagging_dao.get_flag_group_ids()
-            flag_in_flag_group_bool = False
-            if len(flag_group_ids) > 0:
-                for flag_group_idx in flag_group_ids:
-                    flags_in_flag_group_idx = flagging_dao.get_flag_group_flag(flag_group_idx)
-                    if flag_id in flags_in_flag_group_x:
-                        flag_in_flag_group_bool = True
-                        flag_group_id = flag_group_idx
-                        # delete previous dep entry
-                        flagging_dao.remove_specific_flag_dependencies_via_flag_id_and_flag_group_id(ObjectId(flag_id),ObjectId(flag_group_id))
 
-            if flag_in_flag_group_bool:
-                #create new entry flag dep entry for flag_id in flag_group_id
-                flag_name = flagging_dao.get_flag_name(ObjectId(flag_group_id))
-                flag_ids = flagging_dao.get_flag_ids()
-                existing_flag_dep_keys = flagging_dao.get_flag_dependencies_ids()
-                flag_schema_object_flag_dep, fdi_rc = create_flag_dependency(flag_id=flag_id,
-                                                                             flag_name=flag_name,
-                                                                             flag_group_id=flag_group_id,
-                                                                             existing_flag_ids=flag_ids,
-                                                                             existing_flag_dep_keys=existing_flag_dep_keys,
-                                                                             flag_dependencies=[],
-                                                                             flagging_dao=flagging_dao)
+        flag_name = flagging_dao.get_flag_name(ObjectId(flag_id))
+        flag_group_ids = flagging_dao.get_flag_group_ids()
+        flag_in_flag_group_bool = False
+        for flag_group_idx in flag_group_ids:
+            flags_in_flag_group_idx = flagging_dao.get_flag_group_flag(flag_group_idx)
+            if flag_id in flags_in_flag_group_idx:
+                flag_in_flag_group_bool == True
+                flag_group_id = flag_group_idx
 
-                #add new referenced flags to flag dependeny entry
-                #check for cyclical errors
-                flag_set = flagging_dao.get_flag_group_flag()
-                ref_flag_dict = {}
-                for flag in flag_set:
-                    ref_flag_dict[flag] = {CodeLocation(None, None)}
-                referenced_flags_names = [x["name"] for x in _convert_FLI_to_TFLI(new_flag_logic_information)["referenced_flags"]]
-                ref_flag_dict = {}
-                for rf_name in referenced_flags_names:
-                    ref_flag_dict[rf_name] = {CodeLocation(None, None)}
-                flag_logic_cyclical_check = FlagLogicInformation(referenced_flags=ref_flag_dict)
-                validation_results = validate_cyclical_logic(ObjectId(flag_id), flag_group_id, flag_logic_cyclical_check, flagging_dao)
-                flagging_message = ""
-                if len(validation_results.errors) != 0:
-                    cyclical_errors = []
-                    for k, v in validation_results.errors.items():
-                        if isinstance(v, FlagErrorInformation):
-                            cyclical_errors.append(k)
-                    if len(cyclical_errors) > 0:
-                        if len(cyclical_errors) == 1:
-                            flagging_message = "the following flag dependency resulted in cyclical dependencies: " + \
-                                               str(cyclical_errors[0])
-                        else:
-                            flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
-                                ", ".join(str(x) for x in cyclical_errors))
-                        #update flag group that flag is part of with cyclcial error
-                        flagging_dao.update_flag_group(ObjectId(flag_group_id), "CYCLICAL ERROR", flag_group_error_col_name)
+        #flag not in flag group, only check flag for syntax errors and update accordingly
+        if not flag_in_flag_group_bool:
+            # redo flag validation on flag being updated
+            flag_validation = validate_logic(flag_name, new_flag_logic_information, flagging_dao)
+            # update flag with new logic
+            update_flag_id = flagging_dao.update_flag(flag_id, _convert_FLI_to_TFLI(new_flag_logic_information), flag_logic_col_name)
+            if flag_validation.errors != {} or flag_validation.mypy_errors != {}:
+               #flag not in flag group, cylcial error not possible, erro must be due to syntax, update flag
+               updated_flag_id = flagging_dao.update_flag(flag_id, "ERROR",
+                                                          flag_error_col_name)
+               updated_flag_id = flagging_dao.update_flag(flag_id, "DRAFT",
+                                                          flag_status_col_name)
 
-                # get referenced flags from flag logic information, only have to do if flag in flag group
-                if len(new_flag_logic_information.referenced_flags) > 0:
-                    referenced_flags_names_in_flag_id = [x for x in new_flag_logic_information.referenced_flags]
-                    referenced_flags = []
-                    for x in referenced_flags_names_in_flag_id:
-                        referenced_flags.append(ReferencedFlag(flag_name=x, flag_group_id=flag_group_id))
-
-                    #update existing flag dep keys
-                    existing_flag_dep_keys = flagging_dao.get_flag_dependencies_ids()
-                    updated_flag_dep_id, ufdi_rc = add_dependencies_to_flag(flag_dep_id=str(flag_schema_object_flag_dep.uuid),
-                                                                               existing_flag_dep_keys=existing_flag_dep_keys,
-                                                                               new_dependencies=referenced_flags,
-                                                                               flagging_dao=flagging_dao)
-
-            #update flag
-            new_transfer_flag_logic_information = _convert_FLI_to_TFLI(new_flag_logic_information)
-            flag_id_object = ObjectId(flag_id)
-            updated_flag_id = flagging_dao.update_flag(flag=flag_id_object, update_value=new_transfer_flag_logic_information,
-                                                         update_column=flag_logic_col_name)
-            updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
-                                                         update_value="DRAFT",
-                                                         update_column=flag_status_col_name)
-            updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
-                                                         update_value="ERROR",
-                                                         update_column=flag_error_col_name)
-            specific_flag_name = flagging_dao.get_flag_name(updated_flag_id)
-            specific_flag_logic = flagging_dao.get_flag_logic_information(updated_flag_id)
-            flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                           message="error in flag logic",
-                                                           simple_message="new logic updated but has errors",
-                                                           uuid=updated_flag_id,
-                                                           name=specific_flag_name,
-                                                           logic=specific_flag_logic)
-            response_code = 200
+               #create flag schema object
+               flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                              message="error in flag logic",
+                                                              simple_message="new logic updated but has errors",
+                                                              uuid=updated_flag_id,
+                                                              name=flag_name,
+                                                              logic=_convert_FLI_to_TFLI(new_flag_logic_information))
+               response_code = 200
+            else:
+                # no flag errors, flag not in flag group
+                updated_flag_id = flagging_dao.update_flag(flag_id, "", flag_error_col_name)
+                updated_flag_id = flagging_dao.update_flag(flag_id, "PRODUCTION_READY",
+                                                           flag_status_col_name)
+                flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                               message="logic for flag " + str(flag_id) + " has been updated",
+                                                               simple_message="flag logic has been updated",
+                                                               uuid=flag_id,
+                                                               name=flag_name,
+                                                               logic=_convert_FLI_to_TFLI(new_flag_logic_information))
+                response_code = 200
         else:
-            # check if flag is part of flag group
-            flag_group_ids = flagging_dao.get_flag_group_ids()
-            flag_in_flag_group_bool = False
-            if len(flag_group_ids) > 0:
-                for flag_group_idx in flag_group_ids:
-                    flags_in_flag_group_idx = flagging_dao.get_flag_group_flag(flag_group_idx)
-                    if flag_id in flags_in_flag_group_x:
-                        flag_in_flag_group_bool = True
-                        flag_group_id = flag_group_idx
-                        # delete previous dep entry
-                        flagging_dao.remove_specific_flag_dependencies_via_flag_id_and_flag_group_id(ObjectId(flag_id),ObjectId(flag_group_id))
+            #flag being update is part of flag group, must check all flags in flag group for possible cyclical errors
+            # delete previous dep entry
+            flagging_dao.remove_specific_flag_dependencies_via_flag_id_and_flag_group_id(ObjectId(flag_id),
+                                                                                         ObjectId(flag_group_id))
+            # create new entry flag dep entry for flag_id in flag_group_id
+            flag_name = flagging_dao.get_flag_name(ObjectId(flag_id))
+            flag_ids = flagging_dao.get_flag_ids()
+            existing_flag_dep_keys = flagging_dao.get_flag_dependencies_ids()
+            referenced_flags_names = [x["name"] for x in
+                                      _convert_FLI_to_TFLI(new_flag_logic_information)["referenced_flags"]]
+            flag_schema_object_flag_dep, fdi_rc = create_flag_dependency(flag_id=flag_id,
+                                                                         flag_name=flag_name,
+                                                                         flag_group_id=flag_group_id,
+                                                                         existing_flag_ids=flag_ids,
+                                                                         existing_flag_dep_keys=existing_flag_dep_keys,
+                                                                         flag_dependencies=referenced_flags_names,
+                                                                         flagging_dao=flagging_dao)
 
-            if flag_in_flag_group_bool:
-                # create new entry flag dep entry for flag_id in flag_group_id
-                flag_name = flagging_dao.get_flag_name(ObjectId(flag_id))
-                flag_ids = flagging_dao.get_flag_ids()
-                existing_flag_dep_keys = flagging_dao.get_flag_dependencies_ids()
-                flag_schema_object_flag_dep, fdi_rc = create_flag_dependency(flag_id=flag_id,
-                                                                             flag_name=flag_name,
-                                                                             flag_group_id=str(flag_group_id),
-                                                                             existing_flag_ids=flag_ids,
-                                                                             existing_flag_dep_keys=existing_flag_dep_keys,
-                                                                             flag_dependencies=[x for x in new_flag_logic_information.referenced_flags.keys()],
-                                                                             flagging_dao=flagging_dao)
+            #update flag with new logic
+            update_flag_id = flagging_dao.update_flag(flag_id, _convert_FLI_to_TFLI(new_flag_logic_information), flag_logic_col_name)
 
-                # get referenced flags from flag logic information
-                if len(new_flag_logic_information.referenced_flags) > 0:
-                    referenced_flags_names_in_flag_id = [x for x in new_flag_logic_information.referenced_flags]
-                    referenced_flags = []
-                    for x in referenced_flags_names_in_flag_id:
-                        referenced_flags.append(ReferencedFlag(flag_name=x, flag_group_id=flag_group_id))
-
-                    # update existing flag dep keys
-                    existing_flag_dep_keys = flagging_dao.get_flag_dependencies_ids()
-                    updated_flag_dep_id, ufdi_rc = add_dependencies_to_flag(
-                        flag_dep_id=str(flag_schema_object_flag_dep.uuid),
-                        existing_flag_dep_keys=existing_flag_dep_keys,
-                        new_dependencies=referenced_flags,
-                        flagging_dao=flagging_dao)
-
-                # add new referenced flags to flag dependeny entry
-                # check for cyclical errors
-                flag_set = flagging_dao.get_flag_group_flag(flag_group_id)
-                ref_flag_dict = {}
-                for flag in flag_set:
-                    ref_flag_dict[flag] = {CodeLocation(None, None)}
-                referenced_flags_names = [x["name"] for x in _convert_FLI_to_TFLI(new_flag_logic_information)["referenced_flags"]]
-                ref_flag_dict = {}
-                for rf_name in referenced_flags_names:
-                    ref_flag_dict[rf_name] = {CodeLocation(None, None)}
-                flag_logic_cyclical_check = FlagLogicInformation(referenced_flags=ref_flag_dict)
-                validation_results = validate_cyclical_logic(ObjectId(flag_id), flag_group_id,
-                                                             flag_logic_cyclical_check, flagging_dao)
-                flagging_message = ""
+            # check for cyclical and other errors in all flags in flag group based upon new logic
+            cyclical_errors = []
+            other_errors = []
+            flag_name_dict = {}
+            flag_group_flags = flagging_dao.get_flag_group_flag(flag_group_id)
+            for flag_id in flag_group_flags:
+                flag_name_dict[flagging_dao.get_flag_name(flag_id)] = flag_id
+                validation_results = validate_cyclical_logic(None, list(flags_in_flag_group.keys())[0],
+                                                             FlagLogicInformation(), flagging_dao)
                 if len(validation_results.errors) != 0:
-                    cyclical_errors = []
                     for k, v in validation_results.errors.items():
                         if isinstance(v, FlagErrorInformation):
                             cyclical_errors.append(k)
-                    if len(cyclical_errors) > 0:
-                        if len(cyclical_errors) == 1:
-                            flagging_message = "the following flag dependency resulted in cyclical dependencies: " + \
-                                               str(cyclical_errors[0])
-                        else:
-                            flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
-                                ", ".join(str(x) for x in cyclical_errors))
-                        # update flag group that flag is part of with cyclcial error
-                        flagging_dao.update_flag_group(ObjectId(flag_group_id), "CYCLICAL ERROR",
-                                                         flag_group_error_col_name)
-                        flagging_dao.update_flag_group(ObjectId(flag_group_id), "DRAFT", flag_group_status_col_name)
+                    flag_validation = validate_logic(flagging_dao.get_flag_name(flag_id),
+                                                     _convert_TFLI_to_FLI(
+                                                         flagging_dao.get_flag_logic_information(flag_id)),
+                                                     flagging_dao)
+                    if flag_validation.errors != {} or flag_validation.mypy_errors != {}:
+                        other_errors.append(flag_id)
+            cyclical_errors = list(set(cyclical_errors))
+            for k, v in flag_name_dict.items():
+                if k in cyclical_errors:
+                    cyclical_errors.remove(k)
+                    cyclical_errors.append(v)
+            for k, v in flags_in_flag_group.items():
+                for flag_id in [ObjectId(x) for x in v]:
+                    if flag_id in other_errors:
+                        updated_flag_id = flagging_dao.update_flag(flag_id, "ERROR",
+                                                                   flag_error_col_name)
+                        updated_flag_id = flagging_dao.update_flag(flag_id, "DRAFT",
+                                                                   flag_status_col_name)
+                    elif flag_id in cyclical_errors:
+                        updated_flag_id = flagging_dao.update_flag(flag_id, "CYCLICAL_ERROR",
+                                                                   flag_error_col_name)
+                        updated_flag_id = flagging_dao.update_flag(flag_id, "DRAFT",
+                                                                   flag_status_col_name)
+                    else:
+                        updated_flag_id = flagging_dao.update_flag(flag_id, "", flag_error_col_name)
+                        updated_flag_id = flagging_dao.update_flag(flag_id, "PRODUCTION_READY",
+                                                                   flag_status_col_name)
 
-                        # TODO
-                        #   redo cyclical flag check for all flags that were in flag group
-                        #   update flag status and flag error based on redone flag validation
+            if updated_flag_id in other_errors:
+                #create flag schema object based on syntax error
+                flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                               message="error in flag logic",
+                                                               simple_message="new logic updated but has errors",
+                                                               uuid=updated_flag_id,
+                                                               name=flag_name,
+                                                               logic=_convert_FLI_to_TFLI(new_flag_logic_information))
+                response_code = 200
 
-                    # update flag
-                    new_transfer_flag_logic_information = _convert_FLI_to_TFLI(new_flag_logic_information)
-                    flag_id_object = ObjectId(flag_id)
-                    updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
-                                                               update_value=new_transfer_flag_logic_information,
-                                                               update_column=flag_logic_col_name)
-                    updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
-                                                               update_value="DRAFT",
-                                                               update_column=flag_status_col_name)
-                    updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
-                                                               update_value="ERROR",
-                                                               update_column=flag_error_col_name)
-                    specific_flag_name = flagging_dao.get_flag_name(updated_flag_id)
-                    specific_flag_logic = flagging_dao.get_flag_logic_information(updated_flag_id)
-                    flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                                   message="error in flag logic",
-                                                                   simple_message="new logic updated but has errors",
-                                                                   uuid=updated_flag_id,
-                                                                   name=specific_flag_name,
-                                                                   logic=specific_flag_logic)
-                    response_code = 200
-                else:
-                    new_transfer_flag_logic_information = _convert_FLI_to_TFLI(new_flag_logic_information)
-                    flag_id_object = ObjectId(flag_id)
-                    updated_flag_id = flagging_dao.update_flag(flag=flag_id_object, update_value=new_transfer_flag_logic_information,
-                                                                 update_column=flag_logic_col_name)
-                    updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
-                                                                 update_value="PRODUCTION READY",
-                                                                 update_column=flag_status_col_name)
-                    updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
-                                                                 update_value="",
-                                                                 update_column=flag_error_col_name)
-                    specific_flag_logic = flagging_dao.get_flag_logic_information(updated_flag_id)
-                    specific_flag_name = flagging_dao.get_flag_name(updated_flag_id)
-                    flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                                   message="logic for flag " + str(
-                                                                       updated_flag_id) + " has been updated",
-                                                                   simple_message="flag logic has been updated",
-                                                                   uuid=updated_flag_id,
-                                                                   name=specific_flag_name,
-                                                                   logic=specific_flag_logic)
-                    response_code = 200
+            elif updated_flag_id in cyclical_errors:
+                flag_schema_object = FlaggingSchemaInformation(valid=False,
+                                                               message="the following flag dependencies resulted in cyclical dependencies: " + (", ".join(str(x) for x in cyclical_errors)),
+                                                               simple_message="new logic updated but has errors",
+                                                               uuid=updated_flag_id,
+                                                               name=flag_name,
+                                                               logic=_convert_FLI_to_TFLI(new_flag_logic_information))
+                response_code = 200
+            else:
+                #create flag schema object based on no error in flag
+                flag_schema_object = FlaggingSchemaInformation(valid=True,
+                                                               message="logic for flag " + str( updated_flag_id) + " has been updated",
+                                                               simple_message="flag logic has been updated",
+                                                               uuid=updated_flag_id,
+                                                               name=flag_name,
+                                                               logic=_convert_FLI_to_TFLI(new_flag_logic_information))
+                response_code = 200
+                
+
+
+
+
+
+
+
+
+
+
+        #     #add new referenced flags to flag dependeny entry
+        #     #check for cyclical errors
+        #     flag_set = flagging_dao.get_flag_group_flag()
+        #     ref_flag_dict = {}
+        #     for flag in flag_set:
+        #         ref_flag_dict[flag] = {CodeLocation(None, None)}
+        #     referenced_flags_names = [x["name"] for x in _convert_FLI_to_TFLI(new_flag_logic_information)["referenced_flags"]]
+        #     ref_flag_dict = {}
+        #     for rf_name in referenced_flags_names:
+        #         ref_flag_dict[rf_name] = {CodeLocation(None, None)}
+        #     flag_logic_cyclical_check = FlagLogicInformation(referenced_flags=ref_flag_dict)
+        #     validation_results = validate_cyclical_logic(ObjectId(flag_id), flag_group_id, flag_logic_cyclical_check, flagging_dao)
+        #     flagging_message = ""
+        #     if len(validation_results.errors) != 0:
+        #         cyclical_errors = []
+        #         for k, v in validation_results.errors.items():
+        #             if isinstance(v, FlagErrorInformation):
+        #                 cyclical_errors.append(k)
+        #         if len(cyclical_errors) > 0:
+        #             if len(cyclical_errors) == 1:
+        #                 flagging_message = "the following flag dependency resulted in cyclical dependencies: " + \
+        #                                    str(cyclical_errors[0])
+        #             else:
+        #                 flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
+        #                     ", ".join(str(x) for x in cyclical_errors))
+        #             #update flag group that flag is part of with cyclcial error
+        #             flagging_dao.update_flag_group(ObjectId(flag_group_id), "CYCLICAL ERROR", flag_group_error_col_name)
+        #
+        #     # get referenced flags from flag logic information, only have to do if flag in flag group
+        #     if len(new_flag_logic_information.referenced_flags) > 0:
+        #         referenced_flags_names_in_flag_id = [x for x in new_flag_logic_information.referenced_flags]
+        #         referenced_flags = []
+        #         for x in referenced_flags_names_in_flag_id:
+        #             referenced_flags.append(ReferencedFlag(flag_name=x, flag_group_id=flag_group_id))
+        #
+        #         #update existing flag dep keys
+        #         existing_flag_dep_keys = flagging_dao.get_flag_dependencies_ids()
+        #         updated_flag_dep_id, ufdi_rc = add_dependencies_to_flag(flag_dep_id=str(flag_schema_object_flag_dep.uuid),
+        #                                                                    existing_flag_dep_keys=existing_flag_dep_keys,
+        #                                                                    new_dependencies=referenced_flags,
+        #                                                                    flagging_dao=flagging_dao)
+        #
+        #     #update flag
+        #     new_transfer_flag_logic_information = _convert_FLI_to_TFLI(new_flag_logic_information)
+        #     flag_id_object = ObjectId(flag_id)
+        #     updated_flag_id = flagging_dao.update_flag(flag=flag_id_object, update_value=new_transfer_flag_logic_information,
+        #                                                  update_column=flag_logic_col_name)
+        #     updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
+        #                                                  update_value="DRAFT",
+        #                                                  update_column=flag_status_col_name)
+        #     updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
+        #                                                  update_value="ERROR",
+        #                                                  update_column=flag_error_col_name)
+        #     specific_flag_name = flagging_dao.get_flag_name(updated_flag_id)
+        #     specific_flag_logic = flagging_dao.get_flag_logic_information(updated_flag_id)
+        #     flag_schema_object = FlaggingSchemaInformation(valid=False,
+        #                                                    message="error in flag logic",
+        #                                                    simple_message="new logic updated but has errors",
+        #                                                    uuid=updated_flag_id,
+        #                                                    name=specific_flag_name,
+        #                                                    logic=specific_flag_logic)
+        #     #   redo cyclical flag check for all flags that were in flag group
+        #     #   update flag status and flag error based on redone flag validation
+        #     cyclical_errors = []
+        #     other_errors = []
+        #     flag_name_dict = {}
+        #     flag_group_flags = flagging_dao.get_flag_group_flag(flag_group_id)
+        #     for flag_id in flag_group_flags:
+        #         flag_name_dict[flagging_dao.get_flag_name(flag_id)] = flag_id
+        #         validation_results = validate_cyclical_logic(None, list(flags_in_flag_group.keys())[0],
+        #                                                      FlagLogicInformation(), flagging_dao)
+        #         if len(validation_results.errors) != 0:
+        #             for k, v in validation_results.errors.items():
+        #                 if isinstance(v, FlagErrorInformation):
+        #                     cyclical_errors.append(k)
+        #             flag_validation = validate_logic(flagging_dao.get_flag_name(flag_id),
+        #                                              _convert_TFLI_to_FLI(
+        #                                                  flagging_dao.get_flag_logic_information(flag_id)),
+        #                                              flagging_dao)
+        #             if flag_validation.errors != {} or flag_validation.mypy_errors != {}:
+        #                 other_errors.append(flag_id)
+        #     cyclical_errors = list(set(cyclical_errors))
+        #     for k, v in flag_name_dict.items():
+        #         if k in cyclical_errors:
+        #             cyclical_errors.remove(k)
+        #             cyclical_errors.append(v)
+        #     for k, v in flags_in_flag_group.items():
+        #         for flag_id in [ObjectId(x) for x in v]:
+        #             if flag_id in other_errors:
+        #                 updated_flag_id = flagging_dao.update_flag(flag_id, "ERROR",
+        #                                                            flag_error_col_name)
+        #                 updated_flag_id = flagging_dao.update_flag(flag_id, "DRAFT",
+        #                                                            flag_status_col_name)
+        #             elif flag_id in cyclical_errors:
+        #                 updated_flag_id = flagging_dao.update_flag(flag_id, "CYCLICAL_ERROR",
+        #                                                            flag_error_col_name)
+        #                 updated_flag_id = flagging_dao.update_flag(flag_id, "DRAFT",
+        #                                                            flag_status_col_name)
+        #             else:
+        #                 updated_flag_id = flagging_dao.update_flag(flag_id, "", flag_error_col_name)
+        #                 updated_flag_id = flagging_dao.update_flag(flag_id, "PRODUCTION_READY",
+        #                                                            flag_status_col_name)
+        #     response_code = 200
+        # else:
+        #     # check if flag is part of flag group
+        #     flag_group_ids = flagging_dao.get_flag_group_ids()
+        #     flag_in_flag_group_bool = False
+        #     if len(flag_group_ids) > 0:
+        #         for flag_group_idx in flag_group_ids:
+        #             flags_in_flag_group_idx = flagging_dao.get_flag_group_flag(flag_group_idx)
+        #             if flag_id in flags_in_flag_group_x:
+        #                 flag_in_flag_group_bool = True
+        #                 flag_group_id = flag_group_idx
+        #                 # delete previous dep entry
+        #                 flagging_dao.remove_specific_flag_dependencies_via_flag_id_and_flag_group_id(ObjectId(flag_id),ObjectId(flag_group_id))
+        #
+        #     if flag_in_flag_group_bool:
+        #         # create new entry flag dep entry for flag_id in flag_group_id
+        #         flag_name = flagging_dao.get_flag_name(ObjectId(flag_id))
+        #         flag_ids = flagging_dao.get_flag_ids()
+        #         existing_flag_dep_keys = flagging_dao.get_flag_dependencies_ids()
+        #         flag_schema_object_flag_dep, fdi_rc = create_flag_dependency(flag_id=flag_id,
+        #                                                                      flag_name=flag_name,
+        #                                                                      flag_group_id=str(flag_group_id),
+        #                                                                      existing_flag_ids=flag_ids,
+        #                                                                      existing_flag_dep_keys=existing_flag_dep_keys,
+        #                                                                      flag_dependencies=[x for x in new_flag_logic_information.referenced_flags.keys()],
+        #                                                                      flagging_dao=flagging_dao)
+        #
+        #         # get referenced flags from flag logic information
+        #         if len(new_flag_logic_information.referenced_flags) > 0:
+        #             referenced_flags_names_in_flag_id = [x for x in new_flag_logic_information.referenced_flags]
+        #             referenced_flags = []
+        #             for x in referenced_flags_names_in_flag_id:
+        #                 referenced_flags.append(ReferencedFlag(flag_name=x, flag_group_id=flag_group_id))
+        #
+        #             # update existing flag dep keys
+        #             existing_flag_dep_keys = flagging_dao.get_flag_dependencies_ids()
+        #             updated_flag_dep_id, ufdi_rc = add_dependencies_to_flag(
+        #                 flag_dep_id=str(flag_schema_object_flag_dep.uuid),
+        #                 existing_flag_dep_keys=existing_flag_dep_keys,
+        #                 new_dependencies=referenced_flags,
+        #                 flagging_dao=flagging_dao)
+        #
+        #         # add new referenced flags to flag dependeny entry
+        #         # check for cyclical errors
+        #         flag_set = flagging_dao.get_flag_group_flag(flag_group_id)
+        #         ref_flag_dict = {}
+        #         for flag in flag_set:
+        #             ref_flag_dict[flag] = {CodeLocation(None, None)}
+        #         referenced_flags_names = [x["name"] for x in _convert_FLI_to_TFLI(new_flag_logic_information)["referenced_flags"]]
+        #         ref_flag_dict = {}
+        #         for rf_name in referenced_flags_names:
+        #             ref_flag_dict[rf_name] = {CodeLocation(None, None)}
+        #         flag_logic_cyclical_check = FlagLogicInformation(referenced_flags=ref_flag_dict)
+        #         validation_results = validate_cyclical_logic(ObjectId(flag_id), flag_group_id,
+        #                                                      flag_logic_cyclical_check, flagging_dao)
+        #         flagging_message = ""
+        #         if len(validation_results.errors) != 0:
+        #             cyclical_errors = []
+        #             for k, v in validation_results.errors.items():
+        #                 if isinstance(v, FlagErrorInformation):
+        #                     cyclical_errors.append(k)
+        #             if len(cyclical_errors) > 0:
+        #                 if len(cyclical_errors) == 1:
+        #                     flagging_message = "the following flag dependency resulted in cyclical dependencies: " + \
+        #                                        str(cyclical_errors[0])
+        #                 else:
+        #                     flagging_message = "the following flag dependencies resulted in cyclical dependencies: " + (
+        #                         ", ".join(str(x) for x in cyclical_errors))
+        #                 # update flag group that flag is part of with cyclcial error
+        #                 flagging_dao.update_flag_group(ObjectId(flag_group_id), "CYCLICAL ERROR",
+        #                                                  flag_group_error_col_name)
+        #                 flagging_dao.update_flag_group(ObjectId(flag_group_id), "DRAFT", flag_group_status_col_name)
+        #
+        #
+        #                 #   redo cyclical flag check for all flags that were in flag group
+        #                 #   update flag status and flag error based on redone flag validation
+        #                 cyclical_errors = []
+        #                 other_errors = []
+        #                 flag_name_dict = {}
+        #                 flag_group_flags = flagging_dao.get_flag_group_flag(flag_group_id)
+        #                 for flag_id in flag_group_flags:
+        #                     flag_name_dict[flagging_dao.get_flag_name(flag_id)] = flag_id
+        #                     validation_results = validate_cyclical_logic(None, list(flags_in_flag_group.keys())[0],
+        #                                                                  FlagLogicInformation(), flagging_dao)
+        #                     if len(validation_results.errors) != 0:
+        #                         for k, v in validation_results.errors.items():
+        #                             if isinstance(v, FlagErrorInformation):
+        #                                 cyclical_errors.append(k)
+        #                         flag_validation = validate_logic(flagging_dao.get_flag_name(flag_id),
+        #                                                          _convert_TFLI_to_FLI(
+        #                                                              flagging_dao.get_flag_logic_information(flag_id)),
+        #                                                          flagging_dao)
+        #                         if flag_validation.errors != {} or flag_validation.mypy_errors != {}:
+        #                             other_errors.append(flag_id)
+        #                 cyclical_errors = list(set(cyclical_errors))
+        #                 for k, v in flag_name_dict.items():
+        #                     if k in cyclical_errors:
+        #                         cyclical_errors.remove(k)
+        #                         cyclical_errors.append(v)
+        #                 for k, v in flags_in_flag_group.items():
+        #                     for flag_id in [ObjectId(x) for x in v]:
+        #                         if flag_id in other_errors:
+        #                             updated_flag_id = flagging_dao.update_flag(flag_id, "ERROR",
+        #                                                                        flag_error_col_name)
+        #                             updated_flag_id = flagging_dao.update_flag(flag_id, "DRAFT",
+        #                                                                        flag_status_col_name)
+        #                         elif flag_id in cyclical_errors:
+        #                             updated_flag_id = flagging_dao.update_flag(flag_id, "CYCLICAL_ERROR",
+        #                                                                        flag_error_col_name)
+        #                             updated_flag_id = flagging_dao.update_flag(flag_id, "DRAFT",
+        #                                                                        flag_status_col_name)
+        #                         else:
+        #                             updated_flag_id = flagging_dao.update_flag(flag_id, "", flag_error_col_name)
+        #                             updated_flag_id = flagging_dao.update_flag(flag_id, "PRODUCTION_READY",
+        #                                                                        flag_status_col_name)
+        #
+        #
+        #             # update flag
+        #             new_transfer_flag_logic_information = _convert_FLI_to_TFLI(new_flag_logic_information)
+        #             flag_id_object = ObjectId(flag_id)
+        #             updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
+        #                                                        update_value=new_transfer_flag_logic_information,
+        #                                                        update_column=flag_logic_col_name)
+        #             specific_flag_name = flagging_dao.get_flag_name(updated_flag_id)
+        #             specific_flag_logic = flagging_dao.get_flag_logic_information(updated_flag_id)
+        #             flag_schema_object = FlaggingSchemaInformation(valid=False,
+        #                                                            message="error in flag logic",
+        #                                                            simple_message="new logic updated but has errors",
+        #                                                            uuid=updated_flag_id,
+        #                                                            name=specific_flag_name,
+        #                                                            logic=specific_flag_logic)
+        #             #   redo cyclical flag check for all flags that were in flag group
+        #             #   update flag status and flag error based on redone flag validation
+        #             cyclical_errors = []
+        #             other_errors = []
+        #             flag_name_dict = {}
+        #             flag_group_flags = flagging_dao.get_flag_group_flag(flag_group_id)
+        #             for flag_id in flag_group_flags:
+        #                 flag_name_dict[flagging_dao.get_flag_name(flag_id)] = flag_id
+        #                 validation_results = validate_cyclical_logic(None, list(flags_in_flag_group.keys())[0],
+        #                                                              FlagLogicInformation(), flagging_dao)
+        #                 if len(validation_results.errors) != 0:
+        #                     for k, v in validation_results.errors.items():
+        #                         if isinstance(v, FlagErrorInformation):
+        #                             cyclical_errors.append(k)
+        #                     flag_validation = validate_logic(flagging_dao.get_flag_name(flag_id),
+        #                                                      _convert_TFLI_to_FLI(
+        #                                                          flagging_dao.get_flag_logic_information(flag_id)),
+        #                                                      flagging_dao)
+        #                     if flag_validation.errors != {} or flag_validation.mypy_errors != {}:
+        #                         other_errors.append(flag_id)
+        #             cyclical_errors = list(set(cyclical_errors))
+        #             for k, v in flag_name_dict.items():
+        #                 if k in cyclical_errors:
+        #                     cyclical_errors.remove(k)
+        #                     cyclical_errors.append(v)
+        #             for k, v in flags_in_flag_group.items():
+        #                 for flag_id in [ObjectId(x) for x in v]:
+        #                     if flag_id in other_errors:
+        #                         updated_flag_id = flagging_dao.update_flag(flag_id, "ERROR",
+        #                                                                    flag_error_col_name)
+        #                         updated_flag_id = flagging_dao.update_flag(flag_id, "DRAFT",
+        #                                                                    flag_status_col_name)
+        #                     elif flag_id in cyclical_errors:
+        #                         updated_flag_id = flagging_dao.update_flag(flag_id, "CYCLICAL_ERROR",
+        #                                                                    flag_error_col_name)
+        #                         updated_flag_id = flagging_dao.update_flag(flag_id, "DRAFT",
+        #                                                                    flag_status_col_name)
+        #                     else:
+        #                         updated_flag_id = flagging_dao.update_flag(flag_id, "", flag_error_col_name)
+        #                         updated_flag_id = flagging_dao.update_flag(flag_id, "PRODUCTION_READY",
+        #                                                                    flag_status_col_name)
+        #             response_code = 200
+        #         else:
+        #             new_transfer_flag_logic_information = _convert_FLI_to_TFLI(new_flag_logic_information)
+        #             flag_id_object = ObjectId(flag_id)
+        #             updated_flag_id = flagging_dao.update_flag(flag=flag_id_object, update_value=new_transfer_flag_logic_information,
+        #                                                          update_column=flag_logic_col_name)
+        #             updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
+        #                                                          update_value="PRODUCTION READY",
+        #                                                          update_column=flag_status_col_name)
+        #             updated_flag_id = flagging_dao.update_flag(flag=flag_id_object,
+        #                                                          update_value="",
+        #                                                          update_column=flag_error_col_name)
+        #             specific_flag_logic = flagging_dao.get_flag_logic_information(updated_flag_id)
+        #             specific_flag_name = flagging_dao.get_flag_name(updated_flag_id)
+        #             flag_schema_object = FlaggingSchemaInformation(valid=True,
+        #                                                            message="logic for flag " + str(
+        #                                                                updated_flag_id) + " has been updated",
+        #                                                            simple_message="flag logic has been updated",
+        #                                                            uuid=updated_flag_id,
+        #                                                            name=specific_flag_name,
+        #                                                            logic=specific_flag_logic)
+        #             #   redo cyclical flag check for all flags that were in flag group
+        #             #   update flag status and flag error based on redone flag validation
+        #             cyclical_errors = []
+        #             other_errors = []
+        #             flag_name_dict = {}
+        #             flag_group_flags = flagging_dao.get_flag_group_flag(flag_group_id)
+        #             for flag_id in flag_group_flags:
+        #                 flag_name_dict[flagging_dao.get_flag_name(flag_id)] = flag_id
+        #                 validation_results = validate_cyclical_logic(None, list(flags_in_flag_group.keys())[0],
+        #                                                              FlagLogicInformation(), flagging_dao)
+        #                 if len(validation_results.errors) != 0:
+        #                     for k, v in validation_results.errors.items():
+        #                         if isinstance(v, FlagErrorInformation):
+        #                             cyclical_errors.append(k)
+        #                     flag_validation = validate_logic(flagging_dao.get_flag_name(flag_id),
+        #                                                      _convert_TFLI_to_FLI(
+        #                                                          flagging_dao.get_flag_logic_information(flag_id)),
+        #                                                      flagging_dao)
+        #                     if flag_validation.errors != {} or flag_validation.mypy_errors != {}:
+        #                         other_errors.append(flag_id)
+        #             cyclical_errors = list(set(cyclical_errors))
+        #             for k, v in flag_name_dict.items():
+        #                 if k in cyclical_errors:
+        #                     cyclical_errors.remove(k)
+        #                     cyclical_errors.append(v)
+        #             for k, v in flags_in_flag_group.items():
+        #                 for flag_id in [ObjectId(x) for x in v]:
+        #                     if flag_id in other_errors:
+        #                         updated_flag_id = flagging_dao.update_flag(flag_id, "ERROR",
+        #                                                                    flag_error_col_name)
+        #                         updated_flag_id = flagging_dao.update_flag(flag_id, "DRAFT",
+        #                                                                    flag_status_col_name)
+        #                     elif flag_id in cyclical_errors:
+        #                         updated_flag_id = flagging_dao.update_flag(flag_id, "CYCLICAL_ERROR",
+        #                                                                    flag_error_col_name)
+        #                         updated_flag_id = flagging_dao.update_flag(flag_id, "DRAFT",
+        #                                                                    flag_status_col_name)
+        #                     else:
+        #                         updated_flag_id = flagging_dao.update_flag(flag_id, "", flag_error_col_name)
+        #                         updated_flag_id = flagging_dao.update_flag(flag_id, "PRODUCTION_READY",
+        #                                                                    flag_status_col_name)
+        #             response_code = 200
     return flag_schema_object, response_code
 
 #A call to delete a flag provided a UUID, return true/false
@@ -765,7 +1095,7 @@ def delete_flag_group(flag_group_id, existing_flag_groups, flagging_dao: Flaggin
                 for k, v in validation_results.errors.items():
                     if isinstance(v, FlagErrorInformation):
                         cyclical_errors.append(k)
-
+        cyclical_errors = list(set(cyclical_errors))
         for k, v in flag_name_dict.items():
             if k in cyclical_errors:
                 cyclical_errors.remove(k)
@@ -989,6 +1319,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                         for flag in flag_set:
                             flag_name = flagging_dao.get_flag_name(ObjectId(flag))
                             flag_name_dict[flag_name] = ObjectId(flag)
+                        cyclical_errors = list(set(cyclical_errors))
                         for k, v in flag_name_dict.items():
                             if k in cyclical_errors:
                                 updated_flag_id = flagging_dao.update_flag(v, "CYCLICAL_ERROR", flag_error_col_name)
@@ -1089,6 +1420,7 @@ def add_flag_to_flag_group(flag_group_id, new_flags: [], existing_flags: [], exi
                     for flag in flag_set:
                         flag_name = flagging_dao.get_flag_name(ObjectId(flag))
                         flag_name_dict[flag_name] = ObjectId(flag)
+                    cyclical_errors = list(set(cyclical_errors))
                     for k, v in flag_name_dict.items():
                         if k in cyclical_errors:
                             updated_flag_id = flagging_dao.update_flag(v, "CYCLICAL_ERROR", flag_error_col_name)
@@ -1274,6 +1606,7 @@ def remove_flag_from_flag_group(flag_group_id, del_flags: [], existing_flags: []
             for flag in flags_in_flag_group:
                 flag_name = flagging_dao.get_flag_name(ObjectId(flag))
                 flag_name_dict[flag_name] = ObjectId(flag)
+            cyclical_errors = list(set(cyclical_errors))
             for k, v in flag_name_dict.items():
                 if k in cyclical_errors:
                     updated_flag_id = flagging_dao.update_flag(v, "CYCLICAL_ERROR", flag_error_col_name)
