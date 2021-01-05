@@ -339,8 +339,8 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
         flag_in_flag_group_bool = False
         for flag_group_idx in flag_group_ids:
             flags_in_flag_group_idx = flagging_dao.get_flag_group_flag(flag_group_idx)
-            if flag_id in flags_in_flag_group_idx:
-                flag_in_flag_group_bool == True
+            if ObjectId(flag_id) in flags_in_flag_group_idx:
+                flag_in_flag_group_bool = True
                 flag_group_id = flag_group_idx
 
         #flag not in flag group, only check flag for syntax errors and update accordingly
@@ -389,14 +389,14 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                                       _convert_FLI_to_TFLI(new_flag_logic_information)["referenced_flags"]]
             flag_schema_object_flag_dep, fdi_rc = create_flag_dependency(flag_id=flag_id,
                                                                          flag_name=flag_name,
-                                                                         flag_group_id=flag_group_id,
+                                                                         flag_group_id=str(flag_group_id),
                                                                          existing_flag_ids=flag_ids,
                                                                          existing_flag_dep_keys=existing_flag_dep_keys,
                                                                          flag_dependencies=referenced_flags_names,
                                                                          flagging_dao=flagging_dao)
 
             #update flag with new logic
-            update_flag_id = flagging_dao.update_flag(flag_id, _convert_FLI_to_TFLI(new_flag_logic_information), flag_logic_col_name)
+            update_flag_id = flagging_dao.update_flag(ObjectId(flag_id), _convert_FLI_to_TFLI(new_flag_logic_information), flag_logic_col_name)
 
             # check for cyclical and other errors in all flags in flag group based upon new logic
             cyclical_errors = []
@@ -466,7 +466,7 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                                                                name=flag_name,
                                                                logic=_convert_FLI_to_TFLI(new_flag_logic_information))
                 response_code = 200
-                
+
 
 
 
