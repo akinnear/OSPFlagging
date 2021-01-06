@@ -406,8 +406,13 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
             flag_group_flags = flagging_dao.get_flag_group_flag(flag_group_id)
             for flag_id in flag_group_flags:
                 flag_name_dict[flagging_dao.get_flag_name(flag_id)] = flag_id
-                validation_results = validate_cyclical_logic(None, list(flags_in_flag_group.keys())[0],
-                                                             FlagLogicInformation(), flagging_dao)
+                ref_flag_dict = {}
+                referenced_flags_names = [x["name"] for x in flagging_dao.get_flag_logic_information(ObjectId(flag_id))["referenced_flags"]]
+                for rf_name in referenced_flags_names:
+                    ref_flag_dict[rf_name] = {CodeLocation(None, None)}
+                flag_logic_cyclical_check = FlagLogicInformation(referenced_flags=ref_flag_dict)
+                validation_results = validate_cyclical_logic(ObjectId(flag_id), ObjectId(flag_group_id),
+                                                             flag_logic_cyclical_check, flagging_dao)
                 if len(validation_results.errors) != 0:
                     for k, v in validation_results.errors.items():
                         if isinstance(v, FlagErrorInformation):
