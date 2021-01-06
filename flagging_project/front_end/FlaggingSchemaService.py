@@ -295,6 +295,7 @@ def update_flag_name(original_flag_id: str, new_flag_name: str, existing_flags, 
 #Another call for flag logic
 def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation(), existing_flags, flagging_dao:FlaggingDAO):
     flag_schema_object = None
+    og_flag_id = flag_id
     if flag_schema_object is None:
         if flag_id is None:
             flag_schema_object = FlaggingSchemaInformation(valid=False,
@@ -348,12 +349,12 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
             # redo flag validation on flag being updated
             flag_validation = validate_logic(flag_name, new_flag_logic_information, flagging_dao)
             # update flag with new logic
-            update_flag_id = flagging_dao.update_flag(flag_id, _convert_FLI_to_TFLI(new_flag_logic_information), flag_logic_col_name)
+            update_flag_id = flagging_dao.update_flag(ObjectId(flag_id), _convert_FLI_to_TFLI(new_flag_logic_information), flag_logic_col_name)
             if flag_validation.errors != {} or flag_validation.mypy_errors != {}:
                #flag not in flag group, cylcial error not possible, erro must be due to syntax, update flag
-               updated_flag_id = flagging_dao.update_flag(flag_id, "ERROR",
+               updated_flag_id = flagging_dao.update_flag(ObjectId(flag_id), "ERROR",
                                                           flag_error_col_name)
-               updated_flag_id = flagging_dao.update_flag(flag_id, "DRAFT",
+               updated_flag_id = flagging_dao.update_flag(ObjectId(flag_id), "DRAFT",
                                                           flag_status_col_name)
 
                #create flag schema object
@@ -425,26 +426,30 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
             for k, v in flags_in_flag_group.items():
                 for flag_id in [ObjectId(x) for x in v]:
                     if flag_id in other_errors:
-                        updated_flag_id = flagging_dao.update_flag(flag_id, "ERROR",
-                                                                   flag_error_col_name)
-                        updated_flag_id = flagging_dao.update_flag(flag_id, "DRAFT",
-                                                                   flag_status_col_name)
+                        updated_flag_id = flagging_dao.update_flag(flag_id, "ERROR", flag_error_col_name)
+                        updated_flag_id = flagging_dao.update_flag(flag_id, "DRAFT", flag_status_col_name)
                     elif flag_id in cyclical_errors:
-                        updated_flag_id = flagging_dao.update_flag(flag_id, "CYCLICAL_ERROR",
-                                                                   flag_error_col_name)
-                        updated_flag_id = flagging_dao.update_flag(flag_id, "DRAFT",
-                                                                   flag_status_col_name)
+                        updated_flag_id = flagging_dao.update_flag(flag_id, "CYCLICAL_ERROR", flag_error_col_name)
+                        updated_flag_id = flagging_dao.update_flag(flag_id, "DRAFT", flag_status_col_name)
                     else:
                         updated_flag_id = flagging_dao.update_flag(flag_id, "", flag_error_col_name)
-                        updated_flag_id = flagging_dao.update_flag(flag_id, "PRODUCTION_READY",
-                                                                   flag_status_col_name)
-
+                        updated_flag_id = flagging_dao.update_flag(flag_id, "PRODUCTION_READY",  flag_status_col_name)
+            #update flag group accordingly
+            if len(cyclical_errors) != 0:
+                updated_flag_group = flagging_dao.update_flag_group(ObjectId(flag_group_id), "CYCLICAL_ERROR", flag_group_error_col_name)
+                updated_flag_group = flagging_dao.update_flag_group(ObjectId(flag_group_id), "DRAFT", flag_group_status_col_name)
+            elif len(other_errors) != 0:
+                updated_flag_group = flagging_dao.update_flag_group(ObjectId(flag_group_id), "ERROR", flag_group_error_col_name)
+                updated_flag_group = flagging_dao.update_flag_group(ObjectId(flag_group_id), "DRAFT", flag_group_status_col_name)
+            else:
+                updated_flag_group = flagging_dao.update_flag_group(ObjectId(flag_group_id), "", flag_group_error_col_name)
+                updated_flag_group = flagging_dao.update_flag_group(ObjectId(flag_group_id), "PRODUCTION_READY", flag_group_status_col_name)
             if updated_flag_id in other_errors:
                 #create flag schema object based on syntax error
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
-                                                               message="error in flag logic",
+                                                               message="error in flag logic for flag " + str(og_flag_id),
                                                                simple_message="new logic updated but has errors",
-                                                               uuid=updated_flag_id,
+                                                               uuid=ObjectId(og_flag_id),
                                                                name=flag_name,
                                                                logic=_convert_FLI_to_TFLI(new_flag_logic_information))
                 response_code = 200
@@ -453,16 +458,16 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                 flag_schema_object = FlaggingSchemaInformation(valid=False,
                                                                message="the following flag dependencies resulted in cyclical dependencies: " + (", ".join(str(x) for x in cyclical_errors)),
                                                                simple_message="new logic updated but has errors",
-                                                               uuid=updated_flag_id,
+                                                               uuid=ObjectId(og_flag_id),
                                                                name=flag_name,
                                                                logic=_convert_FLI_to_TFLI(new_flag_logic_information))
                 response_code = 200
             else:
                 #create flag schema object based on no error in flag
                 flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                               message="logic for flag " + str( updated_flag_id) + " has been updated",
+                                                               message="logic for flag " + str(og_flag_id) + " has been updated",
                                                                simple_message="flag logic has been updated",
-                                                               uuid=updated_flag_id,
+                                                               uuid=ObjectId(og_flag_id),
                                                                name=flag_name,
                                                                logic=_convert_FLI_to_TFLI(new_flag_logic_information))
                 response_code = 200
