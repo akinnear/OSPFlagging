@@ -293,7 +293,7 @@ def test_update_flag_name_og_name_same_as_nw_name(flagging_dao, mvrb, mvl):
 @mock.patch("flagging.FlaggingValidation.validate_returns_boolean", return_value=TypeValidationResults(), autospec=True)
 @mock.patch("flag_data.FlaggingDAO.FlaggingDAO")
 def test_update_flag_logic(flagging_dao, mvrb, mvl):
-    flagging_dao.return_value.update_flag.return_value = 3
+    flagging_dao.return_value.update_flag.return_value = ObjectId("1a"*12)
     mock_flagging_dao = flagging_dao()
     og_flag_id = ObjectId(generate_object_id())
     existing_flags = [og_flag_id, ObjectId(generate_object_id())]
@@ -321,9 +321,9 @@ def test_update_flag_logic(flagging_dao, mvrb, mvl):
     flagging_dao.return_value.get_flag_name.return_value = "FlagName1A"
     result, response_code = update_flag_logic(flag_id=str(og_flag_id), new_flag_logic_information=nw_flag_logic_information, existing_flags=existing_flags, flagging_dao=mock_flagging_dao)
     assert result.valid == True
-    assert result.message == "logic for flag " + str(3) + " has been updated"
+    assert result.message == "logic for flag " + "1a"*12 + " has been updated"
     assert result.simple_message == "flag logic has been updated"
-    assert result.uuid == 3
+    assert result.uuid == ObjectId("1a"*12)
     assert result.name == "FlagName1A"
     assert result.logic == _convert_FLI_to_TFLI(nw_flag_logic_information)
     assert response_code == 200
