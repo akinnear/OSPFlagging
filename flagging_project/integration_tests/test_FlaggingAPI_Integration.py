@@ -1,18 +1,5 @@
-import pytest
 from flask import Flask
 from handlers.FlaggingAPI import make_routes
-from app import _create_flagging_dao
-import re
-from random_object_id import generate
-from flag_names.FlagService import pull_flag_logic_information
-from flagging.FlagLogicInformation import FlagLogicInformation
-from flagging.FlaggingNodeVisitor import CodeLocation
-from flagging.VariableInformation import VariableInformation
-from flagging.ModuleInformation import ModuleInformation
-from flagging.TypeValidationResults import TypeValidationResults
-from flagging.ErrorInformation import ErrorInformation
-from unittest import mock
-import requests
 from flagging.FlaggingNodeVisitor import determine_variables
 from pymongo import MongoClient
 from testcontainers.mongodb import MongoDbContainer
@@ -21,6 +8,7 @@ from integration_tests import MONGO_DOCKER_IMAGE
 from front_end.TransferFlagLogicInformation import TransferFlagLogicInformation, _convert_FLI_to_TFLI, \
     _convert_TFLI_to_FLI
 import json
+from bson.objectid import ObjectId
 
 def _get_connection_string(container):
     return "mongodb://test:test@localhost:"+container.get_exposed_port(27017)
@@ -61,7 +49,7 @@ def _create_mongo_client(container):
 #                                content_type='application/json')
 #         unpack = client.get("flag/get")
 #
-#         print('hello')
+
 
 def test_simple_create():
     app = Flask(__name__)
@@ -108,7 +96,6 @@ else:
         assert response_2.json["flags"][0]["FLAG_LOGIC"] == _convert_FLI_to_TFLI(determine_variables(payload["FLAG_LOGIC"]))
         assert response_2.json["flags"][0]["FLAG_NAME"] == payload["FLAG_NAME"]
         assert response_2.json["flags"][0]["FLAG_STATUS"] == "PRODUCTION_READY"
-        assert response_2.json["flags"][0]["REFERENCED_FLAGS"] == []
         assert response_2.json["flags"][0]["_id"] == response.json["uuid"]
 
 # test flag home page
@@ -294,7 +281,6 @@ else:
             determine_variables(payload["FLAG_LOGIC"]))
         assert response_2.json["flags"][0]["FLAG_NAME"] == payload["FLAG_NAME"]
         assert response_2.json["flags"][0]["FLAG_STATUS"] == "PRODUCTION_READY"
-        assert response_2.json["flags"][0]["REFERENCED_FLAGS"] == []
         assert response_2.json["flags"][0]["_id"] == response.json["uuid"]
 
 # create flag, missing flag name
@@ -461,7 +447,6 @@ def test_create_flag_w_errors():
         assert response_2.json["flags"][0]["FLAG_LOGIC"] == _convert_FLI_to_TFLI(determine_variables(payload["FLAG_LOGIC"]))
         assert response_2.json["flags"][0]["FLAG_NAME"] == payload["FLAG_NAME"]
         assert response_2.json["flags"][0]["FLAG_STATUS"] == "DRAFT"
-        assert response_2.json["flags"][0]["REFERENCED_FLAGS"] == []
         assert response_2.json["flags"][0]["_id"] == response.json["uuid"]
 
 #create multiple flags, different names
@@ -511,7 +496,6 @@ else:
             determine_variables(payload["FLAG_LOGIC"]))
         assert response_2.json["flags"][0]["FLAG_NAME"] == payload["FLAG_NAME"]
         assert response_2.json["flags"][0]["FLAG_STATUS"] == "PRODUCTION_READY"
-        assert response_2.json["flags"][0]["REFERENCED_FLAGS"] == []
         assert response_2.json["flags"][0]["_id"] == response.json["uuid"]
 
         #create second flag
@@ -584,7 +568,6 @@ else:
             determine_variables(payload["FLAG_LOGIC"]))
         assert response_2.json["flags"][0]["FLAG_NAME"] == payload["FLAG_NAME"]
         assert response_2.json["flags"][0]["FLAG_STATUS"] == "PRODUCTION_READY"
-        assert response_2.json["flags"][0]["REFERENCED_FLAGS"] == []
         assert response_2.json["flags"][0]["_id"] == response.json["uuid"]
 
         #create second flag
@@ -663,7 +646,7 @@ else:
         assert r.json["simple_message"] == "found flag id"
         assert r.json["uuid"] == response.json["uuid"]
         assert r.json["valid"] == True
-        print("hello")
+
 
 # duplicate flag, missing flag id
 def test_duplicate_flag_missing_flag_id():
@@ -2040,9 +2023,15 @@ else:
         url = "flag/update_logic/"+flag_id_1
         r = client.put(url, data=json.dumps(payload), content_type='application/json')
 
+        # F2 -> F1
+        # F3 -> F2
+        # F4 -> F3
+        #F1 -> F4
+        cyclical_flags = [flag_id_1, flag_id_2, flag_id_3, flag_id_4]
         assert r.status_code == 200
         assert r.json["flag_name"] == flag_name_1
-        assert r.json["message"] == "error in flag logic"
+        message = "the following flag dependencies resulted in cyclical dependencies: " + (", ".join(str(x) for x in cyclical_flags))
+        assert r.json["message"] == message
         assert r.json["simple_message"] == "new logic updated but has errors"
         assert r.json["uuid"] == flag_id_1
         assert r.json["valid"] == False
@@ -2060,18 +2049,27 @@ else:
         assert r.json["flag_deps"][3]["FLAG_NAME"] == flag_name_1
         assert r.json["flag_deps"][3]["DEPENDENT_FLAGS"] == [flag_name_4]
 
-        #confirm that both flag 1 and flag group are no longer production ready due to cyclical flags
+        #confirm that both flag 1-4 and flag group are no longer production ready due to cyclical flags
         r = client.get("flag/get")
-        assert r.json["flags"][0]["FLAG_ERRORS"] == "ERROR"
+        assert r.json["flags"][0]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
         assert r.json["flags"][0]["FLAG_STATUS"] == "DRAFT"
         assert r.json["flags"][0]["_id"] == flag_id_1
+        assert r.json["flags"][1]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][1]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][1]["_id"] == flag_id_2
+        assert r.json["flags"][2]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][2]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][2]["_id"] == flag_id_3
+        assert r.json["flags"][3]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][3]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][3]["_id"] == flag_id_4
 
         r = client.get("flag_group/get")
         assert set(r.json["flag_groups"][0]["FLAGS_IN_GROUP"]) == set([flag_id_1, flag_id_2, flag_id_3, flag_id_4])
-        assert r.json["flag_groups"][0]["FLAG_GROUP_ERRORS"] == "CYCLICAL ERROR"
+        assert r.json["flag_groups"][0]["FLAG_GROUP_ERRORS"] == "CYCLICAL_ERROR"
         assert r.json["flag_groups"][0]["FLAG_GROUP_STATUS"] == "DRAFT"
         assert r.json["flag_groups"][0]["_id"] == flag_group_id
-        print("hello")
+
 
 def test_update_flag_logic_create_cyclical_flag_2():
     app = Flask(__name__)
@@ -2151,10 +2149,7 @@ else:
         assert r.json["flag_deps"][1]["FLAG_NAME"] == flag_name_2
         assert r.json["flag_deps"][1]["DEPENDENT_FLAGS"] == [flag_name_1]
 
-
-
-
-        #update flag 1 to reference flag 4, confirm cyclical flag behavior
+        #update flag 1 to reference flag 2, confirm cyclical flag behavior
         flag_name_1 = "FlagName1A"
         flag_logic = f"""\
 if f["{flag_name_2}"] == True:
@@ -2167,7 +2162,9 @@ else:
 
         assert r.status_code == 200
         assert r.json["flag_name"] == flag_name_1
-        assert r.json["message"] == "error in flag logic"
+        cyclical_flags = [flag_id_1, flag_id_2]
+        message = "the following flag dependencies resulted in cyclical dependencies: " + (", ".join(str(x) for x in cyclical_flags))
+        assert r.json["message"] == message
         assert r.json["simple_message"] == "new logic updated but has errors"
         assert r.json["uuid"] == flag_id_1
         assert r.json["valid"] == False
@@ -2185,13 +2182,28 @@ else:
         assert r.json["flag_deps"][1]["FLAG_NAME"] == flag_name_1
         assert r.json["flag_deps"][1]["DEPENDENT_FLAGS"] == [flag_name_2]
 
-        #confirm that both flag 1 and flag group are no longer production ready due to cyclical flags
+        #confirm that both flag 1,2 and flag group are no longer production ready due to cyclical flags
+        r = client.get("flag/get")
+        assert r.status_code == 200
+        assert r.json["flags"][0]["_id"] == flag_id_1
+        assert r.json["flags"][0]["FLAG_NAME"] == flag_name_1
+        assert r.json["flags"][0]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][0]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][1]["_id"] == flag_id_2
+        assert r.json["flags"][1]["FLAG_NAME"] == flag_name_2
+        assert r.json["flags"][1]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][1]["FLAG_STATUS"] == "DRAFT"
 
 
+        rg = client.get('flag_group/get')
+        assert rg.status_code == 200
+        assert rg.json["flag_groups"][0]["_id"] == flag_group_id
+        assert rg.json["flag_groups"][0]["FLAG_GROUP_NAME"] == flag_group_name_1
+        assert rg.json["flag_groups"][0]["FLAG_GROUP_ERRORS"] == "CYCLICAL_ERROR"
+        assert rg.json["flag_groups"][0]["FLAG_GROUP_STATUS"] == "DRAFT"
 
 
-
-# update flag logic, valid
+# update flag logic to be valid
 def test_update_flag_logic_valid():
     app = Flask(__name__)
     app.config["TESTING"] = True
@@ -2259,7 +2271,7 @@ else:
         r3 = client.get("flag/get")
         assert r3.status_code == 200
         assert r3.json["flags"][0]["FLAG_ERRORS"] == ""
-        assert r3.json["flags"][0]["FLAG_STATUS"] == "PRODUCTION READY"
+        assert r3.json["flags"][0]["FLAG_STATUS"] == "PRODUCTION_READY"
 
 # delete flag, missing flag id
 def test_delete_flag_missing_flag_id():
@@ -4212,8 +4224,6 @@ else:
         assert r.json["flags_in_flag_group"] == None
 
 
-
-
 # add flag to flag group, flag name already exists in flag group
 def test_add_flag_to_flag_group_flag_name_already_in_flag():
     app = Flask(__name__)
@@ -4275,7 +4285,7 @@ else:
         r = client.put("flag_group/add_flag/" + flag_group_id + "/x/" + flag_id_2)
         assert r.status_code == 405
         assert r.json["flag_group_name"] == flag_group_name
-        assert r.json["message"] =="flag: " + flag_id_2 + " with name: " + paylaod["FLAG_NAME"] + " already exists in flag group: " + flag_group_id
+        assert r.json["message"] =="flag: " + flag_id_2 + " with name: " + payload["FLAG_NAME"] + " already exists in flag group: " + flag_group_id
         assert r.json["simple_message"] == 'flag already exists in flag group'
         assert r.json["uuid"] == flag_group_id
         assert r.json["valid"] == False
@@ -4285,7 +4295,6 @@ else:
         r = client.get("flag_group/get_specific/" + flag_group_id)
         assert r.status_code == 200
         assert r.json["flags_in_flag_group"] == [flag_id_1]
-
 
 #update flag logic, create cyclical flag
 def test_update_flag_logic_create_cyclical_flag_3():
@@ -4414,7 +4423,6 @@ else:
         assert r.json["flag_deps"][3]["FLAG_NAME"] == flag_name_4
         assert r.json["flag_deps"][3]["DEPENDENT_FLAGS"] == [flag_name_3]
 
-
         #update flag 1 to reference flag 4, confirm cyclical flag behavior
         flag_name_1 = "FlagName1A"
         flag_logic = f"""\
@@ -4427,8 +4435,10 @@ else:
         r = client.put(url, data=json.dumps(payload), content_type='application/json')
 
         assert r.status_code == 200
+        cyclical_flags = [flag_id_1, flag_id_2, flag_id_3, flag_id_4]
+        message = "the following flag dependencies resulted in cyclical dependencies: " + (", ".join(str(x) for x in cyclical_flags))
         assert r.json["flag_name"] == flag_name_1
-        assert r.json["message"] == "error in flag logic"
+        assert r.json["message"] == message
         assert r.json["simple_message"] == "new logic updated but has errors"
         assert r.json["uuid"] == flag_id_1
         assert r.json["valid"] == False
@@ -4448,16 +4458,16 @@ else:
 
         #confirm that both flag 1 and flag group are no longer production ready due to cyclical flags
         r = client.get("flag/get")
-        assert r.json["flags"][0]["FLAG_ERRORS"] == "ERROR"
+        assert r.json["flags"][0]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
         assert r.json["flags"][0]["FLAG_STATUS"] == "DRAFT"
         assert r.json["flags"][0]["_id"] == flag_id_1
 
         r = client.get("flag_group/get")
         assert set(r.json["flag_groups"][0]["FLAGS_IN_GROUP"]) == set([flag_id_1, flag_id_2, flag_id_3, flag_id_4])
-        assert r.json["flag_groups"][0]["FLAG_GROUP_ERRORS"] == "CYCLICAL ERROR"
+        assert r.json["flag_groups"][0]["FLAG_GROUP_ERRORS"] == "CYCLICAL_ERROR"
         assert r.json["flag_groups"][0]["FLAG_GROUP_STATUS"] == "DRAFT"
         assert r.json["flag_groups"][0]["_id"] == flag_group_id
-        print("hello")
+
 
 
 #add flag to flag group, flag has error
@@ -5644,7 +5654,6 @@ else:
         assert r.json["flag_deps"][1]["FLAG_NAME"] == flag_name_2
         assert r.json["flag_deps"][1]["DEPENDENT_FLAGS"] == []
 
-
         #update flags to reference each other
         flag_logic_1a_updated = f"""\
 if f["{flag_name_2}"] == False:
@@ -5666,7 +5675,9 @@ else:
         r = client.put(url, data=json.dumps(payload), content_type='application/json')
         assert r.status_code == 200
         #error in flag logic due to cyclical nature of flag
-        assert r.json["message"] == "error in flag logic"
+        cyclical_flags = [flag_id_1, flag_id_2]
+        message = "the following flag dependencies resulted in cyclical dependencies: " + (", ".join(str(x) for x in cyclical_flags))
+        assert r.json["message"] == message
 
         #confirm update logic
         r = client.get("flag/get_specific/"+flag_id_1)
@@ -5685,6 +5696,7 @@ else:
         assert r.json["flag_deps"][1]["FLAG_ID"] == flag_id_2
         assert r.json["flag_deps"][1]["FLAG_NAME"] == flag_name_2
         assert r.json["flag_deps"][1]["DEPENDENT_FLAGS"] == [flag_name_1]
+
 
 #adding flag to flag group, checking dependency, removing flag from flag group, check dependency
 def test_check_flag_dep_cyclical_remove_flag():
@@ -5776,7 +5788,9 @@ else:
         r = client.put(url, data=json.dumps(payload), content_type='application/json')
         assert r.status_code == 200
         # error in flag logic due to cyclical nature of flag
-        assert r.json["message"] == "error in flag logic"
+        cyclical_flags = [flag_id_1, flag_id_2]
+        message = "the following flag dependencies resulted in cyclical dependencies: " + (", ".join(str(x) for x in cyclical_flags))
+        assert r.json["message"] == message
 
         # confirm update logic
         r = client.get("flag/get_specific/" + flag_id_1)
@@ -5799,7 +5813,14 @@ else:
         #check flag statuses and flag group status
         r = client.get('flag/get')
         assert r.status_code == 200
-
+        assert r.json["flags"][0]["_id"] == flag_id_1
+        assert r.json["flags"][0]["FLAG_NAME"] == flag_name_1
+        assert r.json["flags"][0]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][0]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][1]["_id"] == flag_id_2
+        assert r.json["flags"][1]["FLAG_NAME"] == flag_name_2
+        assert r.json["flags"][1]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][1]["FLAG_STATUS"] == "DRAFT"
 
         #remove flag from flag group
         r = client.put("flag_group/remove_flag/"+flag_group_id+"/x/"+flag_id_2)
@@ -5812,12 +5833,20 @@ else:
         assert r.json["flag_deps"][0]["FLAG_ID"] == flag_id_1
         assert r.json["flag_deps"][0]["FLAG_NAME"] == flag_name_1
         assert r.json["flag_deps"][0]["DEPENDENT_FLAGS"] == [flag_name_2]
-        assert r.json["flag_deps"][1]["FLAG_ID"] == flag_id_2
-        assert r.json["flag_deps"][1]["FLAG_NAME"] == flag_name_2
-        assert r.json["flag_deps"][1]["DEPENDENT_FLAGS"] == [flag_name_1]
+        assert r.json["flag_deps"][0]["FLAG_GROUP_ID"] == flag_group_id
 
-        #check flag statuses
-        r = client.get('flag')
+        #check flag statuses, only one flag in flag group, therefore no cyclical flag errors
+        r = client.get('flag/get')
+        assert r.status_code == 200
+        assert r.json["flags"][0]["_id"] == flag_id_1
+        assert r.json["flags"][0]["FLAG_NAME"] == flag_name_1
+        assert r.json["flags"][0]["FLAG_ERRORS"] == ""
+        assert r.json["flags"][0]["FLAG_STATUS"] == "PRODUCTION_READY"
+        assert r.json["flags"][1]["_id"] == flag_id_2
+        assert r.json["flags"][1]["FLAG_NAME"] == flag_name_2
+        assert r.json["flags"][1]["FLAG_ERRORS"] == ""
+        assert r.json["flags"][1]["FLAG_STATUS"] == "PRODUCTION_READY"
+
 
 #removing flag from flag group, update to flag status and dependency
 def test_removing_flag_from_flag_group_still_cyclical():
@@ -6396,9 +6425,406 @@ else:
         assert r.json["flags"][3]["_id"] == flag_id_4
         assert r.json["flags"][3]["FLAG_NAME"] == flag_name_4
 
+def test_update_flag_name_1_group_flag_status():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        flag_deletion_url = "flag/delete_all"
+        response = client.delete(flag_deletion_url)
+        assert response.status_code == 200
+        flag_group_delete_url = "flag_group/delete_all"
+        response = client.delete(flag_group_delete_url)
+        assert response.status_code == 200
+        response = client.delete("flag_dependency/delete_all")
+        assert response.status_code == 200
+
+        # create flag group
+        flag_group_name = "FlagGroupName1A"
+        r = client.post("flag_group/create/x/" + flag_group_name)
+        assert r.status_code == 200
+        flag_group_id = r.json["uuid"]
+
+        # create 4 cyclical flags
+        flag_name_1 = "FlagName1A"
+        flag_name_2 = "FlagName2B"
+        flag_name_3 = "FlagName3C"
+        flag_name_4 = "FlagName4D"
+
+        flag_logic_1 = f"""\
+if f["{flag_name_2}"] and f["{flag_name_3}"] == False:
+   return True
+else:
+   return False"""
+        payload = {"FLAG_NAME": flag_name_1, "FLAG_LOGIC": flag_logic_1}
+        url = "flag/create/x/" + payload["FLAG_NAME"]
+        response = client.post(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 200
+        flag_id_1 = response.json["uuid"]
+
+        flag_logic_2 = f"""\
+if f["{flag_name_3}"] and f["{flag_name_4}"] == False:
+   return True
+else:
+   return False"""
+        payload = {"FLAG_NAME": flag_name_2, "FLAG_LOGIC": flag_logic_2}
+        url = "flag/create/x/" + payload["FLAG_NAME"]
+        response = client.post(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 200
+        flag_id_2 = response.json["uuid"]
+
+        flag_logic_3 = f"""\
+if f["{flag_name_4}"] and f["{flag_name_1}"] == False:
+   return True
+else:
+   return False"""
+        payload = {"FLAG_NAME": flag_name_3, "FLAG_LOGIC": flag_logic_3}
+        url = "flag/create/x/" + payload["FLAG_NAME"]
+        response = client.post(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 200
+        flag_id_3 = response.json["uuid"]
+
+        flag_logic_4 = f"""\
+if f["{flag_name_1}"] and f["{flag_name_2}"] == False:
+   return True
+else:
+   return False"""
+        payload = {"FLAG_NAME": flag_name_4, "FLAG_LOGIC": flag_logic_4}
+        url = "flag/create/x/" + payload["FLAG_NAME"]
+        response = client.post(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 200
+        flag_id_4 = response.json["uuid"]
+
+        # add flags 1-4 to flag group, causing cyclical flag creation across multiple flags
+        r = client.put("flag_group/add_flag/" + flag_group_id + "/x/" + flag_id_1)
+        assert r.status_code == 200
+        r = client.put("flag_group/add_flag/" + flag_group_id + "/x/" + flag_id_2)
+        assert r.status_code == 200
+        r = client.put("flag_group/add_flag/" + flag_group_id + "/x/" + flag_id_3)
+        assert r.status_code == 200
+        r = client.put("flag_group/add_flag/" + flag_group_id + "/x/" + flag_id_4)
+        assert r.status_code == 200
+
+        # confirm all flags are currently showing error due to cyclical nature of flags
+        r = client.get('flag/get')
+        assert r.status_code == 200
+        assert r.json["flags"][0]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][0]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][0]["_id"] == flag_id_1
+        assert r.json["flags"][0]["FLAG_NAME"] == flag_name_1
+        assert r.json["flags"][1]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][1]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][1]["_id"] == flag_id_2
+        assert r.json["flags"][1]["FLAG_NAME"] == flag_name_2
+        assert r.json["flags"][2]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][2]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][2]["_id"] == flag_id_3
+        assert r.json["flags"][2]["FLAG_NAME"] == flag_name_3
+        assert r.json["flags"][3]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][3]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][3]["_id"] == flag_id_4
+        assert r.json["flags"][3]["FLAG_NAME"] == flag_name_4
+
+        #begin updating flag names
+        new_flag_name_4 = "FlagName5E"
+        r = client.put("flag/update_name/"+flag_id_4+"/"+new_flag_name_4)
+        assert r.status_code == 200
+
+        #confirm name change for flag 4
+        assert flagging_dao.get_flag_name(ObjectId(flag_id_4)) == new_flag_name_4
+
+        #confirm all flags still cyclical due to 2 flag reference
+        # 1 -> 2 and 3
+        # 2 -> 3 and 4
+        # 3 -> 4 and 1
+        # 4 --
+        # 5 -> 1 and 2
+        r = client.get('flag/get')
+        assert r.status_code == 200
+        assert r.json["flags"][0]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][0]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][0]["_id"] == flag_id_1
+        assert r.json["flags"][0]["FLAG_NAME"] == flag_name_1
+        assert r.json["flags"][1]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][1]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][1]["_id"] == flag_id_2
+        assert r.json["flags"][1]["FLAG_NAME"] == flag_name_2
+        assert r.json["flags"][2]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][2]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][2]["_id"] == flag_id_3
+        assert r.json["flags"][2]["FLAG_NAME"] == flag_name_3
+        assert r.json["flags"][3]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][3]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][3]["_id"] == flag_id_4
+        assert r.json["flags"][3]["FLAG_NAME"] == new_flag_name_4
+
+        #second flag name update should remove cyclical flag errors
+        # 1 -> 2 and 3
+        # 2 -> 3 and 4
+        # 3 --
+        # 6 -> 4 and 1
+        # 4 --
+        # 5 -> 1 and 2
+        new_flag_name_3 = "FlagName6F"
+        r = client.put("flag/update_name/" + flag_id_3 + "/" + new_flag_name_3)
+        assert r.status_code == 200
+
+        # confirm name change for flag 3
+        assert flagging_dao.get_flag_name(ObjectId(flag_id_3)) == new_flag_name_3
+
+        r = client.get('flag/get')
+        assert r.status_code == 200
+        assert r.json["flags"][0]["FLAG_ERRORS"] == ""
+        assert r.json["flags"][0]["FLAG_STATUS"] == "PRODUCTION_READY"
+        assert r.json["flags"][0]["_id"] == flag_id_1
+        assert r.json["flags"][0]["FLAG_NAME"] == flag_name_1
+        assert r.json["flags"][1]["FLAG_ERRORS"] == ""
+        assert r.json["flags"][1]["FLAG_STATUS"] == "PRODUCTION_READY"
+        assert r.json["flags"][1]["_id"] == flag_id_2
+        assert r.json["flags"][1]["FLAG_NAME"] == flag_name_2
+        assert r.json["flags"][2]["FLAG_ERRORS"] == ""
+        assert r.json["flags"][2]["FLAG_STATUS"] == "PRODUCTION_READY"
+        assert r.json["flags"][2]["_id"] == flag_id_3
+        assert r.json["flags"][2]["FLAG_NAME"] == new_flag_name_3
+        assert r.json["flags"][3]["FLAG_ERRORS"] == ""
+        assert r.json["flags"][3]["FLAG_STATUS"] == "PRODUCTION_READY"
+        assert r.json["flags"][3]["_id"] == flag_id_4
+        assert r.json["flags"][3]["FLAG_NAME"] == new_flag_name_4
 
 
+#TODO
 #dding flag to flag group, updating flag in flag group, check dependency
+def test_update_flag_logic_1_group_flag_status():
+    app = Flask(__name__)
+    app.config["TESTING"] = True
+    with MongoDbContainer(MONGO_DOCKER_IMAGE) as container, \
+            _create_flagging_dao(container) as flagging_dao:
+        make_routes(app, flagging_dao)
+        client = app.test_client()
+        flag_deletion_url = "flag/delete_all"
+        response = client.delete(flag_deletion_url)
+        assert response.status_code == 200
+        flag_group_delete_url = "flag_group/delete_all"
+        response = client.delete(flag_group_delete_url)
+        assert response.status_code == 200
+        response = client.delete("flag_dependency/delete_all")
+        assert response.status_code == 200
+
+        # create flag group
+        flag_group_name = "FlagGroupName1A"
+        r = client.post("flag_group/create/x/" + flag_group_name)
+        assert r.status_code == 200
+        flag_group_id = r.json["uuid"]
+
+        # create 4 cyclical flags
+        flag_name_1 = "FlagName1A"
+        flag_name_2 = "FlagName2B"
+        flag_name_3 = "FlagName3C"
+        flag_name_4 = "FlagName4D"
+
+        flag_logic_1 = f"""\
+if f["{flag_name_2}"] and f["{flag_name_3}"] == False:
+   return True
+else:
+   return False"""
+        payload = {"FLAG_NAME": flag_name_1, "FLAG_LOGIC": flag_logic_1}
+        url = "flag/create/x/" + payload["FLAG_NAME"]
+        response = client.post(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 200
+        flag_id_1 = response.json["uuid"]
+
+        flag_logic_2 = f"""\
+if f["{flag_name_3}"] and f["{flag_name_4}"] == False:
+   return True
+else:
+   return False"""
+        payload = {"FLAG_NAME": flag_name_2, "FLAG_LOGIC": flag_logic_2}
+        url = "flag/create/x/" + payload["FLAG_NAME"]
+        response = client.post(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 200
+        flag_id_2 = response.json["uuid"]
+
+        flag_logic_3 = f"""\
+if f["{flag_name_4}"] and f["{flag_name_1}"] == False:
+   return True
+else:
+   return False"""
+        payload = {"FLAG_NAME": flag_name_3, "FLAG_LOGIC": flag_logic_3}
+        url = "flag/create/x/" + payload["FLAG_NAME"]
+        response = client.post(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 200
+        flag_id_3 = response.json["uuid"]
+
+        flag_logic_4 = f"""\
+if f["{flag_name_1}"] and f["{flag_name_2}"] == False:
+   return True
+else:
+   return False"""
+        payload = {"FLAG_NAME": flag_name_4, "FLAG_LOGIC": flag_logic_4}
+        url = "flag/create/x/" + payload["FLAG_NAME"]
+        response = client.post(url, data=json.dumps(payload), content_type='application/json')
+        assert response.status_code == 200
+        flag_id_4 = response.json["uuid"]
+
+        # add flags 1-4 to flag group, causing cyclical flag creation across multiple flags
+        r = client.put("flag_group/add_flag/" + flag_group_id + "/x/" + flag_id_1)
+        assert r.status_code == 200
+        r = client.put("flag_group/add_flag/" + flag_group_id + "/x/" + flag_id_2)
+        assert r.status_code == 200
+        r = client.put("flag_group/add_flag/" + flag_group_id + "/x/" + flag_id_3)
+        assert r.status_code == 200
+        r = client.put("flag_group/add_flag/" + flag_group_id + "/x/" + flag_id_4)
+        assert r.status_code == 200
+
+        # confirm all flags are currently showing error due to cyclical nature of flags
+        r = client.get('flag/get')
+        assert r.status_code == 200
+        assert r.json["flags"][0]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][0]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][0]["_id"] == flag_id_1
+        assert r.json["flags"][0]["FLAG_NAME"] == flag_name_1
+        assert r.json["flags"][1]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][1]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][1]["_id"] == flag_id_2
+        assert r.json["flags"][1]["FLAG_NAME"] == flag_name_2
+        assert r.json["flags"][2]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][2]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][2]["_id"] == flag_id_3
+        assert r.json["flags"][2]["FLAG_NAME"] == flag_name_3
+        assert r.json["flags"][3]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][3]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][3]["_id"] == flag_id_4
+        assert r.json["flags"][3]["FLAG_NAME"] == flag_name_4
+
+        # begin updating flag names
+        new_flag_name_4 = "FlagName5E"
+        r = client.put("flag/update_name/" + flag_id_4 + "/" + new_flag_name_4)
+        assert r.status_code == 200
+
+        # confirm name change for flag 4
+        assert flagging_dao.get_flag_name(ObjectId(flag_id_4)) == new_flag_name_4
+
+        # confirm all flags still cyclical due to 2 flag reference
+        # 1 -> 2 and 3
+        # 2 -> 3 and 4
+        # 3 -> 4 and 1
+        # 4 --
+        # 5 -> 1 and 2
+        r = client.get('flag/get')
+        assert r.status_code == 200
+        assert r.json["flags"][0]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][0]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][0]["_id"] == flag_id_1
+        assert r.json["flags"][0]["FLAG_NAME"] == flag_name_1
+        assert r.json["flags"][1]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][1]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][1]["_id"] == flag_id_2
+        assert r.json["flags"][1]["FLAG_NAME"] == flag_name_2
+        assert r.json["flags"][2]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][2]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][2]["_id"] == flag_id_3
+        assert r.json["flags"][2]["FLAG_NAME"] == flag_name_3
+        assert r.json["flags"][3]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][3]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][3]["_id"] == flag_id_4
+        assert r.json["flags"][3]["FLAG_NAME"] == new_flag_name_4
+
+        # second flag name update should remove cyclical flag errors
+        # 1 -> 2 and 3
+        # 2 -> 3 and 4
+        # 3 --
+        # 6 -> 4 and 1
+        # 4 --
+        # 5 -> 1 and 2
+        new_flag_name_3 = "FlagName6F"
+        r = client.put("flag/update_name/" + flag_id_3 + "/" + new_flag_name_3)
+        assert r.status_code == 200
+
+        # confirm name change for flag 3
+        assert flagging_dao.get_flag_name(ObjectId(flag_id_3)) == new_flag_name_3
+
+        r = client.get('flag/get')
+        assert r.status_code == 200
+        assert r.json["flags"][0]["FLAG_ERRORS"] == ""
+        assert r.json["flags"][0]["FLAG_STATUS"] == "PRODUCTION_READY"
+        assert r.json["flags"][0]["_id"] == flag_id_1
+        assert r.json["flags"][0]["FLAG_NAME"] == flag_name_1
+        assert r.json["flags"][1]["FLAG_ERRORS"] == ""
+        assert r.json["flags"][1]["FLAG_STATUS"] == "PRODUCTION_READY"
+        assert r.json["flags"][1]["_id"] == flag_id_2
+        assert r.json["flags"][1]["FLAG_NAME"] == flag_name_2
+        assert r.json["flags"][2]["FLAG_ERRORS"] == ""
+        assert r.json["flags"][2]["FLAG_STATUS"] == "PRODUCTION_READY"
+        assert r.json["flags"][2]["_id"] == flag_id_3
+        assert r.json["flags"][2]["FLAG_NAME"] == new_flag_name_3
+        assert r.json["flags"][3]["FLAG_ERRORS"] == ""
+        assert r.json["flags"][3]["FLAG_STATUS"] == "PRODUCTION_READY"
+        assert r.json["flags"][3]["_id"] == flag_id_4
+        assert r.json["flags"][3]["FLAG_NAME"] == new_flag_name_4
+
+        #update flag logic
+        # 1 -> 2 and 3 and 5 (in group) (cyclical)
+        # 2 -> 3 and 4 (in group) (NOT cyclical)
+        # 3 -- (NOT IN GROUP)
+        # 6 -> 4 and 1 (in group) (cyclical)
+        # 4 -- (NOT IN GROUP)
+        # 5 -> 1 and 2 (in group) (cyclical)
+        new_logic = f"""\
+if f["{flag_name_2}"] and f["{flag_name_3}"] and f["{new_flag_name_4}"] == False:
+    return True
+else:
+    return False"""
+        payload_x = {"FLAG_LOGIC": new_logic}
+        url = "flag/update_logic/"+flag_id_1
+        response = client.put(url, data=json.dumps(payload_x), content_type='application/json')
+        assert response.status_code == 200
+
+        r = client.get('flag/get')
+        assert r.status_code == 200
+        assert r.json["flags"][0]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][0]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][0]["_id"] == flag_id_1
+        assert r.json["flags"][0]["FLAG_NAME"] == flag_name_1
+        assert r.json["flags"][1]["FLAG_ERRORS"] == ""
+        assert r.json["flags"][1]["FLAG_STATUS"] == "PRODUCTION_READY"
+        assert r.json["flags"][1]["_id"] == flag_id_2
+        assert r.json["flags"][1]["FLAG_NAME"] == flag_name_2
+        assert r.json["flags"][2]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][2]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][2]["_id"] == flag_id_3
+        assert r.json["flags"][2]["FLAG_NAME"] == new_flag_name_3
+        assert r.json["flags"][3]["FLAG_ERRORS"] == "CYCLICAL_ERROR"
+        assert r.json["flags"][3]["FLAG_STATUS"] == "DRAFT"
+        assert r.json["flags"][3]["_id"] == flag_id_4
+        assert r.json["flags"][3]["FLAG_NAME"] == new_flag_name_4
+
+        #confirm flag deps
+        r = client.get('flag_dependency/get')
+        assert r.status_code == 200
+
+        for flag_dep in r.json["flag_deps"]:
+            if flag_dep["FLAG_ID"] == flag_id_1:
+                assert flag_dep["FLAG_GROUP_ID"] == flag_group_id
+                assert set(flag_dep["DEPENDENT_FLAGS"]) == set([flag_name_2, flag_name_3, new_flag_name_4])
+                assert flag_dep["FLAG_NAME"] == flag_name_1
+            elif flag_dep["FLAG_ID"] == flag_id_2:
+                assert flag_dep["FLAG_GROUP_ID"] == flag_group_id
+                assert set(flag_dep["DEPENDENT_FLAGS"]) == set([flag_name_3, flag_name_4])
+                assert flag_dep["FLAG_NAME"] == flag_name_2
+            elif flag_dep["FLAG_ID"] == flag_id_3:
+                assert flag_dep["FLAG_GROUP_ID"] == flag_group_id
+                assert set(flag_dep["DEPENDENT_FLAGS"]) == set([flag_name_1, flag_name_4])
+                assert flag_dep["FLAG_NAME"] == new_flag_name_3
+            elif flag_dep["FLAG_ID"] == flag_id_4:
+                assert flag_dep["FLAG_GROUP_ID"] == flag_group_id
+                assert set(flag_dep["DEPENDENT_FLAGS"]) == set([flag_name_1, flag_name_2])
+                assert flag_dep["FLAG_NAME"] == new_flag_name_4
+
+
+
+
 #adding flag to flag group, check dependency, duplicate flag, give new name, add to flag group, check dependency
 #adding flag to flag group, check dependency, update flag logic to have new referenced flags, check dependency
 #adding flag to flag group, check dependency, update flag logic to have cycical logic, check dependnecy
