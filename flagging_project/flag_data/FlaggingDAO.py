@@ -39,7 +39,6 @@ class FlaggingDAO:
     _id: unique user id
     FLAG_NAME: common flag_name -> str
     FLAG_LOGIC: jsonify flag logic information
-    REFERENCED_FLAGS: flags in flag logic -> [str]
     FLAG_STATUS: is flag in production or in draft status -> bool
     FLAG_ERRORS: list of flag errors
     '''
@@ -183,6 +182,12 @@ class FlaggingDAO:
         except Exception as e:
             found_flags = [None]
         return found_flags
+
+    # def get_flag_group_flag_ids(self, flag_group):
+    #     db = get_db(self)
+    #     flag_groups = db[FLAG_GROUPS]
+    #     try:
+    #         found_flag_ids = flag_groups.
 
     def get_flag_names_from_flag_group(self, flag_group):
         flag_name_list = []

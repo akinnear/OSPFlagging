@@ -637,7 +637,7 @@ def test_create_flag_group_name_not_unique(flagging_dao, mvrb, mvl):
     new_flag_group_name = "FlagGroup1"
     result, response_code = create_flag_group(flag_group_name=new_flag_group_name, existing_flag_groups=existing_flag_group_names, flagging_dao=mock_flagging_dao)
     assert result.valid == False
-    assert result.message == "new flag group name must be unique"
+    assert result.message == "new flag group name: " + new_flag_group_name + " must be unique"
     assert result.simple_message == "new flag group name must be unique"
     assert result.uuid == None
     assert result.name == new_flag_group_name
@@ -1149,7 +1149,7 @@ def test_create_flag_group_non_unique_flag_group_name(flagging_dao, mvrb):
     flag_group = "FLAG_GROUP_1A"
     result, response_code = create_flag_group(flag_group_name=flag_group, existing_flag_groups=existing_flag_groups, flagging_dao=mock_flagging_dao)
     assert result.valid == False
-    assert result.message == "new flag group name must be unique"
+    assert result.message == "new flag group name: " + flag_group + " must be unique"
     assert result.simple_message == "new flag group name must be unique"
     assert result.uuid == None
     assert result.name == flag_group

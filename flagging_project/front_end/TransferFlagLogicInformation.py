@@ -121,8 +121,8 @@ def _convert_TFLI_to_FLI(tfli_dict):
         elif param_name == "flag_logic":
             fli_param = tfli_dict[param_name][0]["logic"]
         elif param_name == "return_points":
+            fli_param = set()
             for my_dict in tfli_dict[param_name]:
-                fli_param = set()
                 for code_loc in my_dict["locations"]:
                     cl = CodeLocation(line_number=code_loc["line_number"], column_offset=code_loc["column_offset"])
                     fli_param.add(cl)

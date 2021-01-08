@@ -369,9 +369,9 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                 updated_flag_id = flagging_dao.update_flag(ObjectId(flag_id), "PRODUCTION_READY",
                                                            flag_status_col_name)
                 flag_schema_object = FlaggingSchemaInformation(valid=True,
-                                                               message="logic for flag " + str(flag_id) + " has been updated",
+                                                               message="logic for flag " + str(updated_flag_id) + " has been updated",
                                                                simple_message="flag logic has been updated",
-                                                               uuid=ObjectId(flag_id),
+                                                               uuid=ObjectId(updated_flag_id),
                                                                name=flag_name,
                                                                logic=_convert_FLI_to_TFLI(new_flag_logic_information))
                 response_code = 200
