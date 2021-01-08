@@ -97,7 +97,6 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
             transfer_flag_logic_information = _convert_FLI_to_TFLI(flag_logic_information)
             add_flag_id = flagging_dao.add_flag({flag_name_col_name: flag_name,
                                                    flag_logic_col_name: transfer_flag_logic_information,
-                                                   referenced_flag_col_name: transfer_flag_logic_information["referenced_flags"],
                                                    flag_status_col_name: "DRAFT",
                                                    flag_error_col_name: "ERROR"})
             specific_flag_logic = flagging_dao.get_flag_logic_information(add_flag_id)
@@ -113,7 +112,6 @@ def create_flag(flag_name: str, flag_logic_information:FlagLogicInformation, fla
         transfer_flag_logic_information = _convert_FLI_to_TFLI(flag_logic_information)
         add_flag_id = flagging_dao.add_flag({flag_name_col_name: flag_name,
                                                flag_logic_col_name: transfer_flag_logic_information,
-                                               referenced_flag_col_name: transfer_flag_logic_information["referenced_flags"],
                                                flag_status_col_name: "PRODUCTION_READY",
                                                flag_error_col_name: ""})
         specific_flag_logic = flagging_dao.get_flag_logic_information(add_flag_id)
@@ -367,13 +365,13 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                response_code = 200
             else:
                 # no flag errors, flag not in flag group
-                updated_flag_id = flagging_dao.update_flag(flag_id, "", flag_error_col_name)
-                updated_flag_id = flagging_dao.update_flag(flag_id, "PRODUCTION_READY",
+                updated_flag_id = flagging_dao.update_flag(ObjectId(flag_id), "", flag_error_col_name)
+                updated_flag_id = flagging_dao.update_flag(ObjectId(flag_id), "PRODUCTION_READY",
                                                            flag_status_col_name)
                 flag_schema_object = FlaggingSchemaInformation(valid=True,
                                                                message="logic for flag " + str(flag_id) + " has been updated",
                                                                simple_message="flag logic has been updated",
-                                                               uuid=flag_id,
+                                                               uuid=ObjectId(flag_id),
                                                                name=flag_name,
                                                                logic=_convert_FLI_to_TFLI(new_flag_logic_information))
                 response_code = 200
@@ -413,6 +411,9 @@ def update_flag_logic(flag_id, new_flag_logic_information:FlagLogicInformation()
                 flag_logic_cyclical_check = FlagLogicInformation(referenced_flags=ref_flag_dict)
                 validation_results = validate_cyclical_logic(ObjectId(flag_id), ObjectId(flag_group_id),
                                                              flag_logic_cyclical_check, flagging_dao)
+                if len(validation_results.errors) == 0:
+                    validation_results = validate_cyclical_logic(ObjectId(flag_id), ObjectId(flag_group_id),
+                                                                 flag_logic_cyclical_check, flagging_dao)
                 if len(validation_results.errors) != 0:
                     for k, v in validation_results.errors.items():
                         if isinstance(v, FlagErrorInformation):

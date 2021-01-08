@@ -10,17 +10,17 @@ from front_end.ReferencedFlag import ReferencedFlag
 # TO perform validation please use the interface created in #67 for flag feeders.
 
 
-def validate_cyclical_logic(flag_id, flag_group_id, flag_logic_information:FlagLogicInformation(), flagging_mongo):
+def validate_cyclical_logic(flag_id, flag_group_id, flag_logic_information:FlagLogicInformation(), flagging_dao):
     #TODO
     # get flag feeders
     flag_feeders = pull_flag_feeders(dummy_flag_feeders={"FF1": int, "FF2": bool, "FF3": str, "FF4": int})
 
 
     #dependenceis via name
-    flag_deps_for_flag_group = flagging_mongo.get_flag_dep_by_flag_group_id(flag_group_id)
+    flag_deps_for_flag_group = flagging_dao.get_flag_dep_by_flag_group_id(flag_group_id)
     flag_dependencies = {}
     if flag_id is not None:
-        flag_name = flagging_mongo.get_flag_name(flag_id)
+        flag_name = flagging_dao.get_flag_name(flag_id)
         flag_dependencies[flag_name] = {x for x in flag_logic_information.referenced_flags}
     for i in range(len(flag_deps_for_flag_group)):
         rf_key = flag_deps_for_flag_group[i]["FLAG_NAME"]
@@ -39,7 +39,7 @@ def validate_cyclical_logic(flag_id, flag_group_id, flag_logic_information:FlagL
     return validation_result
 
 
-def validate_logic(flag_name, flag_logic_information:FlagLogicInformation(), flagging_mongo):
+def validate_logic(flag_name, flag_logic_information:FlagLogicInformation(), flagging_dao):
     #TODO
     # get flag feeders
     flag_feeders = pull_flag_feeders(dummy_flag_feeders={"FF1": int, "FF2": bool, "FF3": str, "FF4": int})
